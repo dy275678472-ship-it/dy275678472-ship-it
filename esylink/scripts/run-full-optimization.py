@@ -153,6 +153,8 @@ def inject_blog_cta(html: str, path: Path) -> tuple[str, bool]:
         return html.replace("</article>", BLOG_CTA + "\n</article>", 1), True
     if "</main>" in html:
         return html.replace("</main>", BLOG_CTA + "\n</main>", 1), True
+    if "</body>" in html:
+        return html.replace("</body>", BLOG_CTA + "\n</body>", 1), True
     return html, False
 
 

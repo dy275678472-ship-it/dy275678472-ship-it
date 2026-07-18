@@ -206,6 +206,8 @@ def inject_blog_cta_remaining():
             html = html.replace("</article>", cta + "\n</article>", 1)
         elif "</main>" in html:
             html = html.replace("</main>", cta + "\n</main>", 1)
+        elif "</body>" in html:
+            html = html.replace("</body>", cta + "\n</body>", 1)
         else:
             continue
         f.write_text(html, encoding="utf-8")
