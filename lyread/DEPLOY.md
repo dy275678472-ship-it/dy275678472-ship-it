@@ -2,6 +2,8 @@
 
 服务器：`101.34.63.137`（`ubuntu` 用户，Docker 化部署）。域名 `lyread.cn` → nginx(443) → 后端容器 `127.0.0.1:8004`。
 
+**Cloud Agent SSH 接入**：见 [`docs/lyread-ssh.md`](../docs/lyread-ssh.md)（与上海A/曼谷同一模式：公钥写入 `authorized_keys`）。
+
 ## 架构
 
 ```
