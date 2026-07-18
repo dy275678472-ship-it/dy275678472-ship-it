@@ -4,7 +4,7 @@ export const IMAGES = {
   hero: '/images/hero-banner.webp',
   workspace: '/images/workspace-banner.webp',
   emptyCreate: '/images/empty-create.webp',
-  ogShare: '/images/og-share.svg',
+  ogShare: '/images/og-share.png',
   loginIllustration: '/images/login-illustration.svg',
   adminBanner: '/images/admin-banner.svg',
   adminDenied: '/images/admin-denied.svg',

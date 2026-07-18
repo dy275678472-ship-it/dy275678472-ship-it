@@ -49,7 +49,7 @@ router.afterEach((to) => {
   }
   canonical.href = `https://lyread.cn${to.path === '/' ? '/' : to.path}`
   const ogImage = document.querySelector('meta[property="og:image"]')
-  if (ogImage) ogImage.content = 'https://lyread.cn/images/og-share.svg'
+  if (ogImage) ogImage.content = 'https://lyread.cn/images/og-share.png'
   trackPageView(to.fullPath, title)
 })
 

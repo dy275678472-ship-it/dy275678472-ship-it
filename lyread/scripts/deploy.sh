@@ -47,6 +47,10 @@ bash "$REPO_DIR/lyread/scripts/seed_showcase_cases.sh" || true
 
 echo "=== frontend build ==="
 cd lyread/frontend
+if [ -f "${FRONTEND_ENV_FILE:-/tmp/lyread-frontend.env}" ]; then
+  cp "${FRONTEND_ENV_FILE:-/tmp/lyread-frontend.env}" .env.production
+  echo "Using frontend analytics env from ${FRONTEND_ENV_FILE:-/tmp/lyread-frontend.env}"
+fi
 npm install --silent
 npm run build
 sudo cp -r dist/* /usr/share/nginx/html/

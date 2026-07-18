@@ -60,32 +60,32 @@
     <section class="hot-section">
       <div class="section-header">
         <SectionHeading :icon="images.features.novel">创作案例</SectionHeading>
+        <router-link v-if="hotCases.length" to="/trending" class="more-link">查看全部 →</router-link>
       </div>
-      <div class="hot-grid">
-        <div class="hot-card">
-          <img :src="images.covers[0]" alt="都市神豪题材小说封面" class="hot-cover" />
+      <div v-if="casesLoading" class="hot-loading">加载案例中...</div>
+      <div v-else-if="!hotCases.length" class="hot-empty">
+        <p>暂无公开案例，<router-link to="/workspace">开始创作</router-link> 并提交审核后将展示在这里</p>
+      </div>
+      <div v-else class="hot-grid">
+        <a
+          v-for="(c, i) in hotCases"
+          :key="c.id"
+          :href="c.url"
+          class="hot-card hot-card-link"
+          target="_blank"
+          rel="noopener"
+          @click="trackCaseClick(c)"
+        >
+          <img :src="coverForCase(c, i)" :alt="`${c.title} 封面`" class="hot-cover" loading="lazy" />
           <div class="hot-body">
-            <div class="hot-type">都市神豪</div>
-            <h3>开局十个亿，我在都市横着走</h3>
-            <div class="hot-tags"><span>系统</span><span>爽文</span></div>
+            <div class="hot-type">{{ c.category || '都市' }}</div>
+            <h3>{{ c.title }}</h3>
+            <div class="hot-tags">
+              <span>{{ formatWords(c.word_count) }}</span>
+              <span>热度 {{ c.heat }}</span>
+            </div>
           </div>
-        </div>
-        <div class="hot-card">
-          <img :src="images.covers[1]" alt="战神归来题材小说封面" class="hot-cover" />
-          <div class="hot-body">
-            <div class="hot-type">战神归来</div>
-            <h3>战神回归，发现女儿住狗窝</h3>
-            <div class="hot-tags"><span>虐心</span><span>逆袭</span></div>
-          </div>
-        </div>
-        <div class="hot-card">
-          <img :src="images.covers[2]" alt="重生题材小说封面" class="hot-cover" />
-          <div class="hot-body">
-            <div class="hot-type">重生</div>
-            <h3>重生2003，当首富很简单</h3>
-            <div class="hot-tags"><span>创业</span><span>赚钱</span></div>
-          </div>
-        </div>
+        </a>
       </div>
     </section>
 
@@ -162,10 +162,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { IMAGES } from '../assets/images'
+import { IMAGES, coverForCase } from '../assets/images'
 import SectionHeading from '../components/SectionHeading.vue'
-import { statsApi } from '../api'
-import { formatCount } from '../utils/format'
+import { statsApi, casesApi } from '../api'
+import { formatCount, formatWords } from '../utils/format'
 import { trackEvent } from '../utils/analytics'
 
 const router = useRouter()
@@ -177,6 +177,8 @@ const trialPrompt = ref('')
 const trialLoading = ref(false)
 const trialResult = ref(null)
 const statsLoaded = ref(false)
+const hotCases = ref([])
+const casesLoading = ref(true)
 
 const stats = ref({
   users: '—',
@@ -189,18 +191,27 @@ function openTrial() {
   showTrialModal.value = true
 }
 
+function trackCaseClick(c) {
+  trackEvent('case_click', { category: 'funnel', label: String(c.id) })
+}
+
 onMounted(async () => {
   try {
-    const res = await statsApi.public()
-    if (res?.success) {
+    const [statsRes, casesRes] = await Promise.all([
+      statsApi.public(),
+      casesApi.list(3),
+    ])
+    if (statsRes?.success) {
       stats.value = {
-        users: formatCount(res.users),
-        works: formatCount(res.works),
-        cases: formatCount(res.cases),
+        users: formatCount(statsRes.users),
+        works: formatCount(statsRes.works),
+        cases: formatCount(statsRes.cases),
       }
       statsLoaded.value = true
     }
+    if (casesRes?.success) hotCases.value = casesRes.cases || []
   } catch { /* 隐藏数据区 */ }
+  finally { casesLoading.value = false }
 })
 
 const startTrial = async () => {
@@ -386,6 +397,11 @@ const startTrial = async () => {
 }
 .section-header h2,
 .section-header :deep(.section-heading) { font-size: 24px; color: var(--lyread-text-dark); }
+.more-link { font-size: 14px; color: var(--lyread-primary-blue-end); text-decoration: none; font-weight: 600; }
+.more-link:hover { text-decoration: underline; }
+
+.hot-loading, .hot-empty { text-align: center; color: #94a3b8; padding: 32px 0; font-size: 14px; }
+.hot-empty a { color: var(--lyread-primary-blue-end); }
 
 .hot-section { padding: 40px 24px; max-width: 1200px; margin: 0 auto; }
 .hot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
@@ -395,6 +411,16 @@ const startTrial = async () => {
   overflow: hidden;
   box-shadow: 0 2px 12px var(--lyread-shadow-light);
   border: 1px solid rgba(255,255,255,0.1);
+}
+.hot-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.hot-card-link:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px var(--lyread-shadow-medium);
 }
 .hot-cover {
   width: 100%;
