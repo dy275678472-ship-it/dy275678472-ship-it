@@ -124,7 +124,7 @@ class PublishRequest(BaseModel):
 
 @router.post("/generate-title")
 async def generate_title(req: GenerateTitleRequest, user: Optional[dict] = Depends(get_optional_user)):
-    """步骤1：AI生成爆款书名（对匿名试用开放，由 nginx 限流保护）。"""
+    """步骤1：AI生成爆款书名。匿名可试用一次（nginx 限流）；登录用户扣 1 点。"""
     elements = req.prompt or (",".join(req.keywords) if req.keywords else "")
     elements = elements.strip()
     if not elements:
@@ -142,11 +142,14 @@ async def generate_title(req: GenerateTitleRequest, user: Optional[dict] = Depen
 
 只输出5行，不要其他内容。"""
 
+    # 登录用户走计费；匿名用户免费试用（不计费）
+    uid = str(user["sub"]) if user and user.get("sub") else None
+    job = None
+    if uid:
+        from api.credits import reserve, settle, refund, estimate_points
+        job = reserve(uid, estimate_points("title"), "title")
     try:
-        # 使用统一的 LLM 调用（DeepSeek优先，失败则用PollinationsAI）
         result = chat_with_llm(prompt, max_tokens=500)
-
-        # 解析结果
         titles = []
         for line in result.strip().split("\n"):
             if "|" in line:
@@ -155,8 +158,8 @@ async def generate_title(req: GenerateTitleRequest, user: Optional[dict] = Depen
                     "title": parts[0].strip(),
                     "hook": parts[1].strip() if len(parts) > 1 else ""
                 })
-
-        # 兼容首页试用：额外回传第一个书名与钩子，便于前端跳转创作台
+        if uid and job:
+            settle(uid, job["job_id"], estimate_points("title"))
         first = titles[0] if titles else {"title": "", "hook": ""}
         return {
             "success": True,
@@ -165,14 +168,19 @@ async def generate_title(req: GenerateTitleRequest, user: Optional[dict] = Depen
             "description": first["hook"],
         }
     except Exception as e:
+        if uid and job:
+            refund(uid, job["job_id"])
         return {"success": False, "error": str(e)}
 
 
 @router.post("/generate-outline")
 async def generate_outline(req: GenerateOutlineRequest, user: dict = Depends(get_current_user)):
-    """步骤2：AI生成大纲（起承转合树）"""
+    """步骤2：AI生成大纲（起承转合树）。扣 3 点，失败返还。"""
+    from api.credits import reserve, settle, refund, estimate_points
+    uid = str(user["sub"])
+    job = reserve(uid, estimate_points("outline"), "outline")
     client = get_openai_client()
-    
+
     hot_points = ",".join(req.hot_points)
     
     prompt = f"""你是一个网文大纲大师，精通"起承转合"结构。
@@ -209,8 +217,10 @@ async def generate_outline(req: GenerateOutlineRequest, user: dict = Depends(get
         else:
             outline = {}
 
+        settle(uid, job["job_id"], estimate_points("outline"))
         return {"success": True, "outline": outline}
     except Exception as e:
+        refund(uid, job["job_id"])
         return {"success": False, "error": str(e)}
 
 
@@ -262,7 +272,10 @@ async def get_level_systems():
 
 @router.post("/generate-chapters")
 async def generate_chapters(req: GenerateChaptersRequest, user: dict = Depends(get_current_user)):
-    """步骤5：批量生成章纲（带爽点芯片）"""
+    """步骤5：批量生成章纲（带爽点芯片）。扣 5 点，失败返还。"""
+    from api.credits import reserve, settle, refund, estimate_points
+    uid = str(user["sub"])
+    job = reserve(uid, estimate_points("chapters"), "chapters")
     client = get_openai_client()
     
     prompt = f"""你是一个网文章纲大师。
@@ -309,20 +322,25 @@ async def generate_chapters(req: GenerateChaptersRequest, user: dict = Depends(g
                     "hot_point": hot_points[(i-1) % len(hot_points)],
                     "summary": f"第{i}章的剧情摘要..."
                 })
-        
+
+        settle(uid, job["job_id"], estimate_points("chapters"))
         return {"success": True, "chapters": chapters}
     except Exception as e:
+        refund(uid, job["job_id"])
         return {"success": False, "error": str(e)}
 
 
 @router.post("/ai-continue")
 async def ai_continue(req: AIContinueRequest, user: dict = Depends(get_current_user)):
-    """步骤6：AI流式续写（带隐形水印）"""
+    """步骤6：AI流式续写（带隐形水印）。扣 10 点，失败返还。"""
+    from api.credits import reserve, settle, refund, estimate_points
+    uid = str(user["sub"])
     client = get_openai_client()
-    
+
     if not client:
         return {"success": False, "error": "AI服务未配置"}
-    
+
+    job = reserve(uid, estimate_points("continue"), "continue")
     from services.copyright import inject_watermark
     
     prompt = f"""你是一个网文作家，擅长写爽点密集的网文。
@@ -351,7 +369,8 @@ async def ai_continue(req: AIContinueRequest, user: dict = Depends(get_current_u
         
         # 注入隐形零宽水印（按当前登录用户）
         watermarked = inject_watermark(new_content, user_id=str(user.get("sub", "0")))
-        
+
+        settle(uid, job["job_id"], estimate_points("continue"))
         return {
             "success": True,
             "content": new_content,
@@ -359,6 +378,7 @@ async def ai_continue(req: AIContinueRequest, user: dict = Depends(get_current_u
             "length": len(new_content)
         }
     except Exception as e:
+        refund(uid, job["job_id"])
         return {"success": False, "error": str(e)}
 
 

@@ -165,6 +165,13 @@ async def register(req: RegisterRequest):
             (user_id, req.username, hash_password(req.password), str(req.email) if req.email else None),
         )
         conn.commit()
+        # 注册赠送点数（失败不影响注册主流程）
+        try:
+            from api.credits import grant_signup_bonus
+            grant_signup_bonus(conn, user_id)
+            conn.commit()
+        except Exception as bonus_exc:
+            print(f"[Register] 赠送点数失败: {bonus_exc}")
         return {
             "success": True,
             "message": "注册成功",

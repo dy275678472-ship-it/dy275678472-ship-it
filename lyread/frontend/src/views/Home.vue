@@ -1,35 +1,34 @@
 <template>
   <div class="home">
-    <!-- Hero区域 -->
     <section class="hero">
-      <h1>🧠 AI智能小说创作平台</h1>
-      <p class="subtitle">70% AI + 30% 人工 · 让创作更简单</p>
+      <h1>让 AI 陪你写完一部长篇小说</h1>
+      <p class="subtitle">从人物、大纲到连续章节，自动记住剧情和伏笔；也支持快速生成完整短故事</p>
       <div class="hero-btns">
-        <button class="btn-primary" @click="$router.push('/reader')">开始创作</button>
-        <button class="btn-secondary" @click="showTrialModal = true">免费试用</button>
+        <button class="btn-primary" @click="$router.push('/reader')">开始写长篇小说</button>
+        <button class="btn-secondary" @click="showTrialModal = true">快速生成短故事</button>
       </div>
     </section>
 
     <section class="features">
       <div class="feature-card">
-        <div class="icon">✍️</div>
-        <h3>AI创作</h3>
-        <p>70%AI+30%人工，快速构建小说世界观</p>
+        <div class="icon">🧠</div>
+        <h3>小说大脑</h3>
+        <p>人物档案、伏笔、章节摘要自动记忆，写到第 50 章也不乱</p>
       </div>
       <div class="feature-card">
-        <div class="icon">🛡️</div>
-        <h3>版权保护</h3>
-        <p>多重加密存储，确保您的作品版权</p>
+        <div class="icon">📖</div>
+        <h3>长篇连载</h3>
+        <p>大纲 → 章纲 → 正文续写，专为日更作者设计</p>
       </div>
       <div class="feature-card">
-        <div class="icon">🚀</div>
-        <h3>全网推流</h3>
-        <p>AI智能分发，让您的作品触达更多读者</p>
+        <div class="icon">⚡</div>
+        <h3>短故事</h3>
+        <p>输入想法，几分钟生成完整短篇，适合盐选/公众号</p>
       </div>
       <div class="feature-card">
-        <div class="icon">💰</div>
-        <h3>版权交易</h3>
-        <p>一站式版权交易，收益最大化</p>
+        <div class="icon">◆</div>
+        <h3>点数计费</h3>
+        <p>用多少付多少，注册送 30 点，每日免费 5 点</p>
       </div>
     </section>
 
@@ -49,10 +48,15 @@
       </div>
     </section>
 
-    <!-- 热门推荐 -->
+    <section class="pricing-cta">
+      <h2>透明计费，失败全额返还</h2>
+      <p>生成一章约 2000 字 ≈ 10 点（约 1 元）· 10 元 = 100 点</p>
+      <router-link to="/pricing" class="btn-pricing">查看价格详情 →</router-link>
+    </section>
+
     <section class="hot-section">
       <div class="section-header">
-        <h2>🔥 热门推荐</h2>
+        <h2>📚 创作案例</h2>
       </div>
       <div class="hot-grid">
         <div class="hot-card">
@@ -122,14 +126,20 @@
             <option value="brainhole">脑洞文</option>
           </select>
           <input v-model="trialPrompt" placeholder="描述你的故事想法...例如：主角意外获得神豪系统，在都市纵横" class="trial-input" @keyup.enter="startTrial" />
-          <button class="btn-start-trial" @click="startTrial">
-            🚀 开始创作
+          <button class="btn-start-trial" :disabled="trialLoading" @click="startTrial">
+            {{ trialLoading ? '生成中...' : '🚀 开始创作' }}
           </button>
         </div>
 
+        <div v-if="trialResult" class="trial-result">
+          <h4>✨ AI 为你生成的书名</h4>
+          <p class="result-title">{{ trialResult.title }}</p>
+          <p class="result-hook">{{ trialResult.description }}</p>
+        </div>
+
         <div class="trial-tips">
-          <span>🎁 今日免费次数: 3</span>
-          <span class="tip-link" @click="$router.push('/login')">登录后可保存作品 →</span>
+          <span>🎁 游客可免费试用一次</span>
+          <span class="tip-link" @click="$router.push('/login')">注册送 30 点 →</span>
         </div>
       </div>
     </div>
@@ -139,7 +149,6 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 
 const router = useRouter()
 
@@ -147,8 +156,8 @@ const showTrialModal = ref(false)
 const trialType = ref('')
 const trialPrompt = ref('')
 const trialLoading = ref(false)
+const trialResult = ref(null)
 
-// 新增数据证明数据
 const stats = ref({
   users: '10万+',
   novels: '50万+',
@@ -162,30 +171,32 @@ const startTrial = async () => {
   }
 
   trialLoading.value = true
+  trialResult.value = null
   try {
-    // 调用 /api/story/generate-title 进行试用生成
-    const response = await axios.post('/api/story/generate-title', {
-      genre: trialType.value,
-      prompt: trialPrompt.value
+    const token = localStorage.getItem('token')
+    const headers = { 'Content-Type': 'application/json' }
+    if (token) headers.Authorization = `Bearer ${token}`
+    const res = await fetch('/api/story/generate-title', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ genre: trialType.value, prompt: trialPrompt.value }),
     })
-    
-    // 假设 generate-title 返回了 title 和 description
-    const { title, description } = response.data
-
-    // 成功后跳转到创作工作台，带上生成的内容
-    router.push({
-      path: '/workspace',
-      query: {
-        type: trialType.value,
-        prompt: trialPrompt.value,
-        generatedTitle: title,
-        generatedDescription: description
-      }
-    })
-    showTrialModal.value = false
+    const data = await res.json()
+    if (!data.success) {
+      alert(data.error || data.detail || 'AI 生成失败，请稍后再试')
+      return
+    }
+    trialResult.value = { title: data.title, description: data.description }
+    if (localStorage.getItem('token')) {
+      router.push({
+        path: '/workspace',
+        query: { type: trialType.value, prompt: trialPrompt.value, generatedTitle: data.title },
+      })
+      showTrialModal.value = false
+    }
   } catch (error) {
     console.error('试用生成失败:', error)
-    alert('AI生成失败，请稍后再试或更换内容。')
+    alert('AI 生成失败，请稍后再试或更换内容。')
   } finally {
     trialLoading.value = false
   }
@@ -456,6 +467,26 @@ const startTrial = async () => {
   cursor: pointer;
 }
 .tip-link:hover { text-decoration: underline; }
+
+.pricing-cta {
+  max-width: 720px; margin: 0 auto 48px; padding: 32px 24px; text-align: center;
+  background: linear-gradient(135deg, #fff7e6, #ffe9c7); border-radius: 20px;
+  border: 1px solid #ffd591;
+}
+.pricing-cta h2 { font-size: 22px; color: #ad6800; margin-bottom: 8px; }
+.pricing-cta p { color: #8c6d1f; margin-bottom: 16px; font-size: 14px; }
+.btn-pricing {
+  display: inline-block; padding: 10px 22px; border-radius: 10px;
+  background: #fff; color: #ad6800; font-weight: 600; text-decoration: none;
+  border: 1px solid #ffd591;
+}
+.trial-result {
+  margin-top: 16px; padding: 16px; background: #f0f9ff; border-radius: 12px;
+  border: 1px solid #bae6fd; text-align: left;
+}
+.trial-result h4 { font-size: 14px; color: #0369a1; margin-bottom: 8px; }
+.result-title { font-weight: 700; color: #1e2a3a; margin-bottom: 6px; }
+.result-hook { font-size: 13px; color: #5a6a7a; }
 
 /* 媒体查询调整 */
 @media (max-width: 1024px) {
