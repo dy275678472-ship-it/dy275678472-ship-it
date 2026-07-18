@@ -8,6 +8,8 @@
     <meta name="keywords" content="翼星科技, esnlink, 智能呼叫中心, 短信平台, 物联网, 企业通信">
     <meta name="360-site-verification" content="0ae8aa254ad18dd84b4de4a59ff2d43f" />
     <link rel="canonical" href="https://www.esnlink.cn/">
+    <link rel="alternate" hreflang="zh-CN" href="https://www.esnlink.cn/">
+    <link rel="alternate" hreflang="en" href="https://www.esnlink.cn/en/">
     <meta name="baidu-site-verification" content="codeva-RWoGSVXoTd" />
     <!-- Open Graph -->
     <meta property="og:type" content="website">
@@ -579,7 +581,27 @@
         .partner-item { background:white; border-radius:1.5rem; padding:1.5rem 1rem; border:1px solid #f0f2f5; text-align:center; transition:0.3s; font-size:0.95rem; font-weight:600; color:#475569; }
         .partner-item:hover { border-color:#dbeafe; transform:translateY(-4px); box-shadow:0 12px 25px -10px rgba(37,99,235,0.08); }
         .partner-item i { font-size:2rem; display:block; margin-bottom:0.5rem; background:linear-gradient(135deg,#2563eb,#06b6d4); -webkit-background-clip:text; background-clip:text; color:transparent; }
-        .partner-item span { display:block; }
+        .logo-wall {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem 2rem;
+            margin-top: 1.5rem;
+            padding: 1.5rem 0;
+        }
+        .logo-wall .logo-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+        }
+        .logo-wall .logo-item span:first-child { font-size: 1.2rem; }
 
         /* ===== Breadcrumbs ===== */
         .breadcrumbs {
@@ -682,7 +704,8 @@
             <a href="pricing.html">定价</a>
             <a href="docs/">文档</a>
             <a href="blog/">博客</a>
-            <a href="about.html">关于</a>
+            <a href="cases/">案例</a>
+            <a href="en/">EN</a>
             <a href="booking.html" class="nav-btn btn-trial">免费试用</a>
             <a href="#contact" class="nav-btn"><span class="icon-emoji">🎧</span> 咨询</a>
         </div>
@@ -882,16 +905,26 @@
     <div class="container">
         <h2 class="section-title">客户案例 <span class="text-gradient">· 实力见证</span></h2>
         <div class="section-sub">来自不同行业的信赖，用效果说话</div>
+        <div class="section-sub" style="margin-bottom:1rem">来自不同行业的信赖，用效果说话 · <a href="cases/" style="color:#2563eb;text-decoration:none;font-weight:600">查看全部案例 →</a></div>
         <div class="cases-grid reveal">
-            <div class="case-card">
-                <span class="industry">金融</span>
-                <h4>某大型银行智能客服中心</h4>
-                <p>全渠道云呼叫中心替换传统 IVR，AI 语音导航分流 70% 人工来电。</p>
+            <a href="blog/case-1-zhixiao.html" class="case-card" style="text-decoration:none;color:inherit;display:block">
+                <span class="industry">教育</span>
+                <h4>合肥某职校 AI 招生案例</h4>
+                <p>到校率从 8% 提升至 22%，招生团队从 12 人缩减至 4 人。</p>
                 <div class="result">
-                    <span>接通率 <strong>↑ 35%</strong></span>
+                    <span>到校率 <strong>↑ 175%</strong></span>
+                    <span>触达率 <strong>92%</strong></span>
+                </div>
+            </a>
+            <a href="blog/case-2-peixun.html" class="case-card" style="text-decoration:none;color:inherit;display:block">
+                <span class="industry">教育</span>
+                <h4>连锁培训机构招生升级</h4>
+                <p>AI 外呼自动筛选意向学员，单月招生量提升 2.5 倍。</p>
+                <div class="result">
+                    <span>招生量 <strong>↑ 150%</strong></span>
                     <span>成本 <strong>↓ 40%</strong></span>
                 </div>
-            </div>
+            </a>
             <div class="case-card">
                 <span class="industry">电商</span>
                 <h4>头部电商平台消息服务</h4>
@@ -899,15 +932,6 @@
                 <div class="result">
                     <span>日发送量 <strong>500万+</strong></span>
                     <span>到达率 <strong>99.9%</strong></span>
-                </div>
-            </div>
-            <div class="case-card">
-                <span class="industry">智慧城市</span>
-                <h4>市级智慧市政物联网项目</h4>
-                <p>10 万+ 终端设备接入，实时采集水电燃气数据，远程智能管控。</p>
-                <div class="result">
-                    <span>设备接入 <strong>10万+</strong></span>
-                    <span>运维效率 <strong>↑ 60%</strong></span>
                 </div>
             </div>
         </div>
@@ -991,13 +1015,17 @@
 <section id="partners" style="background:#fff;">
     <div class="container">
         <h2 class="section-title reveal">合作伙伴 <span class="text-gradient">· 携手共赢</span></h2>
-        <div class="section-sub reveal">与翼星科技并肩前行的优秀合作伙伴</div>
-        <div class="partner-grid reveal">
-            <div class="partner-item reveal reveal-delay-1"><span class="icon-emoji">🛰</span><span>中国星网</span></div>
-            <div class="partner-item reveal reveal-delay-2"><span class="icon-emoji">📶</span><span>中国电信</span></div>
-            <div class="partner-item reveal reveal-delay-3"><span class="icon-emoji">📶</span><span>中国移动</span></div>
-            <div class="partner-item reveal reveal-delay-4"><span class="icon-emoji">🌐</span><span>中国联通</span></div>
-                    </div>
+        <div class="section-sub reveal">已服务 500+ 企业，覆盖通信、教育、金融、电商、政务等行业</div>
+        <div class="logo-wall reveal">
+            <div class="logo-item"><span>📶</span><span>中国电信</span></div>
+            <div class="logo-item"><span>📶</span><span>中国移动</span></div>
+            <div class="logo-item"><span>🌐</span><span>中国联通</span></div>
+            <div class="logo-item"><span>🛰</span><span>中国星网</span></div>
+            <div class="logo-item"><span>🏦</span><span>城商行联盟</span></div>
+            <div class="logo-item"><span>🎓</span><span>职教集团</span></div>
+            <div class="logo-item"><span>🛒</span><span>头部电商</span></div>
+            <div class="logo-item"><span>🏥</span><span>社区医院</span></div>
+        </div>
     </div>
 </section>
 

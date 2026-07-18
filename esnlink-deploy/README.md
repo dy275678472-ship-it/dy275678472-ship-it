@@ -15,20 +15,26 @@
 - [x] 产品页增加「相关资源」内链区块
 - [x] sitemap 新增 6 个 URL
 
+### P2（已完成）
+- [x] `robots.txt` 屏蔽 `/seo/` + nginx `X-Robots-Tag: noindex`
+- [x] nginx gzip + 静态资源缓存
+- [x] `/cases/` 案例中心 + 首页案例可点击
+- [x] Logo 信任墙升级（8 行业）
+- [x] 英文版 `/en/`（首页 + SMS + Call Center，hreflang）
+- [x] 广告落地页 `/landing/sms.html`
+- [x] `og-image.webp` 生成
+
 ### 文件结构
 
 ```
 esnlink-deploy/
 ├── site/
-│   ├── index.html          # 首页（首屏+导航+页脚）
-│   ├── call-center.html    # 智能外呼产品页
-│   ├── og-image.png        # 社交分享图
-│   └── sitemap.xml         # 站点地图
-├── css/
-│   └── header-footer.css   # 共享导航/页脚样式
-├── deploy.sh               # 一键部署脚本
-├── generate_og_image.py    # 生成 og-image
-└── patch_blog_cta.py       # 博客 CTA 批量注入
+│   ├── index.html, call-center.html, ...
+│   ├── docs/, solutions/, cases/, en/, landing/
+│   ├── robots.txt, sitemap.xml, og-image.png/webp
+├── nginx/                  # gzip + 缓存 + seo noindex
+├── deploy.sh
+└── generate_*.py
 ```
 
 ## 部署
@@ -39,13 +45,12 @@ bash esnlink-deploy/deploy.sh
 
 服务器：`150.158.42.39` → `/var/www/yixing/`
 
-## 下一步（P2，90 天内）
+## 下一步（P3，可选）
 
-1. 客户 Logo 墙（需客户提供授权 Logo）
-2. 百度/360 站长平台提交 sitemap
-3. `/seo/` 2800 页质量审核
-4. CDN 接入 + 图片 WebP 优化
-5. 英文版 `/en/` 页面
+1. 真实客户 Logo 图片替换 emoji 占位
+2. 百度/360 站长平台手动提交 sitemap
+3. 落地页 A/B 测试
+4. 腾讯云 CDN 域名接入
 
 ## 增长诊断报告
 
