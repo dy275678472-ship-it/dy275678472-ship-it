@@ -98,16 +98,17 @@
         <a href="#" @click.prevent="showForgot = false; showReset = false">返回登录</a>
       </div>
 
-      <!--
-      <div class="social-login">
-        <p>或使用第三方登录</p>
+      <div class="social-login" v-if="!showForgot && !showReset">
+        <p>第三方登录（即将上线）</p>
         <div class="social-icons">
-          <div class="social-icon">💬</div>
-          <div class="social-icon">QQ</div>
-          <div class="social-icon">📱</div>
+          <button type="button" class="social-icon" disabled title="微信登录即将上线">
+            <img :src="images.ui.wechat" alt="微信" width="28" height="28" />
+          </button>
+          <button type="button" class="social-icon" disabled title="QQ 登录即将上线">
+            <img :src="images.ui.qq" alt="QQ" width="28" height="28" />
+          </button>
         </div>
       </div>
-      -->
       </div>
     </div>
   </div>
@@ -124,6 +125,7 @@ const router = useRouter()
 const route = useRoute()
 const logo = IMAGES.logo
 const illustration = IMAGES.loginIllustration
+const images = IMAGES
 const loading = ref(false)
 const error = ref('')
 const success = ref('')
@@ -478,14 +480,19 @@ const handleRegister = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  min-height: 44px; /* 确保触摸目标 */
+  min-height: 44px;
   min-width: 44px;
+  border: none;
+  padding: 0;
 }
-.social-icon:hover {
+.social-icon:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.social-icon:not(:disabled):hover {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   background: var(--lyread-primary-blue-start);

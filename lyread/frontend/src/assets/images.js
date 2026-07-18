@@ -1,6 +1,7 @@
 /** 站点静态图片路径（public/images） */
 export const IMAGES = {
-  logo: '/images/logo-icon.webp',
+  logo: '/images/logo-icon-v2.svg',
+  logoLegacy: '/images/logo-icon.webp',
   hero: '/images/hero-banner.webp',
   workspace: '/images/workspace-banner.webp',
   emptyCreate: '/images/empty-create.webp',
@@ -15,6 +16,8 @@ export const IMAGES = {
   ui: {
     menu: '/images/icon-menu.svg',
     close: '/images/icon-close.svg',
+    wechat: '/images/icon-wechat.svg',
+    qq: '/images/icon-qq.svg',
   },
   features: {
     brain: '/images/icon-brain.webp',
