@@ -38,9 +38,12 @@ chmod 600 ~/.ssh/authorized_keys
 
 ```bash
 ssh -i ~/.ssh/esylink_id ubuntu@101.34.64.67 "hostname && whoami && nginx -v"
+# 期望输出：VM-0-4-ubuntu / ubuntu / nginx/1.24.0
 ```
 
 Cloud Agent 侧私钥路径：`/home/ubuntu/.ssh/esylink_id`
+
+**状态：✅ 已于 2026-07-18 验证通过**
 
 ## 公钥写入后 — 一键部署
 
