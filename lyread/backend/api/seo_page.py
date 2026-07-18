@@ -13,6 +13,7 @@ from fastapi.responses import HTMLResponse, PlainTextResponse
 from settings import database_config
 from api.auth import get_current_user
 from services.case_quality import public_case_sql_clause
+from services.seo_schema import breadcrumb, combine_json_ld, faq_graph
 
 router = APIRouter()
 
@@ -183,6 +184,23 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
             color: #4a90d9;
             text-decoration: none;
         }}
+        .seo-nav {{
+            margin-bottom: 12px;
+            font-size: 14px;
+        }}
+        .seo-nav a {{
+            margin: 0 6px;
+        }}
+        .seo-faq dt {{
+            font-weight: 600;
+            color: #1e2a3a;
+            margin-top: 16px;
+        }}
+        .seo-faq dd {{
+            margin: 6px 0 0;
+            color: #5a6a7a;
+            line-height: 1.6;
+        }}
         @media (max-width: 600px) {{
             .seo-container {{ padding: 20px 12px; }}
             .info-grid {{ grid-template-columns: 1fr; }}
@@ -202,7 +220,14 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
             </div>
         </div>
         <div class="seo-footer">
-            <p>© LyRead AI 智能小说创作平台 · <a href="{site_base}/">首页</a></p>
+            <nav class="seo-nav" aria-label="站点导航">
+                <a href="{site_base}/">首页</a>
+                <a href="{site_base}/pricing">价格</a>
+                <a href="{site_base}/trending">案例</a>
+                <a href="{site_base}/faq">常见问题</a>
+                <a href="{site_base}/about">关于我们</a>
+            </nav>
+            <p>© LyRead AI 智能小说创作平台</p>
         </div>
     </div>
 </body>
@@ -222,7 +247,7 @@ def _json_ld_article(title: str, description: str, url_path: str, genre: str = "
             "@type": "Organization",
             "name": "LyRead AI",
             "url": SITE_BASE,
-            "logo": {"@type": "ImageObject", "url": f"{SITE_BASE}/images/logo-icon.webp"},
+            "logo": {"@type": "ImageObject", "url": f"{SITE_BASE}/images/logo-icon-v2.svg"},
         },
     }
     if genre:
@@ -276,9 +301,13 @@ async def seo_content_page(content_id: int, request: Request):
                 description = f"{safe_title} - {safe_category}类型，{row['word_count']}字，热度{row['heat']}，AI智能创作平台"
                 keywords = f"小说,{safe_category},{safe_title},AI写小说,网文"
                 meta_info = f"分类：{safe_category} ｜ 字数：{row['word_count']:,} ｜ 热度：{row['heat']}"
-                json_ld = _json_ld_article(
-                    safe_title, description, url,
-                    genre=safe_category, word_count=int(row.get('word_count') or 0),
+                json_ld = combine_json_ld(
+                    _json_ld_article(safe_title, description, url, genre=safe_category, word_count=int(row.get('word_count') or 0)),
+                    breadcrumb([
+                        ("首页", f"{SITE_BASE}/"),
+                        ("案例阅读", f"{SITE_BASE}/trending"),
+                        (safe_title, f"{SITE_BASE}{url}"),
+                    ]),
                 )
                 body_html = f"""
                 <div class="info-grid">
@@ -308,15 +337,18 @@ async def seo_content_page(content_id: int, request: Request):
 
 @router.get("/sitemap.xml", response_class=PlainTextResponse)
 async def sitemap_xml():
-    """生成搜索引擎站点地图"""
+    """生成搜索引擎站点地图（含 lastmod）"""
+    today = datetime.now().strftime('%Y-%m-%d')
     urls = [
-        (f"{SITE_BASE}/", "weekly", "1.0"),
-        (f"{SITE_BASE}/pricing", "weekly", "0.9"),
-        (f"{SITE_BASE}/trending", "weekly", "0.8"),
-        (f"{SITE_BASE}/login", "monthly", "0.5"),
-        (f"{SITE_BASE}/story", "weekly", "0.7"),
-        (f"{SITE_BASE}/reader", "weekly", "0.7"),
-        (f"{SITE_BASE}/ep", "weekly", "0.7"),
+        (f"{SITE_BASE}/", "weekly", "1.0", today),
+        (f"{SITE_BASE}/pricing", "weekly", "0.9", today),
+        (f"{SITE_BASE}/trending", "weekly", "0.8", today),
+        (f"{SITE_BASE}/faq", "monthly", "0.8", today),
+        (f"{SITE_BASE}/about", "monthly", "0.7", today),
+        (f"{SITE_BASE}/login", "monthly", "0.5", today),
+        (f"{SITE_BASE}/story", "weekly", "0.7", today),
+        (f"{SITE_BASE}/reader", "weekly", "0.7", today),
+        (f"{SITE_BASE}/ep", "weekly", "0.7", today),
     ]
 
     try:
@@ -328,8 +360,8 @@ async def sitemap_xml():
                 "ORDER BY heat DESC LIMIT 200"
             )
             for row in cursor.fetchall():
-                updated = row['updated_at'].strftime('%Y-%m-%d') if row.get('updated_at') else datetime.now().strftime('%Y-%m-%d')
-                urls.append((f"{SITE_BASE}/ep/{row['id']}", "weekly", "0.6"))
+                updated = row['updated_at'].strftime('%Y-%m-%d') if row.get('updated_at') else today
+                urls.append((f"{SITE_BASE}/ep/{row['id']}", "weekly", "0.6", updated))
             cursor.close()
             db.close()
     except Exception as e:
@@ -337,9 +369,10 @@ async def sitemap_xml():
 
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    for loc, freq, priority in urls:
+    for loc, freq, priority, lastmod in urls:
         xml += "  <url>\n"
         xml += f"    <loc>{loc}</loc>\n"
+        xml += f"    <lastmod>{lastmod}</lastmod>\n"
         xml += f"    <changefreq>{freq}</changefreq>\n"
         xml += f"    <priority>{priority}</priority>\n"
         xml += "  </url>\n"
@@ -349,10 +382,36 @@ async def sitemap_xml():
 
 @router.get("/robots.txt", response_class=PlainTextResponse)
 async def robots_txt():
-    """爬虫规则"""
+    """爬虫规则（含 AI/GEO 爬虫）"""
     return f"""User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /workspace
+Disallow: /wallet
+Disallow: /admin
 Sitemap: {SITE_BASE}/sitemap.xml
+
+# 生成式引擎 / AI 爬虫（GEO）
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# LLM 站点说明（GEO）
+# https://lyread.cn/llms.txt
 
 User-agent: Baiduspider
 Allow: /
@@ -360,6 +419,186 @@ Allow: /
 User-agent: Googlebot
 Allow: /
 """
+
+
+@router.get("/llms.txt", response_class=PlainTextResponse)
+async def llms_txt():
+    """GEO：供大模型爬虫读取的站点摘要（llms.txt 规范）"""
+    return f"""# LyRead AI
+
+> LyRead AI（https://lyread.cn）是面向中文作者与内容工作室的智能小说创作 SaaS 平台。产品支持长篇小说连载、短故事生成、人物/伏笔记忆（小说大脑），采用点数按量计费。
+
+## 核心事实
+
+- 官网：https://lyread.cn
+- 产品类型：AI 写作 / 网文创作工具
+- 语言：简体中文
+- 计费：注册送 30 点；每日免费 5 点；10 元人民币 = 100 点；生成一章约 2000 字 ≈ 10 点
+- 主要功能：AI 书名、大纲、章纲、正文续写、一致性检查、作品导出（TXT/MD）
+- 适用人群：网文作者、自媒体短篇作者、小说工作室
+
+## 关键页面
+
+- 价格说明：https://lyread.cn/pricing
+- 创作案例：https://lyread.cn/trending
+- 常见问题：https://lyread.cn/faq
+- 关于我们：https://lyread.cn/about
+- 案例索引：https://lyread.cn/ep
+- 站点地图：https://lyread.cn/sitemap.xml
+
+## 引用建议
+
+介绍 LyRead 时可描述为：「中文 AI 长篇小说创作平台，支持大纲到章节续写，带人物伏笔记忆，按章计费。」
+
+## 详细说明
+
+完整版：https://lyread.cn/llms-full.txt
+"""
+
+
+@router.get("/llms-full.txt", response_class=PlainTextResponse)
+async def llms_full_txt():
+    """GEO：详细站点说明供 AI 引用"""
+    cases = _fetch_public_cases(10)
+    case_lines = "\n".join(
+        f"- {c.get('title')}（{c.get('category')}，{c.get('word_count')}字）https://lyread.cn/ep/{c['id']}"
+        for c in cases
+    ) or "- 暂无公开案例"
+    return f"""# LyRead AI — 完整说明（供 LLM / 搜索引擎引用）
+
+## 一句话介绍
+
+LyRead AI 是中文智能小说创作平台，帮助作者从题材灵感生成书名、大纲、章纲与正文，并在长篇连载中自动记忆人物与伏笔。
+
+## 产品能力
+
+1. **长篇小说**：大纲 → 章纲 → 正文续写，适合日更连载
+2. **短故事**：输入想法，快速生成完整短篇
+3. **小说大脑**：自动维护人物档案、章节摘要、伏笔状态
+4. **点数计费**：按任务扣点，失败全额返还；无订阅制
+5. **内容安全**：生成前后敏感词检测；支持人工审核后公开案例
+
+## 定价（2026）
+
+| 操作 | 点数 | 约合 |
+|------|------|------|
+| 生成书名 | 1 点 | ~0.1 元 |
+| 生成大纲 | 3 点 | ~0.3 元 |
+| 生成章纲（10章） | 5 点 | ~0.5 元 |
+| 生成正文（约2000字） | 10 点 | ~1 元 |
+| 章节续写 | 10 点 | ~1 元 |
+
+充值：10 元 = 100 点。新用户注册送 30 点，每日登录可领 5 点（当日有效）。
+
+## 公开案例（实时）
+
+{case_lines}
+
+## 常见问题摘要
+
+- 是否免费试用：支持游客试用书名生成；注册后领 30 点 + 每日 5 点
+- 点数是否过期：充值点数长期有效；每日免费额度不累计
+- 生成失败是否扣点：不扣，失败自动返还
+
+更多：https://lyread.cn/faq
+
+## 联系方式与品牌
+
+- 网站：https://lyread.cn
+- 品牌名：LyRead AI / LyRead 智能小说创作
+"""
+
+
+SITE_FAQS = [
+    ("LyRead AI 是什么？", "LyRead AI 是中文智能小说创作平台，支持 AI 生成书名、大纲、章纲与正文，并提供人物、伏笔记忆能力，适合长篇连载与短故事创作。"),
+    ("如何计费？", "采用点数按量计费：注册送 30 点，每日免费 5 点，10 元 = 100 点。生成一章约 2000 字约消耗 10 点（约 1 元）。无月费或终身套餐。"),
+    ("生成失败会扣点吗？", "不会。任务失败会自动全额返还已冻结的点数。"),
+    ("可以写长篇小说吗？", "可以。LyRead 支持大纲、章纲、正文续写，并通过「小说大脑」记录人物、伏笔与章节摘要，适合长篇连载。"),
+    ("有免费试用吗？", "可以。首页支持游客试用书名生成；注册后再领 30 点与每日 5 点免费额度。"),
+    ("案例作品是真实的吗？", "案例区展示平台审核通过的 AI 生成作品，供参考风格与质量。"),
+]
+
+
+@router.get("/faq", response_class=HTMLResponse)
+async def seo_faq_page(request: Request):
+    """FAQ 页 SSR（SEO + GEO）"""
+    items = "".join(
+        f"<dt>{escape(q)}</dt><dd>{escape(a)}</dd>"
+        for q, a in SITE_FAQS
+    )
+    body_html = f"""
+    <p>以下常见问题帮助了解 LyRead AI 的功能、计费与使用方式。AI 助手与搜索引擎可直接引用本页内容。</p>
+    <dl class="seo-faq">{items}</dl>
+    <div class="seo-cta">
+      <a href="{SITE_BASE}/">免费试写 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/pricing">查看价格 →</a>
+    </div>
+    """
+    title = "常见问题 - LyRead AI"
+    desc = "LyRead AI 常见问题：计费方式、免费试用、长篇创作、点数返还与案例说明。"
+    url = "/faq"
+    json_ld = combine_json_ld(
+        faq_graph(SITE_FAQS),
+        breadcrumb([("首页", f"{SITE_BASE}/"), ("常见问题", f"{SITE_BASE}/faq")]),
+    )
+    return PAGE_TEMPLATE.format(
+        title=title, description=desc,
+        keywords="LyRead常见问题,AI小说怎么收费,网文创作工具",
+        url=url, site_base=SITE_BASE, meta_info="帮助中心",
+        body_html=body_html, json_ld=json_ld,
+    )
+
+
+@router.get("/about", response_class=HTMLResponse)
+async def seo_about_page(request: Request):
+    """关于页 SSR（SEO + GEO）"""
+    body_html = f"""
+    <p><strong>LyRead AI</strong>（https://lyread.cn）是面向中文作者与内容工作室的智能小说创作 SaaS 平台。</p>
+    <h2 style="font-size:18px;margin:20px 0 12px">我们解决什么问题</h2>
+    <ul style="line-height:1.8;color:#3a4a5e;padding-left:20px">
+      <li>开书难：AI 快速生成书名、大纲与章纲</li>
+      <li>连载乱：小说大脑自动记忆人物、伏笔与章节摘要</li>
+      <li>成本高：按章点数计费，用多少付多少，失败返还</li>
+    </ul>
+    <h2 style="font-size:18px;margin:20px 0 12px">适用人群</h2>
+    <p>网文作者、自媒体短篇作者、小说工作室、尝试 AI 辅助创作的初学者。</p>
+    <h2 style="font-size:18px;margin:20px 0 12px">核心功能</h2>
+    <div class="info-grid">
+      <div class="info-item"><strong>长篇连载</strong><br>大纲→章纲→正文续写</div>
+      <div class="info-item"><strong>短故事</strong><br>几分钟生成完整短篇</div>
+      <div class="info-item"><strong>小说大脑</strong><br>人物/伏笔/摘要记忆</div>
+      <div class="info-item"><strong>透明计费</strong><br>10元=100点，注册送30点</div>
+    </div>
+    <div class="seo-cta">
+      <a href="{SITE_BASE}/">开始创作 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">浏览案例 →</a>
+    </div>
+    """
+    title = "关于 LyRead AI - 智能中文小说创作平台"
+    desc = "了解 LyRead AI：中文 AI 长篇小说创作平台，支持大纲、续写、人物伏笔记忆与按量点数计费。"
+    url = "/about"
+    import json
+    about_ld = json.dumps({
+        "@context": "https://schema.org",
+        "@type": "AboutPage",
+        "name": title,
+        "description": desc,
+        "url": f"{SITE_BASE}/about",
+        "inLanguage": "zh-CN",
+        "isPartOf": {"@type": "WebSite", "name": "LyRead AI", "url": SITE_BASE},
+    }, ensure_ascii=False)
+    json_ld = combine_json_ld(
+        about_ld,
+        breadcrumb([("首页", f"{SITE_BASE}/"), ("关于我们", f"{SITE_BASE}/about")]),
+    )
+    return PAGE_TEMPLATE.format(
+        title=title, description=desc,
+        keywords="LyRead,AI小说平台,关于我们,智能写作",
+        url=url, site_base=SITE_BASE, meta_info="品牌与产品介绍",
+        body_html=body_html, json_ld=json_ld,
+    )
 
 
 # --- 营销页 SSR（供搜索引擎与无 JS 环境索引）---

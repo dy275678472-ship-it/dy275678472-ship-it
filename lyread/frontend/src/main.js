@@ -33,6 +33,7 @@ router.beforeEach((to, from, next) => {
 router.afterEach((to) => {
   const meta = to.meta || {}
   const title = meta.title || 'LyRead AI'
+  const desc = meta.desc || 'LyRead AI 智能小说创作平台'
   document.title = title
   let descMeta = document.querySelector('meta[name="description"]')
   if (!descMeta) {
@@ -40,7 +41,7 @@ router.afterEach((to) => {
     descMeta.name = 'description'
     document.head.appendChild(descMeta)
   }
-  descMeta.content = meta.desc || 'LyRead AI 智能小说创作平台'
+  descMeta.content = desc
   let canonical = document.querySelector('link[rel="canonical"]')
   if (!canonical) {
     canonical = document.createElement('link')
@@ -48,6 +49,18 @@ router.afterEach((to) => {
     document.head.appendChild(canonical)
   }
   canonical.href = `https://lyread.cn${to.path === '/' ? '/' : to.path}`
+  const setOg = (prop, content) => {
+    let el = document.querySelector(`meta[property="${prop}"]`)
+    if (!el) {
+      el = document.createElement('meta')
+      el.setAttribute('property', prop)
+      document.head.appendChild(el)
+    }
+    el.content = content
+  }
+  setOg('og:title', title)
+  setOg('og:description', desc)
+  setOg('og:url', `https://lyread.cn${to.path === '/' ? '/' : to.path}`)
   const ogImage = document.querySelector('meta[property="og:image"]')
   if (ogImage) ogImage.content = 'https://lyread.cn/images/og-share.png'
   trackPageView(to.fullPath, title)
