@@ -35,6 +35,11 @@ APScheduler 后台任务：每 EVOLUTION_INTERVAL_SECONDS 执行一次自进化�
 | `ADMIN_USERNAMES` | 管理员用户名白名单（逗号分隔） |
 | `MAX_CONCURRENT_JOBS` | 单用户并发生成上限（默认 2） |
 | `ALIPAY_*` | 支付宝收款（见 IMPLEMENTATION-STATUS.md） |
+| `SMTP_HOST/PORT/USER/PASSWORD/FROM` | 邮件发送（找回密码等） |
+| `SITE_URL` | 站点根 URL，用于邮件中的重置链接 |
+| `CONTENT_BLOCKLIST` | 敏感词扩展（逗号分隔） |
+| `CONTENT_BLOCKLIST_FILE` | 敏感词文件路径（默认镜像内 `data/blocklist.txt`） |
+| `EXPOSE_RESET_TOKEN` | 无 SMTP 时 `forgot` 接口返回令牌（`1` 开启） |
 
 ### 重新部署后端
 
@@ -73,3 +78,11 @@ sudo systemctl reload nginx
 ## 监控
 
 cron 看门狗（每 5 分钟）：`/health/live` 异常时自动 `docker restart lyread-backend-fix`，日志 `/var/log/lyread_watchdog.log`。
+
+## 验收冒烟
+
+```bash
+BASE_URL=https://lyread.cn bash lyread/scripts/smoke_test.sh
+```
+
+覆盖：健康检查、注册、余额、创建作品、鉴权、敏感词拦截、管理员权限、找回密码。

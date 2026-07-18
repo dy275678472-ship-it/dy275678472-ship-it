@@ -243,12 +243,22 @@ async def forgot_password(req: ForgotPasswordRequest):
         )
         conn.commit()
         reset_path = f"/login?reset={token}"
-        return {
-            "success": True,
-            "message": "重置令牌已生成（邮件服务未配置时请保存下方链接）",
-            "reset_path": reset_path,
-            "token": token if os.getenv("APP_ENV", "production") != "production" or os.getenv("EXPOSE_RESET_TOKEN", "0") == "1" else None,
-        }
+        from services.email import send_password_reset_email, smtp_configured
+        if smtp_configured():
+            try:
+                send_password_reset_email(str(req.email), reset_path, token)
+                return {"success": True, "message": "重置链接已发送至您的邮箱"}
+            except Exception as mail_exc:
+                print(f"[Forgot] 邮件发送失败: {mail_exc}")
+        expose = os.getenv("EXPOSE_RESET_TOKEN", "0") == "1"
+        if expose:
+            return {
+                "success": True,
+                "message": "重置令牌已生成（邮件服务未配置时请保存下方链接）",
+                "reset_path": reset_path,
+                "token": token,
+            }
+        return {"success": True, "message": "若账号与邮箱匹配，将发送重置邮件"}
     finally:
         if conn.is_connected():
             conn.close()

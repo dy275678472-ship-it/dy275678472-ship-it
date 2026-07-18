@@ -16,11 +16,19 @@ from pydantic import BaseModel
 from openai import OpenAI
 from api.auth import get_current_user, get_optional_user
 from settings import database_config
+from services.content_moderation import check_many, moderation_detail
 
 # 说明：路由不再强制全局登录。
 # - 创作类"试用"接口（生成书名等）对匿名开放，配合 nginx 限流保护额度。
 # - 保存 / 发布 / 列表 / 续写等涉及数据与额度的接口按接口级要求登录。
 router = APIRouter()
+
+
+def _guard_content(*texts: str, label: str = "内容") -> None:
+    """生成/发布前敏感词检测。"""
+    result = check_many(*texts)
+    if not result["ok"]:
+        raise HTTPException(status_code=422, detail=f"{label}{moderation_detail(result['hits'])}")
 
 
 def _db():
@@ -132,6 +140,7 @@ async def generate_title(req: GenerateTitleRequest, user: Optional[dict] = Depen
     elements = elements.strip()
     if not elements:
         raise HTTPException(status_code=422, detail="请填写题材关键词或故事想法")
+    _guard_content(elements, label="输入")
     genre = req.genre or "都市"
 
     prompt = f"""你是一个资深网文编辑，精通各平台爆款书的命名套路。
@@ -153,6 +162,11 @@ async def generate_title(req: GenerateTitleRequest, user: Optional[dict] = Depen
         job = reserve(uid, estimate_points("title"), "title")
     try:
         result = chat_with_llm(prompt, max_tokens=500)
+        mod = check_many(result)
+        if not mod["ok"]:
+            if uid and job:
+                refund(uid, job["job_id"])
+            raise HTTPException(status_code=422, detail=moderation_detail(mod["hits"]))
         titles = []
         for line in result.strip().split("\n"):
             if "|" in line:
@@ -181,6 +195,7 @@ async def generate_outline(req: GenerateOutlineRequest, user: dict = Depends(get
     """步骤2：AI生成大纲（起承转合树）。扣 3 点，失败返还。"""
     from api.credits import reserve, settle, refund, estimate_points
     uid = str(user["sub"])
+    _guard_content(req.title, req.intro, *req.hot_points, label="输入")
     job = reserve(uid, estimate_points("outline"), "outline")
     client = get_openai_client()
 
@@ -278,6 +293,8 @@ async def generate_chapters(req: GenerateChaptersRequest, user: dict = Depends(g
     """步骤5：批量生成章纲（带爽点芯片）。扣 5 点，失败返还。"""
     from api.credits import reserve, settle, refund, estimate_points
     uid = str(user["sub"])
+    outline_str = json.dumps(req.outline, ensure_ascii=False)
+    _guard_content(outline_str, label="大纲")
     job = reserve(uid, estimate_points("chapters"), "chapters")
     client = get_openai_client()
     
@@ -348,6 +365,7 @@ async def ai_continue(req: AIContinueRequest, user: dict = Depends(get_current_u
     if not get_openai_client():
         return {"success": False, "error": "AI服务未配置"}
 
+    _guard_content(req.context, req.content, label="输入")
     job = reserve(uid, estimate_points("continue"), "continue", story_id=req.story_id)
     memory_ctx = req.context or req.content
     chapter_idx = 1
@@ -388,6 +406,10 @@ async def ai_continue(req: AIContinueRequest, user: dict = Depends(get_current_u
 
     try:
         new_content = chat_with_llm(prompt, max_tokens=2000)
+        mod = check_many(new_content)
+        if not mod["ok"]:
+            refund(uid, job["job_id"])
+            raise HTTPException(status_code=422, detail=moderation_detail(mod["hits"]))
         watermarked = inject_watermark(new_content, user_id=uid)
 
         if req.story_id and new_content:
@@ -457,6 +479,8 @@ async def consistency_check(req: AIContinueRequest, user: dict = Depends(get_cur
 async def publish_story(req: PublishRequest, user: dict = Depends(get_current_user)):
     """提交发布审核（不再直接公开，需管理员通过）。"""
     uid = str(user.get("sub", "0"))
+    chapter_text = "".join(ch.get("content", "") for ch in req.chapters)
+    _guard_content(req.title, req.intro, chapter_text, label="作品")
     word_count = sum(len(ch.get("content", "")) for ch in req.chapters)
     db = _db()
     try:
@@ -497,12 +521,22 @@ async def submit_review(story_id: int, user: dict = Depends(get_current_user)):
     db = _db()
     try:
         cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT user_id, title, status FROM stories WHERE id=%s LIMIT 1", (story_id,))
+        cursor.execute("SELECT user_id, title, status, intro, chapters FROM stories WHERE id=%s LIMIT 1", (story_id,))
         row = cursor.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="作品不存在")
         if str(row["user_id"]) != uid:
             raise HTTPException(status_code=403, detail="无权操作")
+        chs = row.get("chapters")
+        if isinstance(chs, str):
+            try:
+                chs = json.loads(chs)
+            except Exception:
+                chs = []
+        chapter_text = "".join(
+            (c.get("content", "") if isinstance(c, dict) else "") for c in (chs or [])
+        )
+        _guard_content(row.get("title"), row.get("intro"), chapter_text, label="作品")
         cursor.execute(
             "SELECT id FROM content_reviews WHERE target_type='story' AND target_id=%s AND result='pending' LIMIT 1",
             (story_id,),
