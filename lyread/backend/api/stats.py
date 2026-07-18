@@ -7,6 +7,7 @@ import mysql.connector
 
 from api.auth import get_optional_user
 from settings import database_config
+from services.case_quality import public_case_sql_clause
 
 router = APIRouter()
 
@@ -117,7 +118,7 @@ def public_stats():
         row = cursor.fetchone() or {}
         data["works"] = int(row.get("c") or 0)
         data["total_words"] = int(row.get("w") or 0)
-        cursor.execute("SELECT COUNT(*) AS c FROM contents WHERE status='active'")
+        cursor.execute(f"SELECT COUNT(*) AS c FROM contents WHERE {public_case_sql_clause()}")
         data["cases"] = int((cursor.fetchone() or {}).get("c") or 0)
         return {"success": True, **data}
     except Exception as exc:

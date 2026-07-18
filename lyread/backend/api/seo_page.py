@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from settings import database_config
 from api.auth import get_current_user
+from services.case_quality import public_case_sql_clause
 
 router = APIRouter()
 
@@ -259,7 +260,7 @@ async def seo_content_page(content_id: int, request: Request):
             cursor = db.cursor(dictionary=True)
             cursor.execute(
                 "SELECT id, title, category, word_count, heat, score, created_at "
-                "FROM contents WHERE id = %s", (content_id,)
+                f"FROM contents WHERE id = %s AND {public_case_sql_clause()}", (content_id,)
             )
             row = cursor.fetchone()
             cursor.close()
@@ -320,7 +321,8 @@ async def sitemap_xml():
         if db:
             cursor = db.cursor(dictionary=True)
             cursor.execute(
-                "SELECT id, title, updated_at FROM contents WHERE status = 'active' ORDER BY heat DESC LIMIT 200"
+                f"SELECT id, title, updated_at FROM contents WHERE {public_case_sql_clause()} "
+                "ORDER BY heat DESC LIMIT 200"
             )
             for row in cursor.fetchall():
                 updated = row['updated_at'].strftime('%Y-%m-%d') if row.get('updated_at') else datetime.now().strftime('%Y-%m-%d')
@@ -355,6 +357,171 @@ Allow: /
 User-agent: Googlebot
 Allow: /
 """
+
+
+# --- 营销页 SSR（供搜索引擎与无 JS 环境索引）---
+
+PRICE_ROWS = [
+    ("生成书名", 1, "含 5 个候选书名与黄金钩子简介"),
+    ("生成大纲", 3, "总纲 + 分卷结构"),
+    ("生成章纲", 5, "批量 10 章章纲规划"),
+    ("生成正文", 10, "约 2000 字一章"),
+    ("章节续写", 10, "承接上文继续写"),
+    ("一致性检查", 2, "人物/伏笔冲突检测"),
+]
+
+PACKAGES = [
+    ("体验包", 10, 100, "约可生成 10 章正文"),
+    ("创作包", 30, 350, "多送 50 点，适合连载起步"),
+    ("连载包", 98, 1200, "多送 200 点，长篇连载优选"),
+]
+
+
+def _json_ld_pricing() -> str:
+    import json
+    offers = [
+        {
+            "@type": "Offer",
+            "name": name,
+            "price": str(price),
+            "priceCurrency": "CNY",
+            "description": desc,
+            "url": f"{SITE_BASE}/pricing",
+        }
+        for name, price, _pts, desc in PACKAGES
+    ]
+    return json.dumps({
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "LyRead AI 创作点数",
+        "description": "按量计费，注册送 30 点，每日免费 5 点，10 元 = 100 点",
+        "brand": {"@type": "Brand", "name": "LyRead AI"},
+        "offers": offers,
+    }, ensure_ascii=False)
+
+
+def _json_ld_trending(items: list) -> str:
+    import json
+    return json.dumps({
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "LyRead AI 创作案例",
+        "url": f"{SITE_BASE}/trending",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": i + 1,
+                "url": f"{SITE_BASE}/ep/{row['id']}",
+                "name": row.get("title") or "作品",
+            }
+            for i, row in enumerate(items[:20])
+        ],
+    }, ensure_ascii=False)
+
+
+def _fetch_public_cases(limit: int = 30) -> list:
+    rows = []
+    try:
+        db = get_db()
+        if db:
+            cursor = db.cursor(dictionary=True)
+            cursor.execute(
+                f"SELECT id, title, category, word_count, heat FROM contents "
+                f"WHERE {public_case_sql_clause()} ORDER BY heat DESC LIMIT %s",
+                (limit,),
+            )
+            rows = cursor.fetchall()
+            cursor.close()
+            db.close()
+    except Exception as e:
+        print(f"[SEO Page] fetch cases: {e}")
+    return rows
+
+
+@router.get("/pricing", response_class=HTMLResponse)
+async def seo_pricing_page(request: Request):
+    """价格页 SSR"""
+    rows_html = "".join(
+        f"<tr><td>{escape(label)}</td><td><strong>{pts} 点</strong></td><td>{escape(note)}</td></tr>"
+        for label, pts, note in PRICE_ROWS
+    )
+    pkg_html = "".join(
+        f'<div class="info-item"><strong>{escape(name)}</strong><br>¥{price} · {pts} 点<br><span style="color:#7a8ba8;font-size:13px">{escape(desc)}</span></div>'
+        for name, price, pts, desc in PACKAGES
+    )
+    body_html = f"""
+    <p>无订阅、无终身无限套餐。生成前显示预计消耗，失败自动全额返还。</p>
+    <div class="info-grid" style="margin-bottom:20px">
+      <div class="info-item"><strong>注册赠送</strong><br>30 点</div>
+      <div class="info-item"><strong>每日免费</strong><br>5 点（当日有效）</div>
+      <div class="info-item"><strong>兑换比例</strong><br>10 元 = 100 点</div>
+      <div class="info-item"><strong>一章参考</strong><br>约 2000 字 ≈ 10 点</div>
+    </div>
+    <h2 style="font-size:18px;margin-bottom:12px">操作消耗参考</h2>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
+      <thead><tr style="background:#f4f8fe"><th style="padding:10px;text-align:left">操作</th><th style="padding:10px">点数</th><th style="padding:10px;text-align:left">说明</th></tr></thead>
+      <tbody>{rows_html}</tbody>
+    </table>
+    <h2 style="font-size:18px;margin-bottom:12px">充值套餐</h2>
+    <div class="info-grid">{pkg_html}</div>
+    <div class="seo-cta">
+      <a href="{SITE_BASE}/login">注册领取 30 点 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/workspace">进入创作台 →</a>
+    </div>
+    """
+    title = "价格与点数计费 - LyRead AI"
+    desc = "LyRead 点数计费：注册送 30 点，每日免费 5 点，10 元 = 100 点。生成一章约 10 点，失败全额返还。"
+    url = "/pricing"
+    return PAGE_TEMPLATE.format(
+        title=title,
+        description=desc,
+        keywords="AI小说价格,点数计费,网文创作收费,LyRead充值",
+        url=url,
+        site_base=SITE_BASE,
+        meta_info="透明计费 · 按量付费",
+        body_html=body_html,
+        json_ld=_json_ld_pricing(),
+    )
+
+
+@router.get("/trending", response_class=HTMLResponse)
+async def seo_trending_page(request: Request):
+    """案例阅读页 SSR"""
+    cases = _fetch_public_cases(40)
+    items_html = ""
+    for row in cases:
+        safe_title = escape(str(row.get("title") or "作品"))
+        safe_cat = escape(str(row.get("category") or "都市"))
+        items_html += f"""
+        <li>
+            <a href="{SITE_BASE}/ep/{int(row['id'])}">{safe_title}</a>
+            <span class="tag">{safe_cat}</span>
+            <span class="stat">{row.get('word_count', 0)}字 · 热度{row.get('heat', 0)}</span>
+        </li>"""
+    if not items_html:
+        items_html = '<li style="text-align:center;color:#7a8ba8;padding:40px;">暂无公开案例</li>'
+
+    body_html = f"""
+    <p>平台真实生成案例，点击阅读详情，或用相同风格开始创作。</p>
+    <ul class="seo-list">{items_html}</ul>
+    <div class="seo-cta">
+      <a href="{SITE_BASE}/workspace">用这个风格开始创作 →</a>
+    </div>
+    """
+    title = "案例阅读 - LyRead AI 智能小说创作"
+    desc = "浏览 LyRead AI 平台公开案例，都市、仙侠、重生等题材 AI 生成小说作品。"
+    url = "/trending"
+    return PAGE_TEMPLATE.format(
+        title=title,
+        description=desc,
+        keywords="AI小说案例,网文作品,智能写作案例,LyRead",
+        url=url,
+        site_base=SITE_BASE,
+        meta_info=f"共 {len(cases)} 部公开作品",
+        body_html=body_html,
+        json_ld=_json_ld_trending(cases),
+    )
 
 
 def _load_env():
@@ -519,7 +686,8 @@ async def seo_content_list(request: Request):
         if db:
             cursor = db.cursor(dictionary=True)
             cursor.execute(
-                "SELECT id, title, category, word_count, heat FROM contents WHERE status = 'active' ORDER BY heat DESC LIMIT 50"
+                f"SELECT id, title, category, word_count, heat FROM contents "
+                f"WHERE {public_case_sql_clause()} ORDER BY heat DESC LIMIT 50"
             )
             for row in cursor.fetchall():
                 safe_title = escape(str(row['title']))

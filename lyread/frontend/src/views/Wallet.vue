@@ -97,12 +97,12 @@ function typeLabel(t) { return TYPE_LABELS[t] || t }
 
 function txnIcon(type) {
   const map = {
-    signup_bonus: images.pricing.gift,
-    daily_grant: images.wallet.free,
-    recharge: images.pricing.gem,
-    refund: images.wallet.paid,
-    settle: images.point,
-    reserve: images.point,
+    signup_bonus: images.txn.signup,
+    daily_grant: images.txn.daily,
+    recharge: images.txn.recharge,
+    refund: images.txn.refund,
+    settle: images.txn.spend,
+    reserve: images.txn.reserve,
   }
   return map[type] || images.point
 }

@@ -16,6 +16,8 @@ export const IMAGES = {
     '/images/cover-urban.webp',
     '/images/cover-warrior.webp',
     '/images/cover-reborn.webp',
+    '/images/cover-xianxia.svg',
+    '/images/cover-romance.svg',
   ],
   avatars: {
     author: '/images/avatar-author.webp',
@@ -32,17 +34,26 @@ export const IMAGES = {
     paid: '/images/icon-credits.webp',
   },
   workspaceActions: {
-    title: '/images/icon-novel.webp',
-    outline: '/images/icon-brain.webp',
-    chapters: '/images/icon-short.webp',
-    continue: '/images/icon-point.webp',
+    title: '/images/icon-action-title.svg',
+    outline: '/images/icon-action-outline.svg',
+    chapters: '/images/icon-action-chapters.svg',
+    continue: '/images/icon-action-continue.svg',
+  },
+  txn: {
+    signup: '/images/icon-gift.webp',
+    daily: '/images/icon-daily.webp',
+    recharge: '/images/icon-gem.webp',
+    refund: '/images/icon-credits.webp',
+    spend: '/images/icon-point.webp',
+    reserve: '/images/icon-point.webp',
   },
 }
 
 export function coverForCase(item, index = 0) {
   const cat = String(item?.category || '').toLowerCase()
-  if (/仙侠|玄幻|修仙/.test(cat)) return IMAGES.covers[0]
+  if (/仙侠|玄幻|修仙/.test(cat)) return IMAGES.covers[3]
+  if (/言情|甜宠|恋爱/.test(cat)) return IMAGES.covers[4]
   if (/战神|都市|神豪/.test(cat)) return IMAGES.covers[1]
   if (/重生|穿越/.test(cat)) return IMAGES.covers[2]
-  return IMAGES.covers[index % IMAGES.covers.length]
+  return IMAGES.covers[index % 3]
 }

@@ -3,6 +3,7 @@
 import mysql.connector
 from fastapi import APIRouter, HTTPException
 from settings import database_config
+from services.case_quality import public_case_sql_clause
 
 router = APIRouter()
 
@@ -23,14 +24,16 @@ def list_cases(limit: int = 20, category: str = None):
         lim = max(1, min(limit, 50))
         if category:
             cursor.execute(
-                "SELECT id, content_id, title, category, word_count, heat, score, created_at "
-                "FROM contents WHERE status='active' AND category=%s ORDER BY heat DESC, id DESC LIMIT %s",
+                f"SELECT id, content_id, title, category, word_count, heat, score, created_at "
+                f"FROM contents WHERE {public_case_sql_clause()} AND category=%s "
+                f"ORDER BY heat DESC, id DESC LIMIT %s",
                 (category, lim),
             )
         else:
             cursor.execute(
-                "SELECT id, content_id, title, category, word_count, heat, score, created_at "
-                "FROM contents WHERE status='active' ORDER BY heat DESC, id DESC LIMIT %s",
+                f"SELECT id, content_id, title, category, word_count, heat, score, created_at "
+                f"FROM contents WHERE {public_case_sql_clause()} "
+                f"ORDER BY heat DESC, id DESC LIMIT %s",
                 (lim,),
             )
         rows = cursor.fetchall()
@@ -64,8 +67,8 @@ def get_case(case_id: int):
     try:
         cursor = conn.cursor(dictionary=True)
         cursor.execute(
-            "SELECT id, content_id, title, category, word_count, heat, score, status, created_at "
-            "FROM contents WHERE id=%s AND status='active' LIMIT 1",
+            f"SELECT id, content_id, title, category, word_count, heat, score, status, created_at "
+            f"FROM contents WHERE id=%s AND {public_case_sql_clause()} LIMIT 1",
             (case_id,),
         )
         row = cursor.fetchone()
