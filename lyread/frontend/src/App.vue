@@ -3,7 +3,7 @@
     <nav class="navbar">
       <div class="nav-brand">
         <router-link to="/" class="brand-link">
-          <span class="logo">🧠</span>
+          <img :src="logo" alt="LyRead" class="logo-img" width="32" height="32" />
           <span class="title">LyRead<span class="title-ai">AI</span></span>
         </router-link>
         <button class="mobile-menu-btn" @click="menuOpen = !menuOpen">
@@ -20,7 +20,7 @@
           <router-link to="/workspace" class="nav-link nav-link-primary" @click="menuOpen = false">创作台</router-link>
           <router-link v-if="isAdmin" to="/admin" class="nav-link" @click="menuOpen = false">后台</router-link>
           <router-link to="/wallet" class="nav-credits" @click="menuOpen = false" title="我的点数">
-            <span class="credits-icon">◆</span>
+            <img :src="pointIcon" alt="" class="credits-icon-img" width="14" height="14" />
             <span class="credits-num">{{ credits === null ? '—' : credits }}</span>
             <span class="credits-label">点</span>
           </router-link>
@@ -35,11 +35,12 @@
 
 <script>
 import { creditsApi } from './api'
+import { IMAGES } from './assets/images'
 
 export default {
   name: 'App',
   data() {
-    return { menuOpen: false, credits: null, isAdmin: false }
+    return { menuOpen: false, credits: null, isAdmin: false, logo: IMAGES.logo, pointIcon: IMAGES.point }
   },
   computed: {
     isLoggedIn() {
@@ -175,6 +176,8 @@ body {
 .btn-logout:hover { color: #ef4444; background: #fef2f2; }
 
 .brand-link { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.logo-img { display: block; border-radius: 8px; object-fit: cover; }
+.credits-icon-img { display: block; flex-shrink: 0; }
 .mobile-menu-btn { display: none; }
 
 @media (max-width: 860px) {

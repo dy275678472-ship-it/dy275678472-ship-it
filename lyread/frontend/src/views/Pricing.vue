@@ -7,21 +7,21 @@
 
     <section class="highlights" v-if="info">
       <div class="highlight-card">
-        <span class="hl-icon">🎁</span>
+        <img :src="images.pricing.gift" alt="" class="hl-icon-img" width="40" height="40" />
         <div>
           <strong>新用户注册送 {{ info.signup_bonus }} 点</strong>
           <p>足够体验书名、大纲与章节生成</p>
         </div>
       </div>
       <div class="highlight-card">
-        <span class="hl-icon">☀️</span>
+        <img :src="images.pricing.daily" alt="" class="hl-icon-img" width="40" height="40" />
         <div>
           <strong>每日免费 {{ info.daily_free }} 点</strong>
           <p>登录领取，当日有效，不累计</p>
         </div>
       </div>
       <div class="highlight-card">
-        <span class="hl-icon">💎</span>
+        <img :src="images.pricing.gem" alt="" class="hl-icon-img" width="40" height="40" />
         <div>
           <strong>10 元 = 100 点</strong>
           <p>生成一章约 2000 字 ≈ 10 点（约 1 元）</p>
@@ -80,11 +80,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { creditsApi, ordersApi } from '../api'
+import { IMAGES } from '../assets/images'
 
 const router = useRouter()
 const info = ref(null)
 const sandboxMode = ref(false)
 const alipayReady = ref(false)
+const images = IMAGES
 
 const LABELS = {
   title: ['生成 5 个书名', '含黄金钩子简介'],
@@ -172,7 +174,7 @@ async function buy(pkg) {
   background: #fff; border-radius: 14px; padding: 20px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #e8f0fa;
 }
-.hl-icon { font-size: 28px; }
+.hl-icon-img { flex-shrink: 0; object-fit: contain; }
 .highlight-card strong { display: block; color: #1e2a3a; margin-bottom: 4px; }
 .highlight-card p { font-size: 13px; color: #5a6a7a; }
 

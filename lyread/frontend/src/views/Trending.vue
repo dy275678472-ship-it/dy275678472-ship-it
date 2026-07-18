@@ -8,12 +8,15 @@
     <div v-if="loading" class="loading">加载中...</div>
     <div v-else-if="!cases.length" class="empty">暂无案例，敬请期待</div>
     <div v-else class="case-grid">
-      <a v-for="c in cases" :key="c.id" :href="c.url" class="case-card" target="_blank" rel="noopener">
-        <span class="cat">{{ c.category || '都市' }}</span>
-        <h3>{{ c.title }}</h3>
-        <div class="meta">
-          <span>{{ c.word_count }} 字</span>
-          <span>🔥 {{ c.heat }}</span>
+      <a v-for="(c, i) in cases" :key="c.id" :href="c.url" class="case-card" target="_blank" rel="noopener">
+        <img :src="coverForCase(c, i)" alt="" class="case-cover" loading="lazy" />
+        <div class="case-body">
+          <span class="cat">{{ c.category || '都市' }}</span>
+          <h3>{{ c.title }}</h3>
+          <div class="meta">
+            <span>{{ c.word_count }} 字</span>
+            <span>🔥 {{ c.heat }}</span>
+          </div>
         </div>
       </a>
     </div>
@@ -27,6 +30,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { casesApi } from '../api'
+import { coverForCase } from '../assets/images'
 
 const cases = ref([])
 const loading = ref(true)
@@ -50,8 +54,15 @@ onMounted(async () => {
 .case-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
 .case-card {
   display: block; text-decoration: none; background: #fff; border-radius: 14px;
-  padding: 20px; border: 1px solid #e8f0fa; transition: all 0.2s;
+  overflow: hidden; border: 1px solid #e8f0fa; transition: all 0.2s;
 }
+.case-cover {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+.case-body { padding: 16px 20px 20px; }
 .case-card:hover { box-shadow: 0 8px 24px rgba(77,161,255,0.12); transform: translateY(-2px); border-color: #bfdbfe; }
 .cat { display: inline-block; padding: 3px 10px; background: rgba(77,161,255,0.12); color: #2563eb; border-radius: 999px; font-size: 12px; margin-bottom: 10px; }
 .case-card h3 { font-size: 16px; color: #1e2a3a; margin-bottom: 12px; line-height: 1.4; }

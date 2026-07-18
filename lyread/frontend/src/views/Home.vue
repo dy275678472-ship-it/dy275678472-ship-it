@@ -1,32 +1,35 @@
 <template>
   <div class="home">
     <section class="hero">
-      <h1>让 AI 陪你写完一部长篇小说</h1>
-      <p class="subtitle">从人物、大纲到连续章节，自动记住剧情和伏笔；也支持快速生成完整短故事</p>
-      <div class="hero-btns">
-        <button class="btn-primary" @click="$router.push('/reader')">开始写长篇小说</button>
-        <button class="btn-secondary" @click="showTrialModal = true">快速生成短故事</button>
+      <img :src="images.hero" alt="" class="hero-bg" aria-hidden="true" />
+      <div class="hero-content">
+        <h1>让 AI 陪你写完一部长篇小说</h1>
+        <p class="subtitle">从人物、大纲到连续章节，自动记住剧情和伏笔；也支持快速生成完整短故事</p>
+        <div class="hero-btns">
+          <button class="btn-primary" @click="$router.push('/reader')">开始写长篇小说</button>
+          <button class="btn-secondary" @click="showTrialModal = true">快速生成短故事</button>
+        </div>
       </div>
     </section>
 
     <section class="features">
       <div class="feature-card">
-        <div class="icon">🧠</div>
+        <img :src="images.features.brain" alt="" class="icon-img" width="56" height="56" />
         <h3>小说大脑</h3>
         <p>人物档案、伏笔、章节摘要自动记忆，写到第 50 章也不乱</p>
       </div>
       <div class="feature-card">
-        <div class="icon">📖</div>
+        <img :src="images.features.novel" alt="" class="icon-img" width="56" height="56" />
         <h3>长篇连载</h3>
         <p>大纲 → 章纲 → 正文续写，专为日更作者设计</p>
       </div>
       <div class="feature-card">
-        <div class="icon">⚡</div>
+        <img :src="images.features.short" alt="" class="icon-img" width="56" height="56" />
         <h3>短故事</h3>
         <p>输入想法，几分钟生成完整短篇，适合盐选/公众号</p>
       </div>
       <div class="feature-card">
-        <div class="icon">◆</div>
+        <img :src="images.features.credits" alt="" class="icon-img" width="56" height="56" />
         <h3>点数计费</h3>
         <p>用多少付多少，注册送 30 点，每日免费 5 点</p>
       </div>
@@ -60,19 +63,28 @@
       </div>
       <div class="hot-grid">
         <div class="hot-card">
-          <div class="hot-type">都市神豪</div>
-          <h3>开局十个亿，我在都市横着走</h3>
-          <div class="hot-tags"><span>系统</span><span>爽文</span></div>
+          <img :src="images.covers[0]" alt="" class="hot-cover" />
+          <div class="hot-body">
+            <div class="hot-type">都市神豪</div>
+            <h3>开局十个亿，我在都市横着走</h3>
+            <div class="hot-tags"><span>系统</span><span>爽文</span></div>
+          </div>
         </div>
         <div class="hot-card">
-          <div class="hot-type">战神归来</div>
-          <h3>战神回归，发现女儿住狗窝</h3>
-          <div class="hot-tags"><span>虐心</span><span>逆袭</span></div>
+          <img :src="images.covers[1]" alt="" class="hot-cover" />
+          <div class="hot-body">
+            <div class="hot-type">战神归来</div>
+            <h3>战神回归，发现女儿住狗窝</h3>
+            <div class="hot-tags"><span>虐心</span><span>逆袭</span></div>
+          </div>
         </div>
         <div class="hot-card">
-          <div class="hot-type">重生</div>
-          <h3>重生2003，当首富很简单</h3>
-          <div class="hot-tags"><span>创业</span><span>赚钱</span></div>
+          <img :src="images.covers[2]" alt="" class="hot-cover" />
+          <div class="hot-body">
+            <div class="hot-type">重生</div>
+            <h3>重生2003，当首富很简单</h3>
+            <div class="hot-tags"><span>创业</span><span>赚钱</span></div>
+          </div>
         </div>
       </div>
     </section>
@@ -82,12 +94,12 @@
       <h2>⭐ 用户评价</h2>
       <div class="testimonial-grid">
         <div class="testimonial-card">
-          <div class="avatar">👨‍💻</div>
+          <img :src="images.avatars.author" alt="" class="avatar-img" width="56" height="56" />
           <div class="name">网文作者小李</div>
           <p>"AI生成大纲太香了！10分钟搞定一本书框架"</p>
         </div>
         <div class="testimonial-card">
-          <div class="avatar">👩‍🎨</div>
+          <img :src="images.avatars.studio" alt="" class="avatar-img" width="56" height="56" />
           <div class="name">工作室负责人</div>
           <p>"批量产出效率翻倍，团队人手必备"</p>
         </div>
@@ -149,8 +161,10 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { IMAGES } from '../assets/images'
 
 const router = useRouter()
+const images = IMAGES
 
 const showTrialModal = ref(false)
 const trialType = ref('')
@@ -229,14 +243,24 @@ const startTrial = async () => {
 .hero {
   text-align: center;
   padding: 80px 24px;
-  background: linear-gradient(135deg, var(--lyread-primary-blue-start) 0%, var(--lyread-primary-blue-end) 100%); /* 渐变蓝英雄区背景 */
+  background: linear-gradient(135deg, var(--lyread-primary-blue-start) 0%, var(--lyread-primary-blue-end) 100%);
   color: white;
-  border-bottom-left-radius: 40px; /* 毛玻璃效果的圆角 */
+  border-bottom-left-radius: 40px;
   border-bottom-right-radius: 40px;
   position: relative;
-  overflow: hidden; /* 确保背景渐变和圆角正确 */
+  overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.22;
+  pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; }
 .hero h1 { font-size: 36px; margin-bottom: 16px; }
 .subtitle { font-size: 18px; opacity: 0.9; margin-bottom: 32px; }
 .hero-btns { display: flex; gap: 16px; justify-content: center; }
@@ -295,7 +319,7 @@ const startTrial = async () => {
   backdrop-filter: blur(8px);
   background-color: rgba(255,255,255,0.9); /* 兜底 */
 }
-.feature-card .icon { font-size: 40px; margin-bottom: 16px; }
+.feature-card .icon-img { display: block; margin: 0 auto 16px; object-fit: contain; }
 .feature-card h3 { color: var(--lyread-text-dark); margin-bottom: 8px; }
 .feature-card p { color: var(--lyread-text-secondary); font-size: 14px; }
 
@@ -340,13 +364,17 @@ const startTrial = async () => {
 .hot-card {
   background: var(--lyread-card-bg);
   border-radius: 16px;
-  padding: 20px;
+  overflow: hidden;
   box-shadow: 0 2px 12px var(--lyread-shadow-light);
   border: 1px solid rgba(255,255,255,0.1);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  background-color: rgba(255,255,255,0.9);
 }
+.hot-cover {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+}
+.hot-body { padding: 16px 20px 20px; }
 .hot-type {
   display: inline-block;
   padding: 4px 12px;
@@ -380,7 +408,14 @@ const startTrial = async () => {
   backdrop-filter: blur(8px);
   background-color: rgba(255,255,255,0.9);
 }
-.testimonial-card .avatar { font-size: 40px; margin-bottom: 12px; }
+.testimonial-card .avatar-img {
+  display: block;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  object-fit: cover;
+}
 .testimonial-card .name { font-weight: 600; color: var(--lyread-text-dark); margin-bottom: 8px; }
 .testimonial-card p { color: var(--lyread-text-secondary); font-size: 14px; }
 

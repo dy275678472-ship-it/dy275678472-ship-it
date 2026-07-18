@@ -2,7 +2,7 @@
   <div class="login-page">
     <div class="login-card">
       <div class="brand">
-        <span class="logo">🧠</span>
+        <img :src="logo" alt="LyRead" class="logo-img" width="48" height="48" />
         <span class="logo-text">LyRead</span>
       </div>
       <p class="subtitle">AI小说创作引擎</p>
@@ -111,9 +111,11 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { authApi } from '../api'
+import { IMAGES } from '../assets/images'
 
 const router = useRouter()
 const route = useRoute()
+const logo = IMAGES.logo
 const loading = ref(false)
 const error = ref('')
 const success = ref('')
@@ -281,8 +283,10 @@ const handleRegister = async () => {
   margin-bottom: 12px;
 }
 
-.logo {
-  font-size: 36px;
+.logo-img {
+  display: block;
+  border-radius: 12px;
+  object-fit: cover;
 }
 
 .logo-text {

@@ -1,7 +1,7 @@
 <template>
   <div class="placeholder-page">
     <div class="card">
-      <span class="icon">🚧</span>
+      <img :src="logo" alt="" class="icon-img" width="64" height="64" />
       <h1>{{ title }}</h1>
       <p>{{ desc }}</p>
       <div class="actions">
@@ -16,8 +16,10 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { IMAGES } from '../assets/images'
 
 const route = useRoute()
+const logo = IMAGES.logo
 const isLoggedIn = computed(() => !!localStorage.getItem('token'))
 
 const META = {
@@ -40,7 +42,7 @@ const desc = computed(() => META[route.path]?.desc || '该功能正在建设中�
   max-width: 480px; text-align: center; background: #fff; border-radius: 20px;
   padding: 48px 32px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); border: 1px solid #e8f0fa;
 }
-.icon { font-size: 48px; display: block; margin-bottom: 16px; }
+.icon-img { display: block; margin: 0 auto 16px; border-radius: 16px; object-fit: cover; }
 h1 { font-size: 24px; color: #1e2a3a; margin-bottom: 12px; }
 p { color: #5a6a7a; line-height: 1.6; margin-bottom: 28px; }
 .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
