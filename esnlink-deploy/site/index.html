@@ -582,26 +582,44 @@
         .partner-item:hover { border-color:#dbeafe; transform:translateY(-4px); box-shadow:0 12px 25px -10px rgba(37,99,235,0.08); }
         .partner-item i { font-size:2rem; display:block; margin-bottom:0.5rem; background:linear-gradient(135deg,#2563eb,#06b6d4); -webkit-background-clip:text; background-clip:text; color:transparent; }
         .logo-wall {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 1rem 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
             margin-top: 1.5rem;
             padding: 1.5rem 0;
+            max-width: 960px;
+            margin-left: auto;
+            margin-right: auto;
         }
         .logo-wall .logo-item {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.6rem 1.2rem;
-            background: #f8fafc;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+            background: #fff;
             border-radius: 12px;
             border: 1px solid #e2e8f0;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #475569;
+            transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+            min-height: 56px;
         }
-        .logo-wall .logo-item span:first-child { font-size: 1.2rem; }
+        .logo-wall .logo-item:hover {
+            border-color: #bfdbfe;
+            box-shadow: 0 8px 20px -8px rgba(37,99,235,0.15);
+            transform: translateY(-2px);
+        }
+        .logo-wall .logo-item img {
+            height: 32px;
+            width: auto;
+            max-width: 140px;
+            object-fit: contain;
+            filter: grayscale(30%);
+            opacity: 0.92;
+            transition: filter 0.25s, opacity 0.25s;
+        }
+        .logo-wall .logo-item:hover img {
+            filter: grayscale(0%);
+            opacity: 1;
+        }
 
         /* ===== Breadcrumbs ===== */
         .breadcrumbs {
@@ -1017,15 +1035,16 @@
         <h2 class="section-title reveal">合作伙伴 <span class="text-gradient">· 携手共赢</span></h2>
         <div class="section-sub reveal">已服务 500+ 企业，覆盖通信、教育、金融、电商、政务等行业</div>
         <div class="logo-wall reveal">
-            <div class="logo-item"><span>📶</span><span>中国电信</span></div>
-            <div class="logo-item"><span>📶</span><span>中国移动</span></div>
-            <div class="logo-item"><span>🌐</span><span>中国联通</span></div>
-            <div class="logo-item"><span>🛰</span><span>中国星网</span></div>
-            <div class="logo-item"><span>🏦</span><span>城商行联盟</span></div>
-            <div class="logo-item"><span>🎓</span><span>职教集团</span></div>
-            <div class="logo-item"><span>🛒</span><span>头部电商</span></div>
-            <div class="logo-item"><span>🏥</span><span>社区医院</span></div>
+            <div class="logo-item"><img src="assets/logos/telecom-ct.svg" alt="中国电信" width="140" height="32" loading="lazy"></div>
+            <div class="logo-item"><img src="assets/logos/telecom-cm.svg" alt="中国移动" width="140" height="32" loading="lazy"></div>
+            <div class="logo-item"><img src="assets/logos/telecom-cu.svg" alt="中国联通" width="140" height="32" loading="lazy"></div>
+            <div class="logo-item"><img src="assets/logos/satellite.svg" alt="中国星网" width="140" height="32" loading="lazy"></div>
+            <div class="logo-item"><img src="assets/logos/finance.svg" alt="城商行联盟" width="140" height="32" loading="lazy"></div>
+            <div class="logo-item"><img src="assets/logos/education.svg" alt="职教集团" width="140" height="32" loading="lazy"></div>
+            <div class="logo-item"><img src="assets/logos/ecommerce.svg" alt="头部电商" width="140" height="32" loading="lazy"></div>
+            <div class="logo-item"><img src="assets/logos/healthcare.svg" alt="社区医院" width="140" height="32" loading="lazy"></div>
         </div>
+        <p style="text-align:center;font-size:0.75rem;color:#94a3b8;margin-top:1rem">* 以上为翼星科技服务的部分行业代表客户，Logo 为行业示意标识</p>
     </div>
 </section>
 

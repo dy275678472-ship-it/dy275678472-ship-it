@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" role="img" aria-label="城商行联盟">
+  <rect width="160" height="48" rx="8" fill="#f8fafc"/>
+  <circle cx="24" cy="24" r="16" fill="#b45309" opacity="0.12"/>
+  <text x="24" y="28" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" font-weight="700" fill="#b45309">CB</text>
+  <text x="88" y="28" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" font-weight="600" fill="#334155">城商行联盟</text>
+</svg>

@@ -10,6 +10,7 @@ ROOT="/workspace/esnlink-deploy"
 echo "==> Deploying esnlink.cn..."
 
 # Generate assets
+python3 "$ROOT/generate_logos.py" 2>/dev/null || true
 python3 "$ROOT/generate_og_image.py" 2>/dev/null || true
 python3 "$ROOT/generate_webp.py" 2>/dev/null || true
 python3 "$ROOT/generate_solutions.py" 2>/dev/null || true
@@ -33,9 +34,9 @@ scp -i "$KEY" -o StrictHostKeyChecking=no \
     "$HOST:/tmp/esnlink-deploy/"
 
 # Subdirectories
-for dir in docs solutions cases en landing; do
+for dir in docs solutions cases en landing assets; do
     if [ -d "$LOCAL/$dir" ] && [ "$(ls -A "$LOCAL/$dir" 2>/dev/null)" ]; then
-        scp -i "$KEY" -o StrictHostKeyChecking=no "$LOCAL/$dir/"* "$HOST:/tmp/esnlink-deploy/$dir/"
+        scp -i "$KEY" -o StrictHostKeyChecking=no -r "$LOCAL/$dir" "$HOST:/tmp/esnlink-deploy/"
     fi
 done
 
@@ -58,11 +59,13 @@ ssh -i "$KEY" -o StrictHostKeyChecking=no "$HOST" "
         sudo mkdir -p $REMOTE/\$d
         sudo mv /tmp/esnlink-deploy/\$d/* $REMOTE/\$d/ 2>/dev/null || true
     done
+    sudo mkdir -p $REMOTE/assets
+    sudo cp -r /tmp/esnlink-deploy/assets/* $REMOTE/assets/ 2>/dev/null || true
     sudo mv /tmp/header-footer.css $REMOTE/css/header-footer.css 2>/dev/null || true
     sudo chown -R www-data:www-data $REMOTE/index.html $REMOTE/call-center.html \
         $REMOTE/booking.html $REMOTE/sms.html $REMOTE/iot.html $REMOTE/edu.html \
         $REMOTE/robots.txt $REMOTE/sitemap.xml $REMOTE/og-image.png $REMOTE/css \
-        $REMOTE/docs $REMOTE/solutions $REMOTE/cases $REMOTE/en $REMOTE/landing 2>/dev/null || true
+        $REMOTE/docs $REMOTE/solutions $REMOTE/cases $REMOTE/en $REMOTE/landing $REMOTE/assets 2>/dev/null || true
     [ -f $REMOTE/og-image.webp ] && sudo chown www-data:www-data $REMOTE/og-image.webp
     chmod +x /tmp/apply_nginx.sh && sudo bash /tmp/apply_nginx.sh
 "
