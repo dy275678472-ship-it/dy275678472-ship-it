@@ -4,7 +4,14 @@ async function request(path, options = {}) {
   if (token) headers.Authorization = `Bearer ${token}`
   const res = await fetch(path, { ...options, headers })
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) return { ...data, detail: data.detail || data.error || res.statusText }
+  if (!res.ok) {
+    return {
+      ...data,
+      detail: data.detail || data.error || res.statusText,
+      status: res.status,
+      insufficient_credits: res.status === 402,
+    }
+  }
   return data
 }
 
@@ -72,6 +79,7 @@ export const adminApi = {
   orders(limit = 50) { return request(`/api/admin/orders?limit=${limit}`) },
   jobs(limit = 50) { return request(`/api/admin/jobs?limit=${limit}`) },
   reviews(result = 'pending') { return request(`/api/admin/reviews?result=${result}`) },
+  reviewPreview(id) { return request(`/api/admin/reviews/${id}/preview`) },
   approveReview(id) { return request(`/api/admin/reviews/${id}/approve`, { method: 'POST' }) },
   rejectReview(id, reason) { return request(`/api/admin/reviews/${id}/reject`, { method: 'POST', body: JSON.stringify({ reason }) }) },
   adjustCredits(userId, points, note, target = 'paid') {

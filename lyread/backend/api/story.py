@@ -332,16 +332,15 @@ async def generate_chapters(req: GenerateChaptersRequest, user: dict = Depends(g
             else:
                 chapters = []
         else:
-            # 模拟返回
-            chapters = []
-            for i in range(1, req.chapter_count + 1):
-                hot_points = ["打脸", "装逼", "逆袭", "宝贝", "升级", "打怪", "救人", "表白"]
-                chapters.append({
-                    "chapter": i,
-                    "title": f"第{i}章 章节名",
-                    "hot_point": hot_points[(i-1) % len(hot_points)],
-                    "summary": f"第{i}章的剧情摘要..."
-                })
+            refund(uid, job["job_id"])
+            return {
+                "success": False,
+                "error": "AI 服务未配置，无法生成章纲。请配置 DEEPSEEK_API_KEY 后重试（本次未扣点）。",
+            }
+
+        if not chapters:
+            refund(uid, job["job_id"])
+            return {"success": False, "error": "章纲解析失败，请重试（本次未扣点）"}
 
         settle(uid, job["job_id"], estimate_points("chapters"))
         return {"success": True, "chapters": chapters}

@@ -34,11 +34,33 @@
             <span class="meta">{{ r.target_type }} #{{ r.target_id }} · 用户 {{ r.user_id }}</span>
           </div>
           <div class="row-actions">
+            <button class="btn-preview" @click="openPreview(r.id)">预览</button>
             <button class="btn-ok" @click="approve(r.id)">通过</button>
             <button class="btn-no" @click="reject(r.id)">驳回</button>
           </div>
         </div>
       </section>
+
+      <div v-if="previewOpen" class="preview-modal" @click.self="previewOpen = false">
+        <div class="preview-panel">
+          <header class="preview-head">
+            <h3>{{ previewData?.title || '作品预览' }}</h3>
+            <button class="preview-close" @click="previewOpen = false">×</button>
+          </header>
+          <div v-if="previewLoading" class="empty">加载中...</div>
+          <div v-else-if="previewData" class="preview-body">
+            <p class="preview-meta">{{ previewData.genre }} · {{ previewData.word_count || 0 }} 字 · {{ previewData.chapters_count || 0 }} 章</p>
+            <p v-if="previewData.intro"><strong>简介：</strong>{{ previewData.intro }}</p>
+            <div v-if="previewData.chapters?.length" class="preview-chapters">
+              <div v-for="ch in previewData.chapters" :key="ch.idx" class="preview-ch">
+                <h4>{{ ch.title || `第${ch.idx}章` }} <span class="meta">({{ ch.word_count }} 字)</span></h4>
+                <pre>{{ ch.excerpt || '（无正文）' }}</pre>
+              </div>
+            </div>
+            <p v-else class="empty">暂无章节正文，请提醒作者先 AI 续写并保存。</p>
+          </div>
+        </div>
+      </div>
 
       <section v-if="tab === 'users'" class="panel">
         <h2>用户</h2>
@@ -105,6 +127,9 @@ const reviews = ref([])
 const users = ref([])
 const orders = ref([])
 const jobs = ref([])
+const previewOpen = ref(false)
+const previewLoading = ref(false)
+const previewData = ref(null)
 
 const tabs = [
   { id: 'reviews', label: '审核' },
@@ -132,6 +157,18 @@ async function loadAll() {
     denied.value = false
   } catch (e) {
     denied.value = true
+  }
+}
+
+async function openPreview(id) {
+  previewOpen.value = true
+  previewLoading.value = true
+  previewData.value = null
+  try {
+    const res = await adminApi.reviewPreview(id)
+    if (res?.success) previewData.value = res.preview
+  } finally {
+    previewLoading.value = false
   }
 }
 
@@ -182,7 +219,8 @@ onMounted(loadAll)
 .row-card { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f0f4f8; gap: 12px; }
 .meta { display: block; font-size: 12px; color: #94a3b8; margin-top: 4px; }
 .row-actions { display: flex; gap: 8px; flex-shrink: 0; }
-.btn-ok, .btn-no, .btn-sm { padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; }
+.btn-ok, .btn-no, .btn-sm, .btn-preview { padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; }
+.btn-preview { background: #eff6ff; color: #2563eb; }
 .btn-ok { background: #16a34a; color: #fff; }
 .btn-no { background: #fef2f2; color: #ef4444; }
 .btn-sm { background: #eff6ff; color: #2563eb; }
@@ -190,5 +228,23 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #f0f4f8; }
 .mono { font-family: monospace; font-size: 11px; }
 .badge { background: #fef3c7; color: #b45309; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
+.preview-modal {
+  position: fixed; inset: 0; background: rgba(15,23,42,0.45); z-index: 1000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.preview-panel {
+  width: min(760px, 100%); max-height: 85vh; overflow: auto;
+  background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.preview-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.preview-close { border: none; background: transparent; font-size: 24px; cursor: pointer; color: #94a3b8; }
+.preview-meta { color: #64748b; font-size: 13px; margin-bottom: 12px; }
+.preview-ch { margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f4f8; }
+.preview-ch h4 { font-size: 14px; margin-bottom: 8px; }
+.preview-ch pre {
+  white-space: pre-wrap; word-break: break-word; font-family: inherit;
+  font-size: 13px; line-height: 1.7; color: #334155; background: #f8fafc;
+  padding: 12px; border-radius: 8px; max-height: 240px; overflow: auto;
+}
 @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
 </style>

@@ -6,7 +6,7 @@ import { initAnalytics, trackPageView } from './utils/analytics'
 
 initAnalytics()
 
-const protectedRoutes = ['/workspace', '/wallet', '/admin']
+const protectedRoutes = ['/workspace', '/wallet', '/admin', '/reader', '/story']
 
 const routes = [
   { path: '/', component: () => import('./views/Home.vue'), meta: { title: 'LyRead AI - 让 AI 陪你写完一部长篇小说', desc: 'LyRead AI 智能小说创作平台，支持长篇小说、短故事、人物伏笔记忆与点数计费。' }},
@@ -24,7 +24,7 @@ const router = createRouter({ history: createWebHistory(), routes })
 
 router.beforeEach((to, from, next) => {
   if (protectedRoutes.includes(to.path) && !localStorage.getItem('token')) {
-    next('/login')
+    next({ path: '/login', query: { redirect: to.fullPath } })
     return
   }
   next()

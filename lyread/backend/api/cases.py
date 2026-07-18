@@ -67,17 +67,20 @@ def get_case(case_id: int):
     try:
         cursor = conn.cursor(dictionary=True)
         cursor.execute(
-            f"SELECT id, content_id, title, category, word_count, heat, score, status, created_at "
+            f"SELECT id, content_id, title, category, word_count, heat, score, status, preview_body, created_at "
             f"FROM contents WHERE id=%s AND {public_case_sql_clause()} LIMIT 1",
             (case_id,),
         )
         row = cursor.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="案例不存在")
+        preview = row.get("preview_body") or ""
         return {
             "success": True,
             "case": {
                 **row,
+                "preview_excerpt": preview[:1500] if preview else "",
+                "has_body": bool(preview),
                 "url": f"/ep/{row['id']}",
                 "created_at": str(row.get("created_at") or ""),
             },

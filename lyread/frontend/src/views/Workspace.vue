@@ -27,6 +27,16 @@
     </aside>
 
     <main class="editor" v-if="editing">
+      <div v-if="welcomeBanner" class="welcome-banner">
+        🎉 欢迎！已到账 <strong>30 点</strong>，试试「AI 续写正文」感受完整创作流程。
+        <button class="welcome-close" @click="welcomeBanner = false">知道了</button>
+      </div>
+      <div v-if="creditsLow" class="credits-banner">
+        <span>点数不足，无法继续生成。</span>
+        <router-link to="/wallet">领取每日免费 5 点</router-link>
+        <router-link to="/pricing">立即充值</router-link>
+        <button class="welcome-close" @click="creditsLow = false">×</button>
+      </div>
       <div class="editor-toolbar">
         <button class="btn-back" @click="backToList">← 返回</button>
         <span class="toolbar-title">{{ form.title || '未命名作品' }}</span>
@@ -143,6 +153,8 @@ const editing = ref(false)
 const busy = ref(false)
 const msg = ref('')
 const msgErr = ref(false)
+const creditsLow = ref(false)
+const welcomeBanner = ref(false)
 const outlinePreview = ref('')
 const chapterContent = ref('')
 const memory = reactive({ summaries: [], characters: [], foreshadowings: [], settings: [] })
@@ -155,6 +167,16 @@ const form = reactive({
 
 function setMsg(text, err = false) {
   msg.value = text; msgErr.value = err
+}
+
+function handleApiError(res, fallback) {
+  if (res?.insufficient_credits || res?.status === 402) {
+    creditsLow.value = true
+    setMsg(res.detail || '点数不足，请先充值或领取每日免费额度', true)
+    return true
+  }
+  setMsg(res?.error || res?.detail || fallback, true)
+  return false
 }
 
 async function loadList() {
@@ -245,7 +267,7 @@ async function doGenerateTitle() {
       if (res.description) form.intro = res.description
       setMsg('书名生成成功')
       window.dispatchEvent(new Event('credits-changed'))
-    } else setMsg(res?.error || res?.detail || '生成失败', true)
+    } else handleApiError(res, '生成失败')
   } finally { busy.value = false }
 }
 
@@ -262,7 +284,7 @@ async function doGenerateOutline() {
       outlinePreview.value = form.outline
       setMsg('大纲生成成功')
       window.dispatchEvent(new Event('credits-changed'))
-    } else setMsg(res?.error || res?.detail || '生成失败', true)
+    } else handleApiError(res, '生成失败')
   } finally { busy.value = false }
 }
 
@@ -276,7 +298,7 @@ async function doGenerateChapters() {
       form.chapters = JSON.stringify(res.chapters)
       setMsg(`已生成 ${res.chapters?.length || 0} 章章纲`)
       window.dispatchEvent(new Event('credits-changed'))
-    } else setMsg(res?.error || res?.detail || '生成失败', true)
+    } else handleApiError(res, '生成失败')
   } finally { busy.value = false }
 }
 
@@ -295,7 +317,7 @@ async function doContinue() {
       await loadMemory()
       await loadChapterList()
       window.dispatchEvent(new Event('credits-changed'))
-    } else setMsg(res?.error || res?.detail || '续写失败', true)
+    } else handleApiError(res, '续写失败')
   } finally { busy.value = false }
 }
 
@@ -327,6 +349,7 @@ function exportStory(format) {
 
 onMounted(async () => {
   await loadList()
+  if (route.query.welcome === '1') welcomeBanner.value = true
   if (route.query.generatedTitle || route.query.prompt) newStory()
 })
 </script>
@@ -377,6 +400,17 @@ onMounted(async () => {
 .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
 .msg { font-size: 13px; margin-top: 10px; color: #16a34a; }
 .msg.err { color: #ef4444; }
+.welcome-banner, .credits-banner {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 12px 16px; margin-bottom: 12px; border-radius: 10px; font-size: 13px;
+}
+.welcome-banner { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.credits-banner { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+.credits-banner a { color: #2563eb; font-weight: 600; text-decoration: none; }
+.welcome-close {
+  margin-left: auto; border: none; background: transparent; cursor: pointer;
+  font-size: 14px; color: inherit; opacity: 0.7;
+}
 .code { background: #f8fafc; padding: 12px; border-radius: 8px; font-size: 12px; overflow: auto; max-height: 200px; white-space: pre-wrap; }
 .memory-list { list-style: none; font-size: 13px; color: #5a6a7a; }
 .memory-list li { padding: 8px 0; border-bottom: 1px solid #f0f4f8; }

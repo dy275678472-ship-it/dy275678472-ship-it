@@ -148,11 +148,22 @@
           <h4>AI 为你生成的书名</h4>
           <p class="result-title">{{ trialResult.title }}</p>
           <p class="result-hook">{{ trialResult.description }}</p>
+          <div v-if="!isLoggedIn" class="trial-cta-row">
+            <button class="btn-continue-trial" @click="goRegisterContinue">
+              用这个名字继续写 → 注册领 30 点
+            </button>
+            <p class="trial-cta-hint">注册即送 30 点，约可 AI 续写 3 章</p>
+          </div>
+          <div v-else class="trial-cta-row">
+            <button class="btn-continue-trial" @click="goWorkspaceContinue">进入创作台继续 →</button>
+          </div>
         </div>
 
-        <div class="trial-tips">
+        <div v-if="trialError" class="trial-error">{{ trialError }}</div>
+
+        <div class="trial-tips" v-if="!trialResult">
           <span class="tip-badge"><img :src="images.pricing.gift" alt="免费试用" width="16" height="16" /> 游客可免费试用一次</span>
-          <span class="tip-link" @click="$router.push('/login')">注册送 30 点 →</span>
+          <span class="tip-link" @click="goRegisterContinue">注册送 30 点 →</span>
         </div>
       </div>
     </div>
@@ -160,7 +171,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { IMAGES, coverForCase } from '../assets/images'
 import SectionHeading from '../components/SectionHeading.vue'
@@ -176,6 +187,26 @@ const trialType = ref('')
 const trialPrompt = ref('')
 const trialLoading = ref(false)
 const trialResult = ref(null)
+const trialError = ref('')
+const isLoggedIn = computed(() => !!localStorage.getItem('token'))
+
+function workspaceQuery() {
+  const q = { type: trialType.value, prompt: trialPrompt.value }
+  if (trialResult.value?.title) q.generatedTitle = trialResult.value.title
+  return q
+}
+
+function goWorkspaceContinue() {
+  router.push({ path: '/workspace', query: workspaceQuery() })
+  showTrialModal.value = false
+}
+
+function goRegisterContinue() {
+  const redirect = `/workspace?${new URLSearchParams(workspaceQuery()).toString()}`
+  router.push({ path: '/login', query: { redirect, mode: 'register' } })
+  showTrialModal.value = false
+  trackEvent('trial_register_cta', { category: 'funnel', label: 'continue_after_title' })
+}
 const statsLoaded = ref(false)
 const hotCases = ref([])
 const casesLoading = ref(true)
@@ -223,6 +254,7 @@ const startTrial = async () => {
   trackEvent('trial_submit', { category: 'funnel', label: trialType.value })
   trialLoading.value = true
   trialResult.value = null
+  trialError.value = ''
   try {
     const token = localStorage.getItem('token')
     const headers = { 'Content-Type': 'application/json' }
@@ -234,21 +266,17 @@ const startTrial = async () => {
     })
     const data = await res.json()
     if (!data.success) {
-      alert(data.error || data.detail || 'AI 生成失败，请稍后再试')
+      trialError.value = data.error || data.detail || 'AI 生成失败，请稍后再试'
       return
     }
     trialResult.value = { title: data.title, description: data.description }
     trackEvent('trial_success', { category: 'funnel', label: 'generate_title' })
     if (localStorage.getItem('token')) {
-      router.push({
-        path: '/workspace',
-        query: { type: trialType.value, prompt: trialPrompt.value, generatedTitle: data.title },
-      })
-      showTrialModal.value = false
+      goWorkspaceContinue()
     }
   } catch (error) {
     console.error('试用生成失败:', error)
-    alert('AI 生成失败，请稍后再试或更换内容。')
+    trialError.value = 'AI 生成失败，请稍后再试或更换内容。'
   } finally {
     trialLoading.value = false
   }
@@ -581,6 +609,17 @@ const startTrial = async () => {
 .trial-result h4 { font-size: 14px; color: #0369a1; margin-bottom: 8px; }
 .result-title { font-weight: 700; color: #1e2a3a; margin-bottom: 6px; }
 .result-hook { font-size: 13px; color: #5a6a7a; }
+.trial-cta-row { margin-top: 16px; text-align: center; }
+.btn-continue-trial {
+  width: 100%; padding: 14px 20px; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+}
+.trial-cta-hint { margin-top: 8px; font-size: 12px; color: #64748b; }
+.trial-error {
+  margin-top: 12px; padding: 10px 12px; border-radius: 8px;
+  background: #fef2f2; color: #dc2626; font-size: 13px; text-align: left;
+}
 
 /* 媒体查询调整 */
 @media (max-width: 1024px) {

@@ -98,7 +98,7 @@
         <a href="#" @click.prevent="showForgot = false; showReset = false">返回登录</a>
       </div>
 
-      <div class="social-login" v-if="!showForgot && !showReset">
+      <div class="social-login" v-if="false && !showForgot && !showReset">
         <p>第三方登录（即将上线）</p>
         <div class="social-icons">
           <button type="button" class="social-icon" disabled title="微信登录即将上线">
@@ -185,7 +185,31 @@ onMounted(() => {
     resetToken.value = route.query.reset
     showReset.value = true
   }
+  if (route.query.mode === 'register') {
+    showRegister.value = true
+  }
 })
+
+function safeRedirectPath() {
+  const raw = route.query.redirect
+  if (typeof raw === 'string' && raw.startsWith('/') && !raw.startsWith('//')) {
+    return raw
+  }
+  return null
+}
+
+function afterAuth(isRegister = false) {
+  const redirect = safeRedirectPath()
+  if (redirect) {
+    router.push(redirect)
+    return
+  }
+  if (isRegister) {
+    router.push('/workspace?welcome=1')
+    return
+  }
+  router.push('/workspace')
+}
 
 const handleLogin = async () => {
   loading.value = true
@@ -202,7 +226,7 @@ const handleLogin = async () => {
     localStorage.setItem('token', res.token)
     localStorage.setItem('user', JSON.stringify(res.user || {}))
     trackEvent('login_success', { category: 'auth', label: 'password' })
-    router.push('/')
+    afterAuth(false)
   } catch (err) {
     error.value = '登录失败，请稍后再试'
   } finally {
@@ -235,8 +259,8 @@ const handleRegister = async () => {
       localStorage.setItem('token', res.token)
       localStorage.setItem('user', JSON.stringify(res.user || {}))
       trackEvent('register_success', { category: 'auth', label: 'auto_login' })
-      success.value = '注册成功，正在进入...'
-      router.push('/')
+      success.value = '注册成功，已到账 30 点，正在进入创作台...'
+      afterAuth(true)
       return
     }
     success.value = '注册成功，请登录'

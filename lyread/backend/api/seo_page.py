@@ -287,7 +287,7 @@ async def seo_content_page(content_id: int, request: Request):
         if db:
             cursor = db.cursor(dictionary=True)
             cursor.execute(
-                "SELECT id, title, category, word_count, heat, score, created_at "
+                "SELECT id, title, category, word_count, heat, score, preview_body, created_at "
                 f"FROM contents WHERE id = %s AND {public_case_sql_clause()}", (content_id,)
             )
             row = cursor.fetchone()
@@ -315,9 +315,18 @@ async def seo_content_page(content_id: int, request: Request):
                     <div class="info-item"><strong>字数</strong><br>{row['word_count']:,}</div>
                     <div class="info-item"><strong>热度</strong><br>{row['heat']}</div>
                     <div class="info-item"><strong>评分</strong><br>{row.get('score', 'N/A')}</div>
-                </div>
+                </div>"""
+                preview = row.get("preview_body") or ""
+                if preview:
+                    safe_preview = escape(preview[:6000]).replace("\n", "<br>")
+                    body_html += f"""
+                <div style="margin-top:24px;line-height:1.9;color:#2a3a4e;white-space:normal">
+                    <h2 style="font-size:18px;margin-bottom:12px;color:#1e2a3a">正文节选</h2>
+                    <div style="background:#f8fafc;padding:20px;border-radius:12px;border:1px solid #e8f0fa">{safe_preview}</div>
+                </div>"""
+                body_html += f"""
                 <div class="seo-cta">
-                    <a href="{SITE_BASE}/?utm_source=baidu&utm_medium=seo">前往 LyRead 阅读完整作品 →</a>
+                    <a href="{SITE_BASE}/login?redirect=/workspace">登录 LyRead 创作你的作品 →</a>
                 </div>
                 """
     except Exception as e:

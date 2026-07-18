@@ -7,6 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from api.admin_auth import get_admin_user
+from services.chapter_store import merge_chapters_for_story
+from services.content_publish import build_preview_body, sync_story_to_contents
 from settings import database_config
 
 router = APIRouter()
@@ -205,18 +207,9 @@ def approve_review(review_id: int, admin: dict = Depends(get_admin_user)):
         )
         if rev["target_type"] == "story":
             c.execute("UPDATE stories SET status='published' WHERE id=%s", (rev["target_id"],))
-            c.execute("SELECT title, genre, word_count FROM stories WHERE id=%s", (rev["target_id"],))
-            story = c.fetchone()
-            if story:
-                cid = f"story_{rev['target_id']}"
-                c.execute(
-                    "INSERT INTO contents (content_id, title, category, word_count, heat, score, status) "
-                    "VALUES (%s,%s,%s,%s,0,0,'active') "
-                    "ON DUPLICATE KEY UPDATE title=VALUES(title), status='active'",
-                    (cid, story["title"], story.get("genre") or "都市", story.get("word_count") or 0),
-                )
+            sync_story_to_contents(c, int(rev["target_id"]))
         conn.commit()
-        return {"success": True, "message": "已通过并发布"}
+        return {"success": True, "message": "已通过并发布（含正文预览）"}
     except HTTPException:
         raise
     except Exception as exc:
@@ -231,15 +224,83 @@ def approve_review(review_id: int, admin: dict = Depends(get_admin_user)):
 def reject_review(review_id: int, req: ReviewAction, admin: dict = Depends(get_admin_user)):
     conn = _db()
     try:
-        c = conn.cursor()
+        conn.start_transaction()
+        c = conn.cursor(dictionary=True)
+        c.execute("SELECT * FROM content_reviews WHERE id=%s FOR UPDATE", (review_id,))
+        rev = c.fetchone()
+        if not rev:
+            raise HTTPException(status_code=404, detail="审核记录不存在")
         reviewer = admin.get("username") or str(admin["sub"])
+        reason = req.reason or "不符合发布规范"
         c.execute(
             "UPDATE content_reviews SET result='rejected', reason=%s, reviewer=%s, reviewed_at=NOW() "
-            "WHERE id=%s AND result='pending'",
-            (req.reason or "不符合发布规范", reviewer, review_id),
+            "WHERE id=%s",
+            (reason, reviewer, review_id),
         )
+        if rev["target_type"] == "story" and rev.get("target_id"):
+            c.execute("UPDATE stories SET status='rejected' WHERE id=%s", (rev["target_id"],))
         conn.commit()
         return {"success": True, "message": "已驳回"}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail="驳回失败") from exc
+    finally:
+        if conn.is_connected():
+            conn.close()
+
+
+@router.get("/reviews/{review_id}/preview")
+def review_preview(review_id: int, _: dict = Depends(get_admin_user)):
+    """审核预览：作品元数据 + 章节节选。"""
+    conn = _db()
+    try:
+        c = conn.cursor(dictionary=True)
+        c.execute("SELECT * FROM content_reviews WHERE id=%s LIMIT 1", (review_id,))
+        rev = c.fetchone()
+        if not rev:
+            raise HTTPException(status_code=404, detail="审核记录不存在")
+        if rev["target_type"] != "story":
+            return {"success": True, "preview": {"title": rev.get("title"), "type": rev["target_type"]}}
+
+        story_id = int(rev["target_id"])
+        c.execute(
+            "SELECT id, title, genre, intro, outline, chapters, word_count, status FROM stories WHERE id=%s LIMIT 1",
+            (story_id,),
+        )
+        story = c.fetchone()
+        if not story:
+            raise HTTPException(status_code=404, detail="作品不存在")
+
+        chapters = merge_chapters_for_story(c, story_id, story.get("chapters"))
+        preview_body = build_preview_body(chapters)
+        chapter_previews = [
+            {
+                "idx": ch.get("chapter") or ch.get("idx"),
+                "title": ch.get("title"),
+                "excerpt": (ch.get("content") or "")[:1200],
+                "word_count": len(ch.get("content") or ""),
+            }
+            for ch in chapters[:5]
+            if isinstance(ch, dict)
+        ]
+        return {
+            "success": True,
+            "preview": {
+                "review_id": review_id,
+                "story_id": story_id,
+                "title": story.get("title") or rev.get("title"),
+                "genre": story.get("genre"),
+                "intro": story.get("intro"),
+                "outline": (story.get("outline") or "")[:2000],
+                "word_count": story.get("word_count"),
+                "status": story.get("status"),
+                "chapters_count": len(chapters),
+                "preview_body": preview_body[:3000],
+                "chapters": chapter_previews,
+            },
+        }
     finally:
         if conn.is_connected():
             conn.close()

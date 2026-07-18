@@ -63,6 +63,7 @@
           </button>
         </div>
       </div>
+      <p class="pay-note pay-error" v-if="payError">{{ payError }}</p>
       <p class="pay-note" v-if="sandboxMode">当前为<strong>沙箱充值模式</strong>：点击充值后确认即可模拟到账。配置支付宝商户密钥后将跳转真实支付。</p>
       <p class="pay-note" v-else-if="alipayReady">支持支付宝扫码/网页支付，支付成功后点数自动到账。</p>
       <p class="pay-note" v-else>支付宝参数配置中。可先使用注册赠送与每日免费额度，或联系管理员开通沙箱测试充值。</p>
@@ -89,6 +90,7 @@ const router = useRouter()
 const info = ref(null)
 const sandboxMode = ref(false)
 const alipayReady = ref(false)
+const payError = ref('')
 const images = IMAGES
 
 const LABELS = {
@@ -140,31 +142,37 @@ onMounted(async () => {
 })
 
 async function buy(pkg) {
+  payError.value = ''
   if (!isLoggedIn.value) {
     trackEvent('pricing_buy_click', { category: 'funnel', label: 'redirect_login', value: pkg.price })
-    router.push('/login')
+    router.push({ path: '/login', query: { redirect: '/pricing' } })
     return
   }
   trackEvent('pricing_buy_click', { category: 'funnel', label: pkg.id, value: pkg.price })
   const key = `pkg-${pkg.id}-${Date.now()}`
   const res = await ordersApi.create(pkg.id, key)
   if (!res?.success) {
-    alert(res?.detail || '创建订单失败')
+    payError.value = res?.detail || '创建订单失败，请稍后再试'
     return
   }
   if (res.sandbox || !res.alipay_ready) {
     const ok = confirm(`沙箱模式：模拟支付 ¥${pkg.price} 获得 ${pkg.credits} 点？`)
     if (!ok) return
     const paid = await ordersApi.sandboxConfirm(res.out_trade_no)
-    alert(paid?.message || paid?.detail || '充值完成')
-    window.dispatchEvent(new Event('credits-changed'))
+    if (paid?.success) {
+      window.dispatchEvent(new Event('credits-changed'))
+      payError.value = ''
+      alert(paid?.message || '充值完成，点数已到账')
+    } else {
+      payError.value = paid?.detail || '沙箱充值失败'
+    }
     return
   }
   if (res.pay_url) {
     window.location.href = res.pay_url
     return
   }
-  alert('请完成支付宝支付（支付页面即将上线）')
+  payError.value = '支付宝下单失败。请确认商户密钥已配置，或联系管理员开启沙箱测试充值。'
 }
 </script>
 
@@ -194,6 +202,7 @@ th, td { padding: 14px 18px; text-align: left; border-bottom: 1px solid #f0f4f8;
 th { background: #f8fafc; font-size: 13px; color: #64748b; }
 .pts { font-weight: 700; color: #2563eb; white-space: nowrap; }
 .note { color: #94a3b8; font-size: 13px; }
+.pay-error { color: #dc2626; background: #fef2f2; padding: 12px 16px; border-radius: 10px; border: 1px solid #fecaca; }
 
 .pkg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 16px; }
 .pkg-card {
