@@ -55,7 +55,17 @@ def _credit_recharge(conn, uid: str, points: int, out_trade_no: str, trade_no: s
 
 @router.get("/packages")
 def packages():
-    return {"success": True, "packages": [{"id": k, **v} for k, v in PACKAGES.items()]}
+    import os
+    from services.alipay import is_configured
+    alipay_ready = is_configured()
+    sandbox = os.getenv("ALIPAY_SANDBOX", "0") == "1"
+    return {
+        "success": True,
+        "packages": [{"id": k, **v} for k, v in PACKAGES.items()],
+        "alipay_ready": alipay_ready,
+        "sandbox": sandbox,
+        "payment_mode": "alipay" if alipay_ready else ("sandbox" if sandbox else "none"),
+    }
 
 
 @router.post("/create")

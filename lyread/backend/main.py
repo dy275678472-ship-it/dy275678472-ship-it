@@ -88,6 +88,28 @@ def liveness():
     return {"status": "ok", "version": APP_VERSION}
 
 
+@app.get("/health/config")
+def config_status():
+    """非敏感配置状态，供运维巡检。"""
+    import os
+    from services.email import smtp_status
+    from services.alipay import is_configured as alipay_configured
+
+    return {
+        "version": APP_VERSION,
+        "env": APP_ENV,
+        "deepseek": bool(os.getenv("DEEPSEEK_API_KEY")),
+        "smtp": smtp_status(),
+        "alipay": {
+            "configured": alipay_configured(),
+            "sandbox": os.getenv("ALIPAY_SANDBOX", "0") == "1",
+            "notify_url": os.getenv("ALIPAY_NOTIFY_URL", "https://lyread.cn/api/orders/alipay/notify"),
+        },
+        "auto_evolution": os.getenv("AUTO_EVOLUTION", "0") == "1",
+        "expose_reset_token": os.getenv("EXPOSE_RESET_TOKEN", "0") == "1",
+    }
+
+
 @app.get("/health/ready")
 def readiness():
     conn = auth.get_db()

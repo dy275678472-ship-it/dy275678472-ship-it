@@ -61,7 +61,9 @@
           </button>
         </div>
       </div>
-      <p class="pay-note">支付宝支付即将上线。当前可先使用注册赠送与每日免费额度体验。</p>
+      <p class="pay-note" v-if="sandboxMode">当前为<strong>沙箱充值模式</strong>：点击充值后确认即可模拟到账。配置支付宝商户密钥后将跳转真实支付。</p>
+      <p class="pay-note" v-else-if="alipayReady">支持支付宝扫码/网页支付，支付成功后点数自动到账。</p>
+      <p class="pay-note" v-else>支付宝参数配置中。可先使用注册赠送与每日免费额度，或联系管理员开通沙箱测试充值。</p>
     </section>
 
     <section class="faq">
@@ -81,6 +83,8 @@ import { creditsApi, ordersApi } from '../api'
 
 const router = useRouter()
 const info = ref(null)
+const sandboxMode = ref(false)
+const alipayReady = ref(false)
 
 const LABELS = {
   title: ['生成 5 个书名', '含黄金钩子简介'],
@@ -117,7 +121,15 @@ const isLoggedIn = computed(() => !!localStorage.getItem('token'))
 
 onMounted(async () => {
   try {
-    info.value = await creditsApi.prices()
+    const [prices, pkgs] = await Promise.all([
+      creditsApi.prices(),
+      ordersApi.packages().catch(() => null),
+    ])
+    info.value = prices
+    if (pkgs) {
+      alipayReady.value = !!pkgs.alipay_ready
+      sandboxMode.value = pkgs.payment_mode === 'sandbox'
+    }
   } catch (e) { /* 使用默认展示 */ }
 })
 

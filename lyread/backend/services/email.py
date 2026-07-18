@@ -9,8 +9,27 @@ def smtp_configured() -> bool:
     return bool(os.getenv("SMTP_HOST") and os.getenv("SMTP_FROM"))
 
 
+def smtp_status() -> dict:
+    """返回 SMTP 配置状态（不含密钥）。"""
+    return {
+        "configured": smtp_configured(),
+        "host": os.getenv("SMTP_HOST") or None,
+        "port": int(os.getenv("SMTP_PORT", "587")),
+        "from": os.getenv("SMTP_FROM") or None,
+        "user_set": bool(os.getenv("SMTP_USER")),
+        "password_set": bool(os.getenv("SMTP_PASSWORD")),
+        "ssl_mode": os.getenv("SMTP_SSL", "0") == "1",
+    }
+
+
 def _site_url() -> str:
     return os.getenv("SITE_URL", "https://lyread.cn").rstrip("/")
+
+
+def _smtp_connect(host: str, port: int, use_ssl: bool):
+    if use_ssl:
+        return smtplib.SMTP_SSL(host, port, timeout=15)
+    return smtplib.SMTP(host, port, timeout=15)
 
 
 def send_email(to: str, subject: str, text_body: str, html_body: str | None = None) -> bool:
@@ -22,7 +41,8 @@ def send_email(to: str, subject: str, text_body: str, html_body: str | None = No
     user = os.getenv("SMTP_USER", "")
     password = os.getenv("SMTP_PASSWORD", "")
     from_addr = os.getenv("SMTP_FROM", "")
-    use_tls = os.getenv("SMTP_TLS", "1") != "0"
+    use_ssl = os.getenv("SMTP_SSL", "0") == "1"
+    use_tls = os.getenv("SMTP_TLS", "1") != "0" and not use_ssl
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
@@ -32,7 +52,7 @@ def send_email(to: str, subject: str, text_body: str, html_body: str | None = No
     if html_body:
         msg.attach(MIMEText(html_body, "html", "utf-8"))
 
-    with smtplib.SMTP(host, port, timeout=15) as server:
+    with _smtp_connect(host, port, use_ssl) as server:
         if use_tls:
             server.starttls()
         if user and password:
