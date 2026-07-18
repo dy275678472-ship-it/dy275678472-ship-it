@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>开发文档 | 翼星科技 esnlink API 文档中心</title>
+    <meta name="description" content="翼星科技 API 开发文档中心。短信 API、智能外呼 API、物联网 API 接入指南，5 分钟快速集成。">
+    <link rel="canonical" href="https://www.esnlink.cn/docs/">
+    <meta property="og:title" content="开发文档 | 翼星科技 esnlink">
+    <meta property="og:description" content="短信 API、智能外呼 API 接入文档，5 分钟快速集成。">
+    <meta property="og:url" content="https://www.esnlink.cn/docs/">
+    <meta property="og:image" content="https://www.esnlink.cn/og-image.png">
+    <link rel="stylesheet" href="/css/header-footer.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: system-ui, sans-serif; color:#1e293b; line-height:1.6; background:#f8fafc; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 1.5rem; }
+        .hero { padding: 3rem 0; background: linear-gradient(160deg,#fff,#eff6ff); }
+        .hero h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .hero p { color: #64748b; }
+        .doc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; padding: 2rem 0 4rem; }
+        .doc-card {
+            background: #fff; border-radius: 1rem; padding: 1.5rem;
+            border: 1px solid #e2e8f0; text-decoration: none; color: inherit;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .doc-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px -10px rgba(37,99,235,0.15); border-color: #bfdbfe; }
+        .doc-card .icon { font-size: 2rem; margin-bottom: 0.8rem; }
+        .doc-card h2 { font-size: 1.15rem; margin-bottom: 0.4rem; color: #0f172a; }
+        .doc-card p { font-size: 0.9rem; color: #64748b; }
+        .doc-card .tag { display: inline-block; margin-top: 0.8rem; font-size: 0.75rem; background: #eff6ff; color: #2563eb; padding: 0.2rem 0.6rem; border-radius: 12px; }
+        .quickstart { background: #0f172a; color: #e2e8f0; border-radius: 1rem; padding: 2rem; margin-bottom: 3rem; }
+        .quickstart h2 { color: #fff; margin-bottom: 1rem; }
+        .quickstart ol { padding-left: 1.2rem; }
+        .quickstart li { margin: 0.5rem 0; }
+        .quickstart a { color: #60a5fa; }
+        .footer { background: #0f172a; padding: 2rem 0; color: #94a3b8; text-align: center; font-size: 0.85rem; }
+        .footer a { color: #60a5fa; text-decoration: none; }
+        .breadcrumbs { background: #fff; padding: 0.7rem 0; font-size: 0.88rem; border-bottom: 1px solid #eef2f6; }
+        .breadcrumbs a { color: #64748b; text-decoration: none; }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="container nav-container">
+        <a href="/index.html" class="logo"><span>esnlink · 翼星科技</span><span class="logo-slogan">开发文档</span></a>
+        <div class="nav-links">
+            <a href="/index.html">首页</a>
+            <a href="/call-center.html">智能外呼</a>
+            <a href="/sms.html">短信平台</a>
+            <a href="/docs/">文档</a>
+            <a href="/booking.html" class="nav-btn btn-trial">免费试用</a>
+        </div>
+        <button class="hamburger" aria-label="菜单">☰</button>
+    </div>
+</nav>
+<nav class="breadcrumbs"><div class="container"><a href="/index.html">首页</a> · <span>开发文档</span></div></nav>
+
+<section class="hero">
+    <div class="container">
+        <h1>API 开发文档</h1>
+        <p>5 分钟接入翼星科技企业通信云服务，支持 REST API + Webhook 回调</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="quickstart">
+        <h2>快速开始</h2>
+        <ol>
+            <li>注册账号并登录控制台，获取 <code>AppID</code> 和 <code>AppSecret</code></li>
+            <li>阅读 <a href="/docs/sms-api.html">短信 API 文档</a>，完成签名鉴权</li>
+            <li>调用发送接口，配置状态回调 URL</li>
+            <li>生产环境上线前，先在沙箱环境测试</li>
+        </ol>
+        <p style="margin-top:1rem;font-size:0.9rem">需要帮助？<a href="/booking.html">预约技术顾问</a> 或发邮件至 business@esnlink.cn</p>
+    </div>
+
+    <div class="doc-grid">
+        <a href="/docs/sms-api.html" class="doc-card">
+            <div class="icon">💬</div>
+            <h2>短信 API</h2>
+            <p>验证码、通知、营销短信发送接口，支持批量发送与状态回执。</p>
+            <span class="tag">REST API · 已上线</span>
+        </a>
+        <a href="/call-center.html" class="doc-card">
+            <div class="icon">📞</div>
+            <h2>智能外呼 API</h2>
+            <p>AI 外呼任务创建、坐席管理、通话记录查询接口。</p>
+            <span class="tag">REST API · 联系获取</span>
+        </a>
+        <a href="/iot.html" class="doc-card">
+            <div class="icon">📡</div>
+            <h2>物联网 API</h2>
+            <p>设备注册、数据上报、规则引擎与 OTA 升级接口。</p>
+            <span class="tag">REST API · 联系获取</span>
+        </a>
+        <a href="/faq.html" class="doc-card">
+            <div class="icon">❓</div>
+            <h2>常见问题</h2>
+            <p>接入过程中的常见技术问题与排查指南。</p>
+            <span class="tag">FAQ</span>
+        </a>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>&copy; 2025 合肥翼星智能科技有限公司 · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">皖ICP备2026012968号-1</a></p>
+</footer>
+<script>
+(function(){var h=document.querySelector('.hamburger'),n=document.querySelector('.nav-links');
+if(h&&n){h.addEventListener('click',function(){n.classList.toggle('open')});}})();
+</script>
+</body>
+</html>

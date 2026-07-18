@@ -14,6 +14,10 @@
     <meta property="og:url" content="https://www.esnlink.cn/sms.html">
     <meta property="og:site_name" content="esnlink · 翼星科技">
     <meta property="og:locale" content="zh_CN">
+    <meta property="og:image" content="https://www.esnlink.cn/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:image" content="https://www.esnlink.cn/og-image.png">
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="短信平台 · 翼星科技 | 三网合一 · 精准触达">
@@ -588,6 +592,17 @@
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页","item":"https://www.esnlink.cn/"},{"@type":"ListItem","position":2,"name":"短信平台","item":"https://www.esnlink.cn/sms.html"}]}
 </script>
     <link rel="stylesheet" href="/css/header-footer.css">
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"翼星短信平台到达率多少？","acceptedAnswer":{"@type":"Answer","text":"国内三网综合到达率 99%+，验证码短信通常 5 秒内送达。"}},
+{"@type":"Question","name":"短信 API 如何接入？","acceptedAnswer":{"@type":"Answer","text":"注册账号获取 AppID 和 AppSecret，参考 docs/sms-api.html 文档，5 分钟即可完成集成。"}},
+{"@type":"Question","name":"短信价格是多少？","acceptedAnswer":{"@type":"Answer","text":"国内短信 0.03 元/条起，无最低消费，比阿里云/腾讯云便宜约 30%。"}}
+]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Product","name":"翼星科技短信平台","description":"三网合一企业短信平台，支持验证码、通知、营销短信","brand":{"@type":"Brand","name":"翼星科技"},"offers":{"@type":"Offer","price":"0.03","priceCurrency":"CNY","priceSpecification":{"@type":"UnitPriceSpecification","unitText":"条"}}}
+</script>
 </head>
 <body>
 
@@ -598,14 +613,15 @@
             <span>esnlink · 翼星科技</span>
             <span class="logo-slogan">短信平台</span>
         </a>
-        <div class="nav-links">
-            <a href="#hero"><span class="icon-emoji">🏠</span> 首页</a>
-            <a href="#features"><span class="icon-emoji">⚙️</span> 功能</a>
-            <a href="#advantages"><span class="icon-emoji">★</span> 优势</a>
-            <a href="#params"><span class="icon-emoji">•</span> 参数</a>
-            <a href="#scenes"><span class="icon-emoji">•</span> 场景</a>
-            <a href="#contact"><span class="icon-emoji">•</span> 联系</a>
-            <a href="index.html" class="nav-btn"><span class="icon-emoji">←</span> 返回官网</a>
+                <div class="nav-links">
+            <a href="index.html">首页</a>
+            <a href="call-center.html">智能外呼</a>
+            <a href="sms.html">短信平台</a>
+            <a href="iot.html">物联网</a>
+            <a href="pricing.html">定价</a>
+            <a href="docs/">文档</a>
+            <a href="blog/">博客</a>
+            <a href="booking.html" class="nav-btn btn-trial">免费试用</a>
         </div>
         <button class="hamburger">☰</button>
     </div>
@@ -878,6 +894,19 @@
     </div>
 </section>
 
+
+<!-- related-links -->
+<section style="background:#f8fafc;padding:3rem 0">
+    <div class="container" style="max-width:900px;margin:0 auto;padding:0 1.5rem">
+        <h2 style="text-align:center;font-size:1.4rem;margin-bottom:1.5rem">相关资源</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem">
+            <a href="docs/sms-api.html" style="background:#fff;padding:1.2rem;border-radius:12px;border:1px solid #e2e8f0;text-decoration:none;color:#1e293b"><strong>📄 短信 API 文档</strong><br><span style="font-size:0.85rem;color:#64748b">5 分钟完成接入</span></a>
+            <a href="solutions/ecommerce.html" style="background:#fff;padding:1.2rem;border-radius:12px;border:1px solid #e2e8f0;text-decoration:none;color:#1e293b"><strong>🛒 电商短信方案</strong><br><span style="font-size:0.85rem;color:#64748b">大促触达最佳实践</span></a>
+            <a href="solutions/finance.html" style="background:#fff;padding:1.2rem;border-radius:12px;border:1px solid #e2e8f0;text-decoration:none;color:#1e293b"><strong>🏦 金融短信方案</strong><br><span style="font-size:0.85rem;color:#64748b">验证码安全合规</span></a>
+            <a href="pricing.html" style="background:#fff;padding:1.2rem;border-radius:12px;border:1px solid #e2e8f0;text-decoration:none;color:#1e293b"><strong>💰 定价方案</strong><br><span style="font-size:0.85rem;color:#64748b">0.03 元/条起</span></a>
+        </div>
+    </div>
+</section>
 <!-- Footer -->
 <footer class="footer">
     <div class="container">

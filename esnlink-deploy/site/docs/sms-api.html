@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短信 API 文档 | 验证码/通知短信接口 | 翼星科技</title>
+    <meta name="description" content="翼星科技短信 API 接入文档。REST API 发送验证码、通知、营销短信，含签名鉴权、请求示例、状态回调说明。5 分钟完成集成。">
+    <meta name="keywords" content="短信API, 短信接口, 验证码短信API, 短信对接文档, 短信SDK">
+    <link rel="canonical" href="https://www.esnlink.cn/docs/sms-api.html">
+    <meta property="og:title" content="短信 API 文档 | 翼星科技">
+    <meta property="og:description" content="REST API 发送验证码、通知短信，含完整代码示例与回调说明。">
+    <meta property="og:url" content="https://www.esnlink.cn/docs/sms-api.html">
+    <meta property="og:image" content="https://www.esnlink.cn/og-image.png">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "翼星科技短信 API 接入文档",
+        "description": "短信 API REST 接口文档，支持验证码、通知、营销短信",
+        "author": { "@type": "Organization", "name": "翼星科技" },
+        "publisher": { "@type": "Organization", "name": "翼星科技", "url": "https://www.esnlink.cn" }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {"@type":"Question","name":"短信 API 如何鉴权？","acceptedAnswer":{"@type":"Answer","text":"使用 AppID + AppSecret 生成 MD5 签名，每次请求携带 sign、timestamp、app_id 参数。"}},
+            {"@type":"Question","name":"验证码短信多久能到达？","acceptedAnswer":{"@type":"Answer","text":"国内三网短信通常 5 秒内到达，到达率 99%+。"}},
+            {"@type":"Question","name":"是否支持状态回调？","acceptedAnswer":{"@type":"Answer","text":"支持。在控制台配置 callback_url，短信状态变更时 POST 推送回执。"}}
+        ]
+    }
+    </script>
+    <link rel="stylesheet" href="/css/header-footer.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: system-ui, sans-serif; color:#1e293b; line-height:1.7; background:#fff; }
+        .container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+        .doc-layout { display: grid; grid-template-columns: 200px 1fr; gap: 2rem; padding: 2rem 0 4rem; max-width: 1100px; margin: 0 auto; }
+        .sidebar { position: sticky; top: 80px; align-self: start; }
+        .sidebar a { display: block; padding: 0.4rem 0; color: #64748b; text-decoration: none; font-size: 0.9rem; }
+        .sidebar a:hover { color: #2563eb; }
+        .content h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .content .lead { color: #64748b; margin-bottom: 2rem; }
+        .content h2 { font-size: 1.4rem; margin: 2rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; }
+        .content h3 { font-size: 1.1rem; margin: 1.5rem 0 0.8rem; }
+        .content p, .content li { color: #475569; margin-bottom: 0.8rem; }
+        .content ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+        pre {
+            background: #0f172a; color: #e2e8f0; padding: 1.2rem;
+            border-radius: 10px; overflow-x: auto; font-size: 0.85rem;
+            margin: 1rem 0; line-height: 1.5;
+        }
+        code { font-family: 'SF Mono', Consolas, monospace; }
+        .inline-code { background: #f1f5f9; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.9em; color: #0f172a; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+        th, td { border: 1px solid #e2e8f0; padding: 0.6rem 0.8rem; text-align: left; }
+        th { background: #f8fafc; font-weight: 600; }
+        .badge { display: inline-block; background: #dcfce7; color: #166534; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .cta-box {
+            background: linear-gradient(135deg,#eff6ff,#e0f2fe);
+            border: 1px solid #bfdbfe; border-radius: 12px;
+            padding: 1.5rem; margin: 2rem 0; text-align: center;
+        }
+        .btn { display: inline-block; padding: 0.6rem 1.5rem; border-radius: 40px; font-weight: 600; text-decoration: none; margin: 0.3rem; }
+        .btn-primary { background: linear-gradient(135deg,#f59e0b,#ea580c); color: #fff; }
+        .btn-secondary { border: 1.5px solid #2563eb; color: #2563eb; }
+        .breadcrumbs { background: #f8fafc; padding: 0.7rem 0; font-size: 0.88rem; border-bottom: 1px solid #eef2f6; }
+        .breadcrumbs a { color: #64748b; text-decoration: none; }
+        .footer { background: #0f172a; padding: 2rem 0; color: #94a3b8; text-align: center; font-size: 0.85rem; }
+        .footer a { color: #60a5fa; text-decoration: none; }
+        @media (max-width: 768px) { .doc-layout { grid-template-columns: 1fr; } .sidebar { display: none; } }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="container nav-container">
+        <a href="/index.html" class="logo"><span>esnlink · 翼星科技</span><span class="logo-slogan">短信 API</span></a>
+        <div class="nav-links">
+            <a href="/docs/">文档中心</a>
+            <a href="/sms.html">短信平台</a>
+            <a href="/booking.html" class="nav-btn btn-trial">免费试用</a>
+        </div>
+        <button class="hamburger" aria-label="菜单">☰</button>
+    </div>
+</nav>
+<nav class="breadcrumbs"><div class="container"><a href="/index.html">首页</a> · <a href="/docs/">文档</a> · <span>短信 API</span></div></nav>
+
+<div class="doc-layout container">
+    <aside class="sidebar">
+        <strong style="font-size:0.8rem;color:#94a3b8;text-transform:uppercase">目录</strong>
+        <a href="#overview">概述</a>
+        <a href="#auth">鉴权方式</a>
+        <a href="#send">发送短信</a>
+        <a href="#callback">状态回调</a>
+        <a href="#errors">错误码</a>
+        <a href="#examples">代码示例</a>
+        <a href="#faq">常见问题</a>
+    </aside>
+    <main class="content">
+        <h1>短信 API 文档</h1>
+        <p class="lead">翼星科技短信平台 REST API，支持验证码、通知、营销短信。国内三网合一，5 秒送达，99%+ 到达率。</p>
+        <p><span class="badge">API 版本 v1</span> &nbsp; Base URL: <code class="inline-code">https://api.esnlink.cn/v1</code></p>
+
+        <h2 id="overview">概述</h2>
+        <p>所有接口采用 <strong>HTTPS POST</strong>，请求与响应均为 <strong>JSON</strong> 格式，字符编码 UTF-8。</p>
+        <table>
+            <tr><th>环境</th><th>地址</th></tr>
+            <tr><td>生产环境</td><td><code>https://api.esnlink.cn/v1</code></td></tr>
+            <tr><td>沙箱环境</td><td><code>https://sandbox.esnlink.cn/v1</code></td></tr>
+        </table>
+
+        <h2 id="auth">鉴权方式</h2>
+        <p>每次请求需携带以下公共参数：</p>
+        <table>
+            <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+            <tr><td>app_id</td><td>string</td><td>控制台获取的应用 ID</td></tr>
+            <tr><td>timestamp</td><td>int</td><td>Unix 时间戳（秒），误差不超过 300 秒</td></tr>
+            <tr><td>sign</td><td>string</td><td>签名，见下方算法</td></tr>
+        </table>
+        <h3>签名算法</h3>
+        <pre><code>sign = MD5(app_id + timestamp + app_secret)</code></pre>
+        <p>将 <code class="inline-code">app_secret</code> 妥善保管，切勿写入前端代码或公开仓库。</p>
+
+        <h2 id="send">发送短信</h2>
+        <p><strong>POST</strong> <code class="inline-code">/sms/send</code></p>
+        <h3>请求参数</h3>
+        <table>
+            <tr><th>参数</th><th>类型</th><th>必填</th><th>说明</th></tr>
+            <tr><td>mobile</td><td>string</td><td>是</td><td>手机号，多个用英文逗号分隔，最多 200 个</td></tr>
+            <tr><td>template_id</td><td>string</td><td>是</td><td>已审核通过的模板 ID</td></tr>
+            <tr><td>params</td><td>object</td><td>否</td><td>模板变量，如 {"code":"123456"}</td></tr>
+            <tr><td>sign_name</td><td>string</td><td>是</td><td>短信签名，如【翼星科技】</td></tr>
+        </table>
+        <h3>响应示例</h3>
+        <pre><code>{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "msg_id": "20260718120000123456",
+    "count": 1
+  }
+}</code></pre>
+
+        <h2 id="callback">状态回调</h2>
+        <p>在控制台配置 <code class="inline-code">callback_url</code> 后，短信状态变更时向该地址 POST 推送：</p>
+        <pre><code>{
+  "msg_id": "20260718120000123456",
+  "mobile": "13800138000",
+  "status": "DELIVERED",
+  "deliver_time": "2026-07-18 12:00:05"
+}</code></pre>
+        <p>状态值：<code class="inline-code">SENT</code> 已发送 · <code class="inline-code">DELIVERED</code> 已送达 · <code class="inline-code">FAILED</code> 失败</p>
+
+        <h2 id="errors">错误码</h2>
+        <table>
+            <tr><th>code</th><th>说明</th></tr>
+            <tr><td>0</td><td>成功</td></tr>
+            <tr><td>1001</td><td>签名错误</td></tr>
+            <tr><td>1002</td><td>时间戳过期</td></tr>
+            <tr><td>2001</td><td>手机号格式错误</td></tr>
+            <tr><td>2002</td><td>模板不存在或未审核</td></tr>
+            <tr><td>3001</td><td>余额不足</td></tr>
+            <tr><td>5000</td><td>系统繁忙，请重试</td></tr>
+        </table>
+
+        <h2 id="examples">代码示例</h2>
+        <h3>cURL</h3>
+        <pre><code>curl -X POST https://api.esnlink.cn/v1/sms/send \
+  -H "Content-Type: application/json" \
+  -d '{
+    "app_id": "your_app_id",
+    "timestamp": 1721289600,
+    "sign": "生成的MD5签名",
+    "mobile": "13800138000",
+    "template_id": "TPL_VERIFY_001",
+    "sign_name": "翼星科技",
+    "params": {"code": "123456"}
+  }'</code></pre>
+        <h3>Python</h3>
+        <pre><code>import hashlib, time, requests
+
+APP_ID = "your_app_id"
+APP_SECRET = "your_app_secret"
+ts = int(time.time())
+sign = hashlib.md5(f"{APP_ID}{ts}{APP_SECRET}".encode()).hexdigest()
+
+resp = requests.post("https://api.esnlink.cn/v1/sms/send", json={
+    "app_id": APP_ID,
+    "timestamp": ts,
+    "sign": sign,
+    "mobile": "13800138000",
+    "template_id": "TPL_VERIFY_001",
+    "sign_name": "翼星科技",
+    "params": {"code": "123456"}
+})
+print(resp.json())</code></pre>
+        <h3>PHP</h3>
+        <pre><code>$appId = "your_app_id";
+$secret = "your_app_secret";
+$ts = time();
+$sign = md5($appId . $ts . $secret);
+
+$data = [
+    "app_id" => $appId,
+    "timestamp" => $ts,
+    "sign" => $sign,
+    "mobile" => "13800138000",
+    "template_id" => "TPL_VERIFY_001",
+    "sign_name" => "翼星科技",
+    "params" => ["code" => "123456"]
+];
+$ch = curl_init("https://api.esnlink.cn/v1/sms/send");
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+echo curl_exec($ch);</code></pre>
+
+        <h2 id="faq">常见问题</h2>
+        <h3>短信 API 如何鉴权？</h3>
+        <p>使用 AppID + AppSecret 生成 MD5 签名，每次请求携带 sign、timestamp、app_id 参数。</p>
+        <h3>验证码短信多久能到达？</h3>
+        <p>国内三网短信通常 5 秒内到达，到达率 99%+。</p>
+        <h3>是否支持状态回调？</h3>
+        <p>支持。在控制台配置 callback_url，短信状态变更时 POST 推送回执。</p>
+
+        <div class="cta-box">
+            <h3 style="margin-bottom:0.5rem">准备好接入了？</h3>
+            <p style="color:#64748b;margin-bottom:1rem">免费试用 14 天，含 100 条测试短信额度</p>
+            <a href="/booking.html" class="btn btn-primary">免费试用</a>
+            <a href="/sms.html" class="btn btn-secondary">了解短信平台</a>
+        </div>
+
+        <p style="font-size:0.9rem;color:#94a3b8">相关文档：<a href="/docs/">文档中心</a> · <a href="/call-center.html">智能外呼</a> · <a href="/pricing.html">定价方案</a></p>
+    </main>
+</div>
+
+<footer class="footer">
+    <p>&copy; 2025 合肥翼星智能科技有限公司 · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">皖ICP备2026012968号-1</a></p>
+</footer>
+<script>
+(function(){var h=document.querySelector('.hamburger'),n=document.querySelector('.nav-links');
+if(h&&n){h.addEventListener('click',function(){n.classList.toggle('open')});}})();
+</script>
+</body>
+</html>

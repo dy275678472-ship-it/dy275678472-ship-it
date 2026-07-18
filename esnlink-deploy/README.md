@@ -4,16 +4,16 @@
 
 ## 已部署改动（2026-07-18）
 
-### P0 立即处理
-- [x] 首页首屏改版：新价值主张 + 产品控制台视觉 + 双 CTA（免费试用 / 查看定价）
-- [x] 导航栏重构：链接至真实产品页（call-center / sms / iot / pricing / blog）
-- [x] 新增 `call-center.html` 智能外呼独立 SEO 页面
-- [x] 补充全站 `og-image.png`（1200×630 社交分享图）
-- [x] 页脚死链修复（`#` → 真实 URL）
-- [x] 新增智能呼叫中心产品卡片（首页四大产品矩阵）
-- [x] `ai-employees.html` 品牌修正 + noindex
-- [x] 博客 21 篇文章文末 CTA 转化卡片
-- [x] sitemap 新增 call-center.html
+### P0（已完成）
+- 首页首屏改版、导航/页脚修复、call-center.html、og-image、博客 CTA
+
+### P1（已完成）
+- [x] `booking.html` canonical/og 修正为 esnlink.cn
+- [x] 新建 `/docs/` 文档中心 + `/docs/sms-api.html` 短信 API 文档
+- [x] 新建行业方案页：教育 / 电商 / 金融
+- [x] 产品页（sms/iot/edu）补充 og:image + Product/FAQ Schema + 统一导航
+- [x] 产品页增加「相关资源」内链区块
+- [x] sitemap 新增 6 个 URL
 
 ### 文件结构
 
@@ -39,13 +39,13 @@ bash esnlink-deploy/deploy.sh
 
 服务器：`150.158.42.39` → `/var/www/yixing/`
 
-## 下一步（P1，30 天内）
+## 下一步（P2，90 天内）
 
-1. 各产品页补充 `og:image` 和 Product Schema
-2. 建立 `/docs/sms-api.html` API 文档页
-3. 客户 Logo 墙（需客户提供授权 Logo）
-4. 百度/360 站长平台提交更新后的 sitemap
-5. `booking.html` canonical 从 yixing.tech 改为 esnlink.cn
+1. 客户 Logo 墙（需客户提供授权 Logo）
+2. 百度/360 站长平台提交 sitemap
+3. `/seo/` 2800 页质量审核
+4. CDN 接入 + 图片 WebP 优化
+5. 英文版 `/en/` 页面
 
 ## 增长诊断报告
 
