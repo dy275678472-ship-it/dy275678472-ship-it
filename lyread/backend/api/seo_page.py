@@ -35,6 +35,9 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
     <meta name="keywords" content="{keywords}">
     <meta property="og:title" content="{title}">
     <meta property="og:description" content="{description}">
+    <meta property="og:image" content="{site_base}/images/og-share.svg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:type" content="article">
     <meta property="og:url" content="{site_base}{url}">
     <meta name="robots" content="index,follow">

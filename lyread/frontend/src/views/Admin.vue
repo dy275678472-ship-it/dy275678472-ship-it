@@ -1,13 +1,16 @@
 <template>
   <div class="admin-page">
+    <img :src="banner" alt="" class="admin-banner" aria-hidden="true" />
     <header class="admin-header">
       <h1>运营后台</h1>
       <button class="btn-refresh" @click="loadAll">刷新</button>
     </header>
 
     <div v-if="denied" class="denied">
-      <h2>403</h2>
+      <img :src="deniedImg" alt="无权限访问" class="denied-img" width="200" />
+      <h2>403 无权限</h2>
       <p>需要管理员权限。请在服务器设置 <code>ADMIN_USERNAMES</code> 或将用户 <code>role</code> 设为 <code>admin</code>。</p>
+      <router-link to="/" class="btn-home">返回首页</router-link>
     </div>
 
     <template v-else>
@@ -90,6 +93,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { adminApi } from '../api'
+import { IMAGES } from '../assets/images'
+
+const banner = IMAGES.adminBanner
+const deniedImg = IMAGES.adminDenied
 
 const denied = ref(false)
 const tab = ref('reviews')
@@ -150,11 +157,18 @@ onMounted(loadAll)
 </script>
 
 <style scoped>
-.admin-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px; }
-.admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.admin-page { max-width: 1100px; margin: 0 auto; padding: 0 20px 80px; }
+.admin-banner { width: 100%; height: auto; border-radius: 16px; margin: 24px 0 0; display: block; object-fit: cover; max-height: 140px; }
+.admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; margin-top: 16px; }
 .admin-header h1 { font-size: 24px; }
 .btn-refresh { padding: 8px 16px; border-radius: 8px; border: 1px solid #dbeafe; background: #fff; cursor: pointer; }
-.denied { text-align: center; padding: 60px; color: #64748b; }
+.denied { text-align: center; padding: 40px 20px 60px; color: #64748b; }
+.denied-img { display: block; margin: 0 auto 20px; }
+.denied h2 { color: #1e2a3a; margin-bottom: 12px; }
+.btn-home {
+  display: inline-block; margin-top: 20px; padding: 10px 20px; border-radius: 10px;
+  background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff; text-decoration: none; font-weight: 600;
+}
 .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
 .stat-card { background: #fff; border-radius: 12px; padding: 16px; border: 1px solid #e8f0fa; text-align: center; }
 .stat-num { display: block; font-size: 28px; font-weight: 800; color: #2563eb; }

@@ -6,8 +6,8 @@
           <img :src="logo" alt="LyRead" class="logo-img" width="32" height="32" />
           <span class="title">LyRead<span class="title-ai">AI</span></span>
         </router-link>
-        <button class="mobile-menu-btn" @click="menuOpen = !menuOpen">
-          {{ menuOpen ? '✕' : '☰' }}
+        <button class="mobile-menu-btn" @click="menuOpen = !menuOpen" :aria-label="menuOpen ? '关闭菜单' : '打开菜单'">
+          <img :src="menuOpen ? uiIcons.close : uiIcons.menu" alt="" width="24" height="24" />
         </button>
       </div>
       <div class="nav-links" :class="{ open: menuOpen }">
@@ -44,7 +44,7 @@ import { IMAGES } from './assets/images'
 export default {
   name: 'App',
   data() {
-    return { menuOpen: false, credits: null, isAdmin: false, logo: IMAGES.logo, pointIcon: IMAGES.point }
+    return { menuOpen: false, credits: null, isAdmin: false, logo: IMAGES.logo, pointIcon: IMAGES.point, uiIcons: IMAGES.ui }
   },
   computed: {
     isLoggedIn() {
@@ -194,7 +194,7 @@ body {
   .nav-brand { flex: 1; }
   .mobile-menu-btn {
     display: block; background: none; border: none;
-    font-size: 22px; cursor: pointer; padding: 8px; color: #2563eb;
+    cursor: pointer; padding: 8px; line-height: 0;
   }
   .nav-links {
     display: none; position: absolute; top: 56px; left: 0; right: 0;

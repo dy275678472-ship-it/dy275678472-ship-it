@@ -17,8 +17,11 @@
       </EmptyState>
       <ul v-else class="story-list">
         <li v-for="s in stories" :key="s.id" @click="openStory(s.id)" class="story-item">
-          <span class="s-title">{{ s.title || '未命名' }}</span>
-          <span class="s-meta">{{ s.word_count || 0 }} 字 · {{ s.status }}</span>
+          <img :src="images.defaultStoryCover" alt="" class="story-thumb" width="36" height="48" aria-hidden="true" />
+          <div class="story-item-body">
+            <span class="s-title">{{ s.title || '未命名' }}</span>
+            <span class="s-meta">{{ s.word_count || 0 }} 字 · {{ s.status }}</span>
+          </div>
         </li>
       </ul>
     </aside>
@@ -336,7 +339,12 @@ onMounted(async () => {
 .btn-new { padding: 8px 14px; border: none; border-radius: 8px; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer; font-size: 13px; }
 .btn-new.large { padding: 12px 24px; font-size: 15px; }
 .story-list { list-style: none; }
-.story-item { padding: 12px; border-radius: 10px; cursor: pointer; margin-bottom: 6px; border: 1px solid transparent; }
+.story-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px; border-radius: 10px; cursor: pointer; margin-bottom: 6px; border: 1px solid transparent;
+}
+.story-thumb { flex-shrink: 0; border-radius: 6px; object-fit: cover; background: #eef5ff; }
+.story-item-body { min-width: 0; flex: 1; }
 .story-item:hover { background: #f0f7ff; border-color: #dbeafe; }
 .s-title { display: block; font-weight: 600; font-size: 14px; color: #1e2a3a; }
 .s-meta { font-size: 12px; color: #94a3b8; }

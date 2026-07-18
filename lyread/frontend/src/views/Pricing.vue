@@ -1,5 +1,6 @@
 <template>
   <div class="pricing-page">
+    <img :src="images.pricingHero" alt="" class="pricing-hero-banner" aria-hidden="true" />
     <header class="page-hero">
       <img :src="images.pricing.gem" alt="点数计费图标" class="page-hero-icon" width="44" height="44" />
       <h1>点数计费，用多少付多少</h1>
@@ -169,6 +170,7 @@ async function buy(pkg) {
 
 <style scoped>
 .pricing-page { max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
+.pricing-hero-banner { width: 100%; height: auto; border-radius: 16px; margin-bottom: 28px; display: block; object-fit: cover; max-height: 180px; }
 .page-hero { text-align: center; margin-bottom: 40px; }
 .page-hero-icon { display: block; margin: 0 auto 12px; }
 .page-hero h1 { font-size: 32px; color: #1e2a3a; margin-bottom: 12px; }

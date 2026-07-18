@@ -1,6 +1,11 @@
 <template>
   <div class="login-page">
-    <div class="login-card">
+    <div class="login-layout">
+      <div class="login-visual" aria-hidden="true">
+        <img :src="illustration" alt="" class="login-illustration" />
+        <p class="visual-caption">AI 陪你写完一部长篇小说</p>
+      </div>
+      <div class="login-card">
       <div class="brand">
         <img :src="logo" alt="LyRead" class="logo-img" width="48" height="48" />
         <span class="logo-text">LyRead</span>
@@ -103,6 +108,7 @@
         </div>
       </div>
       -->
+      </div>
     </div>
   </div>
 </template>
@@ -117,6 +123,7 @@ import { trackEvent } from '../utils/analytics'
 const router = useRouter()
 const route = useRoute()
 const logo = IMAGES.logo
+const illustration = IMAGES.loginIllustration
 const loading = ref(false)
 const error = ref('')
 const success = ref('')
@@ -260,22 +267,58 @@ const handleRegister = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #eef5ff 0%, #f6f9ff 100%); /* 微奢冰灰蓝渐变背景 */
+  padding: 24px;
+  background: linear-gradient(135deg, #eef5ff 0%, #f6f9ff 100%);
   font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, 'Microsoft YaHei', Arial, sans-serif;
 }
 
-.login-card {
-  width: 400px; /* 稍微增大卡片宽度 */
-  padding: 45px; /* 增加内边距 */
-  background: rgba(255, 255, 255, 0.9); /* 毛玻璃效果的背景 */
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px; /* 更圆润的圆角 */
-  text-align: center;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15); /* 更强的阴影 */
-  backdrop-filter: blur(15px); /* 毛玻璃滤镜 */
-  -webkit-backdrop-filter: blur(15px);
-  position: relative;
+.login-layout {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  max-width: 920px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 24px;
   overflow: hidden;
+  box-shadow: 0 16px 48px rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.login-visual {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+  background: linear-gradient(160deg, #eef5ff 0%, #dbeafe 100%);
+  border-right: 1px solid rgba(218, 230, 245, 0.8);
+}
+
+.login-illustration {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 16px;
+}
+
+.visual-caption {
+  font-size: 15px;
+  color: #5a6a7a;
+  font-weight: 500;
+}
+
+.login-card {
+  width: 400px;
+  flex-shrink: 0;
+  padding: 45px;
+  background: rgba(255, 255, 255, 0.95);
+  text-align: center;
+  position: relative;
 }
 
 .brand {
@@ -450,12 +493,16 @@ const handleRegister = async () => {
 }
 
 /* 移动端适配 */
+@media (max-width: 860px) {
+  .login-layout { flex-direction: column; max-width: 400px; }
+  .login-visual { display: none; }
+  .login-card { width: 100%; padding: 30px 25px; border-radius: 0; }
+}
+
 @media (max-width: 480px) {
-  .login-card {
-    width: 95%;
-    padding: 30px 25px;
-    border-radius: 16px;
-  }
+  .login-page { padding: 16px; }
+  .login-layout { border-radius: 16px; }
+  .login-card { padding: 30px 25px; }
   .logo-text {
     font-size: 26px;
   }
