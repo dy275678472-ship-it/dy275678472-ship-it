@@ -42,6 +42,9 @@ done
 echo "=== archive test cases ==="
 bash "$REPO_DIR/lyread/scripts/cleanup_test_cases.sh" || true
 
+echo "=== seed showcase cases ==="
+bash "$REPO_DIR/lyread/scripts/seed_showcase_cases.sh" || true
+
 echo "=== frontend build ==="
 cd lyread/frontend
 npm install --silent
