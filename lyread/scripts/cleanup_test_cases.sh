@@ -7,12 +7,12 @@ DB="${MYSQL_DATABASE:-lyread}"
 
 ROOT_PW=$(docker exec "$CONTAINER" printenv MYSQL_ROOT_PASSWORD)
 
-SQL="UPDATE contents SET status='archived' WHERE status='active' AND (
+docker exec -i "$CONTAINER" mysql --default-character-set=utf8mb4 -uroot -p"$ROOT_PW" "$DB" <<'EOSQL'
+UPDATE contents SET status='archived' WHERE status='active' AND (
   title LIKE '%测试%' OR LOWER(title) LIKE '%test%' OR LOWER(title) LIKE '%demo%'
   OR title LIKE '%未命名%' OR CHAR_LENGTH(TRIM(title)) < 4
-);"
+);
+SELECT ROW_COUNT() AS archived_rows;
+EOSQL
 
-COUNT_SQL="SELECT COUNT(*) FROM contents WHERE status='archived' AND updated_at >= NOW() - INTERVAL 1 MINUTE;"
-
-docker exec "$CONTAINER" mysql -uroot -p"$ROOT_PW" "$DB" -e "$SQL"
-echo "[cleanup] archived test/placeholder cases (see contents.status=archived)"
+echo "[cleanup] archived test/placeholder cases (status=archived)"
