@@ -1,43 +1,44 @@
-# TianShu MythOS Growth Fixes
+# TianShu MythOS — Growth & Deployment
 
-Deployed to production server `43.172.29.127`.
+**Strategy:** English-only · Conversion-first (registration → retention → revenue)
 
-## P0 (Live)
+See **[ROADMAP.md](./ROADMAP.md)** for the current plan.
 
-- Remove Amazon affiliate injection
-- Per-page OG Meta (`buildPageMetadata`)
-- Organization `sameAs` social profiles
-- `/pricing` and `/faq` pages
-- Homepage registry counter + vote CTA
+## Live (Production)
+
+### Conversion & trust
+- `/pricing`, `/faq`, `/compare/mythos-vs-*`
+- Homepage Citizens counter + post-signup vote CTA
+- Amazon affiliate removed
+
+### SEO (supporting conversion, not primary goal)
+- Per-page OG meta + Schema
 - IndexNow submission
+- 50 thinnest character pages expanded (one-time quality floor)
+- 12 throne lore pages expanded
 
-## P1 (Live)
+## Removed from roadmap
 
-| Fix | Status |
-|-----|--------|
-| hreflang en/zh on homepage and `/zh` | ✅ |
-| 3 competitor comparison pages | ✅ `/compare/mythos-vs-*` |
-| 12 throne pages expanded (~5000 words each) | ✅ `throne-lore.ts` |
-| Top 50 thinnest character bios expanded (1200–1700 words) | ✅ DB updated |
-| Character Person JSON-LD enriched | ✅ |
-| Event pages use `buildPageMetadata` + Event schema | ✅ |
-| IndexNow resubmit | ✅ 573 URLs |
+- Chinese `/zh` and hreflang (301 → `/`)
+- Bulk expansion of remaining ~198 character pages
+- Chinese guide clusters
 
-## Tools
+## Deploy
 
 ```bash
-# Code patches
-python3 tianshu_p1_deploy.py
+# English-only pivot (removes zh, hreflang, deprecates bulk char expand)
+python3 tianshu_en_only.py
 
-# Content expansion (requires DEEPSEEK_API_KEY on server)
-python3 tools/tianshu_expand_thrones.py
-python3 tools/tianshu_expand_chars.py 50
-
-# Rebuild
 cd /data/www/mythos && npm run build && pm2 restart mythos
 python3 tools/tianshu_indexnow.py
 ```
 
-## Not Included
+## Tools
 
-- **Cloudflare CDN** — requires DNS migration to Cloudflare account
+| Script | Status |
+|--------|--------|
+| `tianshu_p0_deploy.py` | Active |
+| `tianshu_p1_deploy.py` | Active |
+| `tianshu_en_only.py` | Active — English-only pivot |
+| `tianshu_expand_thrones.py` | On-demand only (campaign content) |
+| `tianshu_expand_chars.py` | **Deprecated** — do not run |
