@@ -1,0 +1,84 @@
+Fetching MIIT notice index...
+MIIT relevant notices: 342
+  MIIT processed 25/342, records so far: 290
+  MIIT processed 50/342, records so far: 573
+  MIIT processed 75/342, records so far: 958
+  MIIT processed 100/342, records so far: 1243
+  MIIT processed 125/342, records so far: 1484
+  MIIT processed 150/342, records so far: 2027
+  MIIT processed 175/342, records so far: 2417
+  MIIT processed 200/342, records so far: 2635
+  MIIT processed 225/342, records so far: 2864
+  MIIT processed 250/342, records so far: 2984
+  MIIT processed 275/342, records so far: 3195
+  MIIT processed 300/342, records so far: 3350
+  MIIT processed 325/342, records so far: 3430
+MIIT records with 国内呼叫中心业务: 3468
+Discovering Anhui CA URLs...
+Anhui seed URLs: 12
+{
+  "total_records": 3392,
+  "by_source": {
+    "工信部": 3392
+  },
+  "by_year": {
+    "0000": 2,
+    "2020": 20,
+    "2021": 254,
+    "2022": 280,
+    "2023": 430,
+    "2024": 1039,
+    "2025": 906,
+    "2026": 461
+  },
+  "by_page_type": {
+    "新发证名单": 1236,
+    "注销公示": 2003,
+    "注销批准": 153
+  },
+  "by_province": {
+    "北京": 599,
+    "广东": 514,
+    "未知": 422,
+    "上海": 240,
+    "江苏": 221,
+    "浙江": 190,
+    "福建": 164,
+    "安徽": 135,
+    "四川": 118,
+    "山东": 115,
+    "河南": 91,
+    "湖北": 82,
+    "陕西": 82,
+    "重庆": 67,
+    "辽宁": 62,
+    "河北": 60,
+    "湖南": 44,
+    "天津": 38,
+    "贵州": 33,
+    "广西": 19,
+    "山西": 15,
+    "江西": 13,
+    "云南": 12,
+    "新疆": 11,
+    "黑龙江": 10,
+    "吉林": 10,
+    "海南": 6,
+    "内蒙古": 5,
+    "甘肃": 5,
+    "宁夏": 5,
+    "青海": 3,
+    "西藏": 1
+  },
+  "by_prefix": {
+    "B2-(全网)": 1850,
+    "混合-(全网)": 147,
+    "其他": 1241,
+    "未知": 153,
+    "B1-(全网)": 1
+  },
+  "miit_notices_scraped": 342,
+  "ahca_urls_scraped": 12,
+  "data_coverage_note": "工信部在线公示系统(tsm.miit.gov.cn)仅保留约2020年至今名单；2010-2019年跨地区名单未在该系统公开归档"
+}
+CSV written to /workspace/data/callcenter_extract/callcenter_2010_2026_miit_anhui.csv
