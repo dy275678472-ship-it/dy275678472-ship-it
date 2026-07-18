@@ -21,6 +21,12 @@ export const authApi = {
       body: JSON.stringify({ username, password, email: email || undefined }),
     })
   },
+  forgot(username, email) {
+    return request('/api/auth/forgot', { method: 'POST', body: JSON.stringify({ username, email }) })
+  },
+  reset(token, password) {
+    return request('/api/auth/reset', { method: 'POST', body: JSON.stringify({ token, password }) })
+  },
 }
 
 export const creditsApi = {
@@ -34,6 +40,7 @@ export const creditsApi = {
 export const storyApi = {
   list(status) { return request(`/api/story/list${status ? `?status=${status}` : ''}`) },
   get(id) { return request(`/api/story/${id}`) },
+  chapters(id) { return request(`/api/story/${id}/chapters`) },
   save(data) { return request('/api/story/save', { method: 'POST', body: JSON.stringify(data) }) },
   remove(id) { return request(`/api/story/${id}`, { method: 'DELETE' }) },
   generateTitle(body) { return request('/api/story/generate-title', { method: 'POST', body: JSON.stringify(body) }) },

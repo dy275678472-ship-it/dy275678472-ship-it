@@ -208,3 +208,81 @@ async def me(user: dict = Depends(get_current_user)):
             if conn.is_connected():
                 conn.close()
     return {"id": user["sub"], "username": user.get("username"), "role": role}
+
+
+class ForgotPasswordRequest(BaseModel):
+    username: str = Field(min_length=3, max_length=64)
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(min_length=32, max_length=64)
+    password: str = Field(min_length=8, max_length=128)
+
+
+@router.post("/forgot")
+async def forgot_password(req: ForgotPasswordRequest):
+    """申请重置密码（验证用户名+邮箱匹配）。"""
+    conn = get_db()
+    if not conn:
+        raise HTTPException(status_code=503, detail="服务暂时不可用")
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT id, email FROM users WHERE username=%s LIMIT 1", (req.username,)
+        )
+        user = cursor.fetchone()
+        if not user or not user.get("email") or str(user["email"]).lower() != str(req.email).lower():
+            return {"success": True, "message": "若账号与邮箱匹配，将生成重置令牌"}
+        token = secrets.token_urlsafe(32)
+        from datetime import datetime, timedelta
+        expires = datetime.utcnow() + timedelta(hours=1)
+        cursor.execute(
+            "INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (%s,%s,%s)",
+            (user["id"], token, expires),
+        )
+        conn.commit()
+        reset_path = f"/login?reset={token}"
+        return {
+            "success": True,
+            "message": "重置令牌已生成（邮件服务未配置时请保存下方链接）",
+            "reset_path": reset_path,
+            "token": token if os.getenv("APP_ENV", "production") != "production" or os.getenv("EXPOSE_RESET_TOKEN", "0") == "1" else None,
+        }
+    finally:
+        if conn.is_connected():
+            conn.close()
+
+
+@router.post("/reset")
+async def reset_password(req: ResetPasswordRequest):
+    """使用令牌重置密码。"""
+    conn = get_db()
+    if not conn:
+        raise HTTPException(status_code=503, detail="服务暂时不可用")
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT user_id, expires_at, used_at FROM password_reset_tokens WHERE token=%s LIMIT 1",
+            (req.token,),
+        )
+        row = cursor.fetchone()
+        if not row or row.get("used_at"):
+            raise HTTPException(status_code=400, detail="无效或已使用的重置链接")
+        from datetime import datetime
+        if row["expires_at"] < datetime.utcnow():
+            raise HTTPException(status_code=400, detail="重置链接已过期")
+        cursor.execute(
+            "UPDATE users SET password_hash=%s WHERE id=%s",
+            (hash_password(req.password), row["user_id"]),
+        )
+        cursor.execute("UPDATE password_reset_tokens SET used_at=NOW() WHERE token=%s", (req.token,))
+        conn.commit()
+        return {"success": True, "message": "密码已重置，请登录"}
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=500, detail="重置失败")
+    finally:
+        if conn.is_connected():
+            conn.close()

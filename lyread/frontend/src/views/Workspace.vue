@@ -23,6 +23,7 @@
           <button class="btn-sm" :disabled="busy" @click="save">保存</button>
           <button class="btn-sm" @click="exportStory('txt')">导出 TXT</button>
           <button class="btn-sm" @click="exportStory('md')">导出 MD</button>
+          <button class="btn-sm" @click="submitReview">提交审核</button>
         </div>
       </div>
 
@@ -55,7 +56,34 @@
           <textarea v-model="chapterContent" class="textarea content-area" placeholder="在此编辑或 AI 续写正文..."></textarea>
         </section>
 
-        <section class="panel" v-if="memory.summaries && memory.summaries.length">
+        <section class="panel" v-if="chapterList.length">
+          <h3>章节列表</h3>
+          <ul class="chapter-list">
+            <li v-for="ch in chapterList" :key="ch.idx || ch.chapter" @click="loadChapter(ch)">
+              {{ ch.title || `第${ch.idx || ch.chapter}章` }} <span class="wc">{{ ch.word_count || (ch.content||'').length }}字</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="panel" v-if="memory.characters?.length || memory.foreshadowings?.length">
+          <h3>🧠 小说大脑</h3>
+          <div v-if="memory.characters?.length" class="brain-block">
+            <h4>人物</h4>
+            <p v-for="c in memory.characters" :key="c.id"><strong>{{ c.name }}</strong> {{ c.profile }}</p>
+          </div>
+          <div v-if="memory.foreshadowings?.length" class="brain-block">
+            <h4>伏笔</h4>
+            <p v-for="f in memory.foreshadowings" :key="f.id" :class="{ done: f.status==='recovered' }">
+              第{{ f.planted_chapter }}章：{{ f.content }} <em>({{ f.status }})</em>
+            </p>
+          </div>
+          <div v-if="memory.summaries?.length" class="brain-block">
+            <h4>章节摘要</h4>
+            <p v-for="m in memory.summaries" :key="m.chapter_idx">第{{ m.chapter_idx }}章：{{ m.summary }}</p>
+          </div>
+        </section>
+
+        <section class="panel" v-else-if="memory.summaries && memory.summaries.length">
           <h3>🧠 小说大脑 · 章节摘要</h3>
           <ul class="memory-list">
             <li v-for="m in memory.summaries" :key="m.chapter_idx">
@@ -88,7 +116,8 @@ const msg = ref('')
 const msgErr = ref(false)
 const outlinePreview = ref('')
 const chapterContent = ref('')
-const memory = reactive({ summaries: [] })
+const memory = reactive({ summaries: [], characters: [], foreshadowings: [], settings: [] })
+const chapterList = ref([])
 
 const form = reactive({
   id: null, title: '', genre: '', intro: '',
@@ -120,13 +149,30 @@ async function openStory(id) {
   } catch { chapterContent.value = '' }
   outlinePreview.value = form.outline
   editing.value = true
-  loadMemory()
+  await loadMemory()
+  await loadChapterList()
+}
+
+async function loadChapterList() {
+  if (!form.id) { chapterList.value = []; return }
+  const res = await storyApi.chapters(form.id)
+  if (res?.success) chapterList.value = res.chapters || []
+}
+
+function loadChapter(ch) {
+  chapterContent.value = ch.content || ''
+  form.chapter_title = ch.title
 }
 
 async function loadMemory() {
   if (!form.id) return
   const res = await storyApi.memory(form.id)
-  if (res?.success) memory.summaries = res.summaries || []
+  if (res?.success) {
+    memory.summaries = res.summaries || []
+    memory.characters = res.characters || []
+    memory.foreshadowings = res.foreshadowings || []
+    memory.settings = res.settings || []
+  }
 }
 
 function newStory() {
@@ -218,8 +264,22 @@ async function doContinue() {
       chapterContent.value += (chapterContent.value ? '\n\n' : '') + res.content
       setMsg(`续写成功 +${res.length} 字`)
       await loadMemory()
+      await loadChapterList()
       window.dispatchEvent(new Event('credits-changed'))
     } else setMsg(res?.error || res?.detail || '续写失败', true)
+  } finally { busy.value = false }
+}
+
+async function submitReview() {
+  if (!form.id) { await save(); if (!form.id) return }
+  busy.value = true
+  try {
+    const token = localStorage.getItem('token')
+    const res = await fetch(`/api/story/${form.id}/submit-review`, {
+      method: 'POST', headers: { Authorization: `Bearer ${token}` },
+    })
+    const d = await res.json()
+    setMsg(d?.message || d?.detail || '已提交', !d?.success)
   } finally { busy.value = false }
 }
 
@@ -276,6 +336,13 @@ onMounted(async () => {
 .code { background: #f8fafc; padding: 12px; border-radius: 8px; font-size: 12px; overflow: auto; max-height: 200px; white-space: pre-wrap; }
 .memory-list { list-style: none; font-size: 13px; color: #5a6a7a; }
 .memory-list li { padding: 8px 0; border-bottom: 1px solid #f0f4f8; }
+.chapter-list { list-style: none; max-height: 200px; overflow-y: auto; }
+.chapter-list li { padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; display: flex; justify-content: space-between; }
+.chapter-list li:hover { background: #f0f7ff; }
+.wc { color: #94a3b8; font-size: 11px; }
+.brain-block { margin-bottom: 12px; font-size: 13px; color: #5a6a7a; }
+.brain-block h4 { font-size: 12px; color: #2563eb; margin-bottom: 6px; }
+.brain-block p.done { opacity: 0.5; text-decoration: line-through; }
 @media (max-width: 768px) {
   .workspace { flex-direction: column; }
   .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #e8f0fa; }

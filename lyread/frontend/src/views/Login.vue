@@ -41,6 +41,21 @@
         </button>
       </form>
 
+      <!-- 找回密码 -->
+      <form v-else-if="showForgot" @submit.prevent="handleForgot">
+        <input v-model="form.username" type="text" class="input" placeholder="用户名" required />
+        <input v-model="form.email" type="email" class="input" placeholder="注册邮箱" required />
+        <button type="submit" class="btn btn-primary" :disabled="loading">{{ loading ? '提交中...' : '获取重置链接' }}</button>
+      </form>
+
+      <!-- 重置密码 -->
+      <form v-else-if="showReset" @submit.prevent="handleReset">
+        <input v-model="resetToken" type="text" class="input" placeholder="重置令牌" required />
+        <input v-model="form.password" type="password" class="input" placeholder="新密码（≥8位）" required />
+        <input v-model="form.confirmPassword" type="password" class="input" placeholder="确认新密码" required />
+        <button type="submit" class="btn btn-primary" :disabled="loading">{{ loading ? '重置中...' : '重置密码' }}</button>
+      </form>
+
       <!-- 登录表单 -->
       <form v-else @submit.prevent="handleLogin">
         <input 
@@ -65,12 +80,17 @@
       <p v-if="error" class="error" :class="{ show: error }">{{ error }}</p>
       <p v-if="success" class="success" :class="{ show: success }">{{ success }}</p>
       
-      <div class="footer">
+      <div class="footer" v-if="!showForgot && !showReset">
         <a href="#" @click.prevent="toggleMode">
           {{ showRegister ? '已有账号？登录' : '没有账号？注册' }}
         </a>
         <span class="divider">|</span>
+        <a href="#" @click.prevent="showForgot = true">忘记密码</a>
+        <span class="divider">|</span>
         <a href="#" @click.prevent="$router.push('/')">先看看</a>
+      </div>
+      <div class="footer" v-else>
+        <a href="#" @click.prevent="showForgot = false; showReset = false">返回登录</a>
       </div>
 
       <!--
@@ -88,15 +108,19 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { authApi } from '../api'
 
 const router = useRouter()
+const route = useRoute()
 const loading = ref(false)
 const error = ref('')
 const success = ref('')
 const showRegister = ref(false)
+const showForgot = ref(false)
+const showReset = ref(false)
+const resetToken = ref('')
 
 const form = reactive({
   username: '',
@@ -107,9 +131,49 @@ const form = reactive({
 
 const toggleMode = () => {
   showRegister.value = !showRegister.value
+  showForgot.value = false
+  showReset.value = false
   error.value = ''
   success.value = ''
 }
+
+const handleForgot = async () => {
+  loading.value = true
+  error.value = ''
+  try {
+    const res = await authApi.forgot(form.username, form.email)
+    if (res?.token) {
+      resetToken.value = res.token
+      showForgot.value = false
+      showReset.value = true
+      success.value = res.message || '请设置新密码'
+    } else {
+      success.value = res?.message || '若账号匹配将收到重置指引'
+    }
+  } catch (e) {
+    error.value = '请求失败'
+  } finally { loading.value = false }
+}
+
+const handleReset = async () => {
+  if (form.password !== form.confirmPassword) { error.value = '两次密码不一致'; return }
+  if (form.password.length < 8) { error.value = '密码至少8位'; return }
+  loading.value = true
+  try {
+    const res = await authApi.reset(resetToken.value, form.password)
+    if (res?.success) {
+      success.value = '密码已重置，请登录'
+      showReset.value = false
+    } else error.value = res?.detail || '重置失败'
+  } finally { loading.value = false }
+}
+
+onMounted(() => {
+  if (route.query.reset) {
+    resetToken.value = route.query.reset
+    showReset.value = true
+  }
+})
 
 const handleLogin = async () => {
   loading.value = true

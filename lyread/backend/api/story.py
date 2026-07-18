@@ -335,9 +335,13 @@ async def generate_chapters(req: GenerateChaptersRequest, user: dict = Depends(g
 
 @router.post("/ai-continue")
 async def ai_continue(req: AIContinueRequest, user: dict = Depends(get_current_user)):
-    """步骤6：AI续写（带小说大脑上下文 + 隐形水印）。扣 10 点，失败返还。"""
+    """步骤6：AI续写（小说大脑完整上下文 + 自动更新记忆）。扣 10 点。"""
     from api.credits import reserve, settle, refund, estimate_points
-    from services.story_memory import build_memory_context, parse_chapters, extract_summary_prompt
+    from services.chapter_store import merge_chapters_for_story, chapters_to_json
+    from services.story_memory import (
+        build_memory_context, load_brain, extract_brain_update_prompt,
+        apply_brain_update, parse_brain_json,
+    )
     from services.copyright import inject_watermark
 
     uid = str(user["sub"])
@@ -346,7 +350,7 @@ async def ai_continue(req: AIContinueRequest, user: dict = Depends(get_current_u
 
     job = reserve(uid, estimate_points("continue"), "continue", story_id=req.story_id)
     memory_ctx = req.context or req.content
-    story_row = None
+    chapter_idx = 1
 
     if req.story_id:
         db = _db()
@@ -357,75 +361,64 @@ async def ai_continue(req: AIContinueRequest, user: dict = Depends(get_current_u
             if story_row and str(story_row.get("user_id")) != uid:
                 refund(uid, job["job_id"])
                 raise HTTPException(status_code=403, detail="无权续写该作品")
-            summaries = []
-            try:
-                cursor.execute(
-                    "SELECT chapter_idx, summary FROM chapter_summaries WHERE story_id=%s ORDER BY chapter_idx",
-                    (req.story_id,),
-                )
-                summaries = cursor.fetchall()
-            except Exception:
-                summaries = []
             if story_row:
-                chapters = parse_chapters(story_row.get("chapters"))
+                chapters = merge_chapters_for_story(cursor, req.story_id, story_row.get("chapters"))
+                brain = load_brain(cursor, req.story_id)
                 memory_ctx = build_memory_context(
-                    story_row.get("title") or "",
-                    story_row.get("intro") or "",
-                    story_row.get("outline") or "",
-                    story_row.get("characters") or "",
-                    chapters,
-                    summaries,
+                    story_row.get("title") or "", story_row.get("intro") or "",
+                    story_row.get("outline") or "", story_row.get("characters") or "",
+                    chapters, brain,
                 )
                 if req.content:
-                    memory_ctx += f"\n\n当前编辑内容：\n{req.content[-4000:]}"
+                    memory_ctx += f"\n\n当前编辑：\n{req.content[-4000:]}"
+                cursor.execute("SELECT COALESCE(MAX(idx),0)+1 FROM chapters WHERE story_id=%s", (req.story_id,))
+                r = cursor.fetchone()
+                chapter_idx = int(list(r.values())[0] if isinstance(r, dict) else r[0])
         finally:
             if db.is_connected():
                 db.close()
 
-    prompt = f"""你是一个网文作家，擅长写爽点密集的网文。
+    prompt = f"""你是网文作家，擅长爽文。
 
 【全书记忆】
 {memory_ctx}
 
-风格要求：{req.style}
-
-请续写后续正文（约 800–1200 字），要求：
-1. 人物姓名、关系、设定与上文一致
-2. 情节要有爽点（打脸、装逼、逆袭等）
-3. 直接输出正文，不要标题和说明"""
+风格：{req.style}
+续写 800–1200 字正文，人物设定一致，情节有爽点。直接输出正文。"""
 
     try:
         new_content = chat_with_llm(prompt, max_tokens=2000)
         watermarked = inject_watermark(new_content, user_id=uid)
 
-        # 更新章节摘要（小说大脑）
         if req.story_id and new_content:
             try:
                 db2 = _db()
-                cursor2 = db2.cursor()
-                cursor2.execute(
-                    "SELECT COALESCE(MAX(chapter_idx),0)+1 FROM chapter_summaries WHERE story_id=%s",
-                    (req.story_id,),
+                cur = db2.cursor(dictionary=True)
+                brain = load_brain(cur, req.story_id)
+                names = [c["name"] for c in brain.get("characters", [])]
+                upd_prompt = extract_brain_update_prompt(chapter_idx, new_content, names)
+                brain_raw = chat_with_llm(upd_prompt, max_tokens=800)
+                brain_data = parse_brain_json(brain_raw)
+                apply_brain_update(cur, req.story_id, chapter_idx, brain_data)
+                cur.execute(
+                    "INSERT INTO chapters (story_id, user_id, idx, title, content, word_count) "
+                    "VALUES (%s,%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE content=VALUES(content), word_count=VALUES(word_count)",
+                    (req.story_id, uid, chapter_idx, req.chapter_title or f"第{chapter_idx}章", new_content, len(new_content)),
                 )
-                idx = cursor2.fetchone()[0]
-                summary = chat_with_llm(extract_summary_prompt(req.chapter_title, new_content), max_tokens=200)
-                cursor2.execute(
-                    "INSERT INTO chapter_summaries (story_id, chapter_idx, summary) VALUES (%s,%s,%s) "
-                    "ON DUPLICATE KEY UPDATE summary=VALUES(summary)",
-                    (req.story_id, idx, summary[:500]),
+                chs = merge_chapters_for_story(cur, req.story_id, None)
+                chs.append({"chapter": chapter_idx, "title": req.chapter_title or f"第{chapter_idx}章", "content": new_content})
+                cur2 = db2.cursor()
+                cur2.execute(
+                    "UPDATE stories SET chapters=%s, word_count=%s, updated_at=NOW() WHERE id=%s",
+                    (chapters_to_json(chs), sum(len(c.get("content", "")) for c in chs), req.story_id),
                 )
                 db2.commit()
                 db2.close()
             except Exception as mem_exc:
-                print(f"[ai-continue] 摘要更新失败: {mem_exc}")
+                print(f"[ai-continue] 大脑更新失败: {mem_exc}")
 
         settle(uid, job["job_id"], estimate_points("continue"))
-        return {
-            "success": True,
-            "content": new_content,
-            "watermarked": watermarked,
-            "length": len(new_content),
-        }
+        return {"success": True, "content": new_content, "watermarked": watermarked, "length": len(new_content), "chapter_idx": chapter_idx}
     except HTTPException:
         raise
     except Exception as e:
@@ -663,37 +656,41 @@ def _story_to_dict(row: dict) -> dict:
 
 @router.post("/save")
 async def save_story(req: SaveStoryRequest, user: dict = Depends(get_current_user)):
-    """保存或更新作品草稿（归属当前登录用户）。"""
+    """保存或更新作品草稿；同步写入 chapters 表。"""
+    from services.chapter_store import parse_chapters_json, sync_chapters_table, chapters_to_json
+
     uid = str(user.get("sub", "0"))
-    word_count = _count_words(req.chapters)
+    ch_list = parse_chapters_json(req.chapters)
+    word_count = sum(len(str(ch.get("content", ""))) for ch in ch_list if isinstance(ch, dict))
     db = _db()
     try:
         cursor = db.cursor()
         if req.id:
-            # 仅允许更新属于自己的作品
             cursor.execute("SELECT user_id FROM stories WHERE id = %s LIMIT 1", (req.id,))
             row = cursor.fetchone()
             if not row:
                 raise HTTPException(status_code=404, detail="作品不存在")
             if row[0] and str(row[0]) != uid:
                 raise HTTPException(status_code=403, detail="无权修改该作品")
+            story_id = req.id
             cursor.execute(
                 "UPDATE stories SET title=%s, genre=%s, intro=%s, outline=%s, characters=%s, "
                 "chapters=%s, status=%s, word_count=%s, user_id=%s, updated_at=NOW() WHERE id=%s",
                 (req.title, req.genre, req.intro, req.outline, req.characters,
-                 req.chapters, req.status or "draft", word_count, uid, req.id),
+                 req.chapters, req.status or "draft", word_count, uid, story_id),
             )
-            db.commit()
-            return {"success": True, "story_id": req.id}
-        # 新建
-        story_id = int(time.time() * 1000)
-        cursor.execute(
-            "INSERT INTO stories (id, user_id, title, genre, intro, outline, characters, chapters, "
-            "status, word_count, created_at, updated_at) "
-            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW(),NOW())",
-            (story_id, uid, req.title, req.genre, req.intro, req.outline, req.characters,
-             req.chapters, req.status or "draft", word_count),
-        )
+        else:
+            story_id = int(time.time() * 1000)
+            cursor.execute(
+                "INSERT INTO stories (id, user_id, title, genre, intro, outline, characters, chapters, "
+                "status, word_count, created_at, updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW(),NOW())",
+                (story_id, uid, req.title, req.genre, req.intro, req.outline, req.characters,
+                 req.chapters, req.status or "draft", word_count),
+            )
+        if ch_list:
+            wc = sync_chapters_table(cursor, story_id, uid, ch_list)
+            cursor.execute("UPDATE stories SET word_count=%s, chapters=%s WHERE id=%s",
+                           (wc, chapters_to_json(parse_chapters_json(req.chapters) or ch_list), story_id))
         db.commit()
         return {"success": True, "story_id": story_id}
     except HTTPException:
@@ -740,6 +737,27 @@ async def list_stories(status: Optional[str] = None, user: dict = Depends(get_cu
             db.close()
 
 
+@router.get("/{story_id}/chapters")
+async def list_chapters(story_id: int, user: dict = Depends(get_current_user)):
+    """章节列表（优先 chapters 表）。"""
+    from services.chapter_store import merge_chapters_for_story, chapters_to_json
+    uid = str(user["sub"])
+    db = _db()
+    try:
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT user_id, chapters FROM stories WHERE id=%s LIMIT 1", (story_id,))
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="作品不存在")
+        if str(row["user_id"]) != uid:
+            raise HTTPException(status_code=403, detail="无权查看")
+        chapters = merge_chapters_for_story(cursor, story_id, row.get("chapters"))
+        return {"success": True, "chapters": chapters, "total": len(chapters)}
+    finally:
+        if db.is_connected():
+            db.close()
+
+
 @router.get("/{story_id}/export")
 async def export_story(story_id: int, format: str = "txt", user: dict = Depends(get_current_user)):
     """导出作品为 TXT 或 Markdown。"""
@@ -753,8 +771,8 @@ async def export_story(story_id: int, format: str = "txt", user: dict = Depends(
             raise HTTPException(status_code=404, detail="作品不存在")
         if row.get("user_id") and str(row["user_id"]) != uid:
             raise HTTPException(status_code=403, detail="无权导出该作品")
-        from services.story_memory import parse_chapters
-        chapters = parse_chapters(row.get("chapters"))
+        from services.chapter_store import merge_chapters_for_story
+        chapters = merge_chapters_for_story(cursor, story_id, row.get("chapters"))
         title = row.get("title") or "未命名"
         lines = [f"# {title}" if format == "md" else title, ""]
         if row.get("intro"):
@@ -783,7 +801,8 @@ async def export_story(story_id: int, format: str = "txt", user: dict = Depends(
 
 @router.get("/{story_id}/memory")
 async def story_memory(story_id: int, user: dict = Depends(get_current_user)):
-    """小说大脑视图：章节摘要列表。"""
+    """小说大脑完整视图。"""
+    from services.story_memory import load_brain
     uid = str(user.get("sub", "0"))
     db = _db()
     try:
@@ -794,21 +813,8 @@ async def story_memory(story_id: int, user: dict = Depends(get_current_user)):
             raise HTTPException(status_code=404, detail="作品不存在")
         if row.get("user_id") and str(row["user_id"]) != uid:
             raise HTTPException(status_code=403, detail="无权查看")
-        cursor.execute(
-            "SELECT chapter_idx, summary, created_at FROM chapter_summaries WHERE story_id=%s ORDER BY chapter_idx",
-            (story_id,),
-        )
-        summaries = cursor.fetchall()
-        return {
-            "success": True,
-            "title": row.get("title"),
-            "characters": row.get("characters"),
-            "outline": row.get("outline"),
-            "summaries": [
-                {"chapter_idx": s["chapter_idx"], "summary": s["summary"], "created_at": str(s.get("created_at") or "")}
-                for s in summaries
-            ],
-        }
+        brain = load_brain(cursor, story_id)
+        return {"success": True, "title": row.get("title"), "outline": row.get("outline"), **brain}
     finally:
         if db.is_connected():
             db.close()
@@ -816,7 +822,8 @@ async def story_memory(story_id: int, user: dict = Depends(get_current_user)):
 
 @router.get("/{story_id}")
 async def get_story(story_id: int, user: dict = Depends(get_current_user)):
-    """获取作品详情（仅本人）。"""
+    """获取作品详情（章节优先从 chapters 表加载）。"""
+    from services.chapter_store import merge_chapters_for_story, chapters_to_json
     uid = str(user.get("sub", "0"))
     db = _db()
     try:
@@ -827,6 +834,9 @@ async def get_story(story_id: int, user: dict = Depends(get_current_user)):
             raise HTTPException(status_code=404, detail="作品不存在")
         if row.get("user_id") and str(row["user_id"]) != uid:
             raise HTTPException(status_code=403, detail="无权查看该作品")
+        chapters = merge_chapters_for_story(cursor, story_id, row.get("chapters"))
+        if chapters:
+            row["chapters"] = chapters_to_json(chapters)
         return {"success": True, "story": _story_to_dict(row)}
     except HTTPException:
         raise
