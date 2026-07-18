@@ -5,7 +5,7 @@
 | 名称 | 上海A |
 | IP | `150.158.42.39` |
 | 区域 | 腾讯云 · 上海 |
-| 用户 | `root`（如无法登录可试 `ubuntu`） |
+| 用户 | `ubuntu`（已验证可用） |
 
 ## 公钥（添加到服务器）
 
@@ -31,7 +31,7 @@ chmod 600 ~/.ssh/authorized_keys
 ## 方法二：已有密码登录时
 
 ```bash
-ssh root@150.158.42.39
+ssh ubuntu@150.158.42.39
 # 登录后执行上面的 mkdir / echo / chmod 命令
 ```
 
@@ -41,13 +41,13 @@ ssh root@150.158.42.39
 
 ```bash
 chmod 600 ~/.ssh/shanghai_a_deploy
-ssh -i ~/.ssh/shanghai_a_deploy root@150.158.42.39
+ssh -i ~/.ssh/shanghai_a_deploy ubuntu@150.158.42.39
 ```
 
 ## 验证
 
 ```bash
-ssh -i ~/.ssh/shanghai_a_deploy root@150.158.42.39 "hostname && uptime"
+ssh -i ~/.ssh/shanghai_a_deploy ubuntu@150.158.42.39 "hostname && uptime"
 ```
 
 ## 服务器当前状态（2026-07-18）
