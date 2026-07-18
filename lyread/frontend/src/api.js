@@ -54,6 +54,7 @@ export const storyApi = {
   godfingers() { return request('/api/story/godfingers') },
   levelSystems() { return request('/api/story/level-systems') },
   generateTitle(body) { return request('/api/story/generate-title', { method: 'POST', body: JSON.stringify(body) }) },
+  suggestIdeas(body) { return request('/api/story/suggest-ideas', { method: 'POST', body: JSON.stringify(body) }) },
   generateOutline(body) { return request('/api/story/generate-outline', { method: 'POST', body: JSON.stringify(body) }) },
   generateChapters(body) { return request('/api/story/generate-chapters', { method: 'POST', body: JSON.stringify(body) }) },
   generateShort(body) { return request('/api/story/generate-short', { method: 'POST', body: JSON.stringify(body) }) },

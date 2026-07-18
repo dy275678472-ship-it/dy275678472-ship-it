@@ -102,6 +102,9 @@ class GenerateTitleRequest(BaseModel):
     keywords: Optional[List[str]] = None  # 核心脑洞词
     genre: Optional[str] = None  # 题材
     prompt: Optional[str] = None  # 首页试用的自由描述
+    exclude_titles: Optional[List[str]] = None  # 已展示过的书名，避免重复
+    count: int = 5
+    variation: Optional[str] = None  # 随机风格种子，换一批时使用
 
 class GenerateOutlineRequest(BaseModel):
     """生成大纲请求"""
@@ -120,6 +123,14 @@ class GenerateShortStoryRequest(BaseModel):
     godfinger: Optional[str] = None
     hot_points: Optional[List[str]] = None
     word_target: int = 3000
+
+
+class SuggestIdeasRequest(BaseModel):
+    """AI 生成故事灵感候选"""
+    genre: str
+    prompt: Optional[str] = ""
+    exclude: Optional[List[str]] = None
+    count: int = 5
 
 class GenerateChaptersRequest(BaseModel):
     """生成章纲请求"""
@@ -153,17 +164,25 @@ async def generate_title(req: GenerateTitleRequest, user: Optional[dict] = Depen
         raise HTTPException(status_code=422, detail="请填写题材关键词或故事想法")
     _guard_content(elements, label="输入")
     genre = req.genre or "都市"
+    import random
+    import time
+    variation = req.variation or str(random.randint(1000, 9999))
+    exclude_block = ""
+    if req.exclude_titles:
+        exclude_block = "\n请勿使用以下已出现过的书名：\n" + "\n".join(f"- {t}" for t in req.exclude_titles[:30])
 
+    count = max(3, min(req.count, 8))
     prompt = f"""你是一个资深网文编辑，精通各平台爆款书的命名套路。
 用户提供的核心元素：{elements}
 题材：{genre}
+创意变化编号：{variation}（请与常见套路有所区别，风格可更犀利或更文艺）{exclude_block}
 
-请生成5个极具吸睛力的书名，每个书名都要：
+请生成{count}个极具吸睛力的书名，每个书名都要：
 1. 前20字内出现核心爽点关键词
 2. 带有强烈的"点击欲望"
 3. 格式：书名 | 一句话黄金钩子简介
 
-只输出5行，不要其他内容。"""
+只输出{count}行，不要其他内容。"""
 
     # 登录用户走计费；匿名用户免费试用（不计费）
     uid = str(user["sub"]) if user and user.get("sub") else None
@@ -191,7 +210,7 @@ async def generate_title(req: GenerateTitleRequest, user: Optional[dict] = Depen
         first = titles[0] if titles else {"title": "", "hook": ""}
         return {
             "success": True,
-            "titles": titles[:5],
+            "titles": titles[:count],
             "title": first["title"],
             "description": first["hook"],
         }
@@ -665,6 +684,46 @@ async def suggest_genres():
         {"id": "entertainment", "name": "文娱", "hot": 78, "tags": ["明星", "娱乐", "文艺"]}
     ]
     return {"success": True, "genres": genres}
+
+
+@router.post("/suggest-ideas")
+async def suggest_ideas(req: SuggestIdeasRequest, user: dict = Depends(get_current_user)):
+    """AI 生成故事灵感候选（可多次换一批）。扣 1 点。"""
+    from api.credits import reserve, settle, refund, estimate_points
+    import random
+
+    uid = str(user["sub"])
+    _guard_content(req.prompt or req.genre, label="输入")
+    job = reserve(uid, estimate_points("title"), "idea_suggest")
+    count = max(3, min(req.count, 6))
+    exclude_block = ""
+    if req.exclude:
+        exclude_block = "\n请勿重复以下灵感：\n" + "\n".join(f"- {x}" for x in req.exclude[:20])
+    seed = random.randint(1000, 9999)
+    prompt = f"""你是网文策划，为「{req.genre}」题材生成{count}个故事灵感钩子。
+用户已有想法：{req.prompt or '无'}
+变化编号：{seed}{exclude_block}
+
+每个灵感 30-60 字，一行一个，不要编号，不要其他说明。"""
+
+    try:
+        result = chat_with_llm(prompt, max_tokens=500)
+        mod = check_many(result)
+        if not mod["ok"]:
+            refund(uid, job["job_id"])
+            raise HTTPException(status_code=422, detail=moderation_detail(mod["hits"]))
+        ideas = [ln.strip().lstrip('0123456789.-、) ') for ln in result.strip().split("\n") if ln.strip()]
+        ideas = [i for i in ideas if len(i) >= 8][:count]
+        if not ideas:
+            refund(uid, job["job_id"])
+            return {"success": False, "error": "灵感生成失败，本次未扣点"}
+        settle(uid, job["job_id"], estimate_points("title"))
+        return {"success": True, "ideas": ideas}
+    except HTTPException:
+        raise
+    except Exception as e:
+        refund(uid, job["job_id"])
+        return {"success": False, "error": str(e)}
 
 
 @router.post("/generate-short")

@@ -27,9 +27,14 @@
       <input v-model="genreCustom" class="input" placeholder="或自定义题材" @input="genreId = ''" />
 
       <h2>2. 故事灵感</h2>
-      <div class="templates">
-        <button v-for="(t, i) in templates" :key="i" type="button" class="tpl" @click="prompt = t">{{ t }}</button>
+      <div class="action-row">
+        <button type="button" class="btn-secondary" @click="shuffleTemplates">🎲 换一批模板</button>
+        <button type="button" class="btn-secondary" :disabled="busy" @click="generateMoreIdeas">✨ AI 生成更多</button>
       </div>
+      <div class="templates">
+        <button v-for="(t, i) in displayedTemplates" :key="i" type="button" class="tpl" @click="prompt = t">{{ t }}</button>
+      </div>
+      <label class="lbl">或手动输入</label>
       <textarea v-model="prompt" class="textarea" rows="4" placeholder="描述你想写的短故事..." />
 
       <h2>3. 金手指（可选）</h2>
@@ -69,7 +74,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { storyApi } from '../api'
 import { IMAGES } from '../assets/images'
-import { templatesForGenre } from '../constants/creation'
+import { templatesForGenre, allTemplatesForGenre } from '../constants/creation'
+import { pickRandom, mergeStringOptions } from '../utils/optionPool'
 
 const router = useRouter()
 const images = IMAGES
@@ -80,6 +86,8 @@ const genreCustom = ref('')
 const genreName = ref('')
 const prompt = ref('')
 const godfinger = ref('')
+const ideaPool = ref([])
+const displayedTemplates = ref([])
 const busy = ref(false)
 const error = ref('')
 const creditsLow = ref(false)
@@ -89,10 +97,32 @@ const templates = computed(() => templatesForGenre(genreId.value || 'default'))
 const genreLabel = computed(() => genreCustom.value || genreName.value || '都市')
 const canGenerate = computed(() => (genreId.value || genreCustom.value?.trim()) && prompt.value?.trim())
 
+function refreshTemplates() {
+  ideaPool.value = mergeStringOptions(ideaPool.value, allTemplatesForGenre(genreId.value || 'default'))
+  displayedTemplates.value = pickRandom(ideaPool.value, 4)
+}
+
+function shuffleTemplates() { refreshTemplates() }
+
+async function generateMoreIdeas() {
+  busy.value = true
+  error.value = ''
+  try {
+    const res = await storyApi.suggestIdeas({ genre: genreLabel.value, prompt: prompt.value, exclude: ideaPool.value, count: 4 })
+    if (res?.success) {
+      ideaPool.value = mergeStringOptions(ideaPool.value, res.ideas || [])
+      displayedTemplates.value = pickRandom(ideaPool.value, 4)
+      window.dispatchEvent(new Event('credits-changed'))
+    } else error.value = res?.detail || res?.error || '生成失败'
+  } finally { busy.value = false }
+}
+
 function pickGenre(g) {
   genreId.value = g.id
   genreName.value = g.name
   genreCustom.value = ''
+  ideaPool.value = [...allTemplatesForGenre(g.id)]
+  displayedTemplates.value = pickRandom(ideaPool.value, 4)
 }
 
 async function generate() {
@@ -140,6 +170,7 @@ onMounted(async () => {
   const [g, gf] = await Promise.all([storyApi.suggestGenres(), storyApi.godfingers()])
   if (g?.success) genres.value = g.genres || []
   if (gf?.success) godfingers.value = gf.godfingers || []
+  refreshTemplates()
 })
 </script>
 
@@ -156,6 +187,9 @@ onMounted(async () => {
 .chip { padding: 10px 14px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; }
 .chip.selected { border-color: #2563eb; background: #eff6ff; }
 .input, .textarea { width: 100%; padding: 10px 12px; border: 1px solid #dbeafe; border-radius: 10px; font-size: 14px; }
+.lbl { display: block; font-size: 12px; color: #64748b; margin: 8px 0 6px; font-weight: 600; }
+.action-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.btn-secondary { padding: 8px 14px; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; cursor: pointer; font-size: 13px; }
 .templates { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
 .tpl { text-align: left; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; cursor: pointer; font-size: 13px; }
 .btn-generate, .btn-primary, .btn-secondary {

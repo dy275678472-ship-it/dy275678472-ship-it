@@ -145,7 +145,19 @@
         </div>
 
         <div v-if="trialResult" class="trial-result">
-          <h4>AI 为你生成的书名（点击选用）</h4>
+          <h4>AI 为你生成的书名（点击选用，不够可继续生成）</h4>
+          <div class="action-row-trial" v-if="trialTitles.length">
+            <button
+              v-if="isLoggedIn"
+              type="button"
+              class="btn-more-titles"
+              :disabled="trialLoading"
+              @click="startTrial(true)"
+            >
+              {{ trialLoading ? '生成中...' : '🎲 再随机 5 个（1 点）' }}
+            </button>
+            <span v-else class="guest-more-hint">注册后可无限换批生成书名</span>
+          </div>
           <div v-if="trialTitles.length" class="title-pick-grid">
             <button
               v-for="(t, i) in trialTitles"
@@ -263,36 +275,58 @@ onMounted(async () => {
   finally { casesLoading.value = false }
 })
 
-const startTrial = async () => {
+const startTrial = async (append = false) => {
   if (!trialType.value || !trialPrompt.value) {
-    alert('请选择题材并描述你的故事想法')
+    trialError.value = '请选择题材并描述你的故事想法'
     return
   }
 
   trackEvent('trial_submit', { category: 'funnel', label: trialType.value })
   trialLoading.value = true
-  trialResult.value = null
+  if (!append) {
+    trialResult.value = null
+    trialTitles.value = []
+  }
   trialError.value = ''
   try {
     const token = localStorage.getItem('token')
     const headers = { 'Content-Type': 'application/json' }
     if (token) headers.Authorization = `Bearer ${token}`
+    const body = {
+      genre: trialType.value,
+      prompt: trialPrompt.value,
+      exclude_titles: append ? trialTitles.value.map(t => t.title) : [],
+      variation: String(Date.now()),
+      count: 5,
+    }
     const res = await fetch('/api/story/generate-title', {
       method: 'POST',
-      headers,
-      body: JSON.stringify({ genre: trialType.value, prompt: trialPrompt.value }),
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     })
     const data = await res.json()
     if (!data.success) {
       trialError.value = data.error || data.detail || 'AI 生成失败，请稍后再试'
       return
     }
-    trialResult.value = { title: data.title, description: data.description }
-    trialTitles.value = data.titles || [{ title: data.title, hook: data.description }]
-    trackEvent('trial_success', { category: 'funnel', label: 'generate_title' })
-    if (localStorage.getItem('token')) {
-      goWorkspaceContinue()
+    const incoming = data.titles || [{ title: data.title, hook: data.description }]
+    if (append) {
+      const seen = new Set(trialTitles.value.map(t => t.title))
+      for (const t of incoming) {
+        if (t.title && !seen.has(t.title)) {
+          trialTitles.value.push(t)
+          seen.add(t.title)
+        }
+      }
+    } else {
+      trialTitles.value = incoming
+      trialResult.value = { title: data.title, description: data.description }
     }
+    if (!trialResult.value && trialTitles.value.length) {
+      trialResult.value = { title: trialTitles.value[0].title, description: trialTitles.value[0].hook || '' }
+    }
+    trackEvent('trial_success', { category: 'funnel', label: append ? 'more_titles' : 'generate_title' })
+    window.dispatchEvent(new Event('credits-changed'))
   } catch (error) {
     console.error('试用生成失败:', error)
     trialError.value = 'AI 生成失败，请稍后再试或更换内容。'
@@ -634,6 +668,12 @@ const startTrial = async () => {
 .title-pick.selected { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
 .title-pick strong { display: block; color: #1e2a3a; margin-bottom: 4px; }
 .title-pick span { font-size: 12px; color: #64748b; }
+.action-row-trial { margin-bottom: 10px; }
+.btn-more-titles {
+  padding: 8px 14px; border-radius: 8px; border: 1px solid #93c5fd;
+  background: #fff; color: #2563eb; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.guest-more-hint { font-size: 12px; color: #64748b; }
 .result-title { font-weight: 700; color: #1e2a3a; margin-bottom: 6px; }
 .result-hook { font-size: 13px; color: #5a6a7a; }
 .trial-cta-row { margin-top: 16px; text-align: center; }

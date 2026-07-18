@@ -23,14 +23,17 @@
     <!-- Step 0: Genre -->
     <section v-show="step === 0" class="wizard-panel">
       <h2>选择题材</h2>
-      <p class="hint">点击热门题材，或在下方输入自定义题材</p>
+      <p class="hint">点选推荐题材，或下方手动输入 · 两者可任选</p>
+      <div class="action-row">
+        <button type="button" class="btn-secondary" @click="shuffleGenres">🎲 换一批推荐</button>
+      </div>
       <div class="chip-grid">
         <button
-          v-for="g in genres"
+          v-for="g in displayedGenres"
           :key="g.id"
           type="button"
           class="chip"
-          :class="{ selected: draft.genreId === g.id }"
+          :class="{ selected: draft.genreId === g.id && !draft.genreCustom }"
           @click="pickGenre(g)"
         >
           <strong>{{ g.name }}</strong>
@@ -38,16 +41,23 @@
           <em>{{ (g.tags || []).join(' · ') }}</em>
         </button>
       </div>
-      <input v-model="draft.genreCustom" class="input" placeholder="或输入自定义题材，如：科幻末世" @input="draft.genreId = ''" />
+      <label class="field-label">或手动输入题材</label>
+      <input v-model="draft.genreCustom" class="input" placeholder="例如：科幻末世、悬疑推理..." @input="onCustomGenre" />
     </section>
 
     <!-- Step 1: Idea -->
     <section v-show="step === 1" class="wizard-panel">
       <h2>故事灵感</h2>
-      <p class="hint">选一个灵感模板，或写下你自己的想法</p>
+      <p class="hint">点选灵感模板、AI 生成更多，或直接手动输入</p>
+      <div class="action-row">
+        <button type="button" class="btn-secondary" @click="shuffleIdeas">🎲 换一批模板</button>
+        <button type="button" class="btn-secondary" :disabled="busy" @click="generateMoreIdeas">
+          {{ busy ? '生成中...' : `✨ AI 生成更多（${prices.title || 1} 点）` }}
+        </button>
+      </div>
       <div class="template-list">
         <button
-          v-for="(t, i) in ideaTemplates"
+          v-for="(t, i) in displayedIdeas"
           :key="i"
           type="button"
           class="template-card"
@@ -55,20 +65,27 @@
           @click="draft.intro = t"
         >{{ t }}</button>
       </div>
+      <label class="field-label">或手动输入 / 编辑灵感</label>
       <textarea v-model="draft.intro" class="textarea" rows="4" placeholder="描述你的故事核心冲突、主角处境..." />
     </section>
 
     <!-- Step 2: Title -->
     <section v-show="step === 2" class="wizard-panel">
       <h2>书名</h2>
-      <p class="hint">AI 生成 5 个候选书名，点击选用或自行修改</p>
-      <button class="btn-primary" :disabled="busy" @click="generateTitles">
-        {{ busy ? '生成中...' : `AI 生成书名（${prices.title || 1} 点）` }}
-      </button>
+      <p class="hint">从 AI 推荐中点选，不够可继续随机生成；也可完全手动输入</p>
+      <div class="action-row">
+        <button class="btn-primary" :disabled="busy" @click="generateTitles(false)">
+          {{ busy ? '生成中...' : `AI 生成书名（${prices.title || 1} 点）` }}
+        </button>
+        <button class="btn-secondary" :disabled="busy || !draft.titleCandidates.length" @click="generateTitles(true)">
+          {{ busy ? '生成中...' : `🎲 再随机 5 个（${prices.title || 1} 点）` }}
+        </button>
+      </div>
+      <p v-if="draft.titleCandidates.length" class="count-hint">已积累 {{ draft.titleCandidates.length }} 个候选，点击选用</p>
       <div v-if="draft.titleCandidates.length" class="title-grid">
         <button
           v-for="(t, i) in draft.titleCandidates"
-          :key="i"
+          :key="`${t.title}-${i}`"
           type="button"
           class="title-card"
           :class="{ selected: draft.title === t.title }"
@@ -78,14 +95,18 @@
           <span>{{ t.hook || t.description }}</span>
         </button>
       </div>
-      <input v-model="draft.title" class="input" placeholder="最终书名" />
+      <label class="field-label">最终书名（可手动修改）</label>
+      <input v-model="draft.title" class="input" placeholder="输入或点选上方书名" />
     </section>
 
     <!-- Step 3: Setup -->
     <section v-show="step === 3" class="wizard-panel">
       <h2>金手指与爽点</h2>
-      <p class="hint">选择主角能力和故事爽点（可多选）</p>
-      <h3>金手指</h3>
+      <p class="hint">点选推荐，或点「随机搭配」；爽点可多选</p>
+      <div class="action-row">
+        <button type="button" class="btn-secondary" @click="randomSetup">🎲 随机搭配一套</button>
+      </div>
+      <h3>金手指（点选或随机）</h3>
       <div class="chip-grid small">
         <button
           v-for="g in godfingers"
@@ -98,7 +119,8 @@
           {{ g.icon }} {{ g.name }}
         </button>
       </div>
-      <h3>爽点标签</h3>
+      <input v-model="draft.godfingerCustom" class="input" placeholder="或手动输入金手指设定，如：时间回溯能力" />
+      <h3>爽点标签（多选）</h3>
       <div class="chip-grid small">
         <button
           v-for="hp in hotPointOptions"
@@ -119,9 +141,15 @@
     <!-- Step 4: Outline -->
     <section v-show="step === 4" class="wizard-panel">
       <h2>故事大纲</h2>
-      <button class="btn-primary" :disabled="busy" @click="generateOutline">
-        {{ busy ? '生成中...' : `AI 生成大纲（${prices.outline || 3} 点）` }}
-      </button>
+      <div class="action-row">
+        <button class="btn-primary" :disabled="busy" @click="generateOutline(false)">
+          {{ busy ? '生成中...' : `AI 生成大纲（${prices.outline || 3} 点）` }}
+        </button>
+        <button class="btn-secondary" :disabled="busy || !draft.outlineText" @click="generateOutline(true)">
+          🎲 换一版大纲
+        </button>
+      </div>
+      <label class="field-label">大纲内容（可手动编辑）</label>
       <textarea v-model="draft.outlineText" class="textarea code-area" rows="12" placeholder="大纲 JSON 或文字，可编辑" />
     </section>
 
@@ -130,8 +158,11 @@
       <h2>章纲规划</h2>
       <div class="row">
         <label>章数 <input v-model.number="draft.chapterCount" type="number" min="3" max="30" class="input short" /></label>
-        <button class="btn-primary" :disabled="busy" @click="generateChapterPlans">
+        <button class="btn-primary" :disabled="busy" @click="generateChapterPlans(false)">
           {{ busy ? '生成中...' : `AI 生成章纲（${prices.chapters || 5} 点）` }}
+        </button>
+        <button class="btn-secondary" :disabled="busy || !draft.chapterPlans.length" @click="generateChapterPlans(true)">
+          🎲 换一批章纲
         </button>
       </div>
       <ul v-if="draft.chapterPlans.length" class="chapter-plans">
@@ -183,7 +214,8 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { storyApi, creditsApi } from '../api'
-import { HOT_POINTS, WRITE_STYLES, templatesForGenre, WIZARD_STEPS } from '../constants/creation'
+import { HOT_POINTS, WRITE_STYLES, allTemplatesForGenre, WIZARD_STEPS } from '../constants/creation'
+import { shuffleArray, pickRandom, mergeTitleCandidates, mergeStringOptions } from '../utils/optionPool'
 
 const props = defineProps({
   initial: { type: Object, default: () => ({}) },
@@ -197,6 +229,10 @@ const msg = ref('')
 const msgErr = ref(false)
 const creditsLow = ref(false)
 const genres = ref([])
+const allGenres = ref([])
+const displayedGenres = ref([])
+const displayedIdeas = ref([])
+const ideaPool = ref([])
 const godfingers = ref([])
 const levelSystems = ref([])
 const prices = ref({})
@@ -212,6 +248,7 @@ const draft = reactive({
   title: '',
   titleCandidates: [],
   godfinger: '',
+  godfingerCustom: '',
   hotPoints: ['打脸', '逆袭'],
   levelSystem: '',
   outlineText: '',
@@ -222,9 +259,39 @@ const draft = reactive({
   ...props.initial,
 })
 
-const ideaTemplates = computed(() => templatesForGenre(draft.genreId || 'default'))
+const genreLabel = computed(() => draft.genreCustom?.trim() || draft.genreName || '都市')
 
-const genreLabel = computed(() => draft.genreCustom || draft.genreName || '都市')
+function refreshIdeaPool() {
+  const base = allTemplatesForGenre(draft.genreId || 'default')
+  ideaPool.value = mergeStringOptions(ideaPool.value, base)
+  displayedIdeas.value = pickRandom(ideaPool.value, 5)
+}
+
+function shuffleGenres() {
+  displayedGenres.value = pickRandom(allGenres.value.length ? allGenres.value : genres.value, 6)
+}
+
+function shuffleIdeas() {
+  displayedIdeas.value = pickRandom(ideaPool.value.length ? ideaPool.value : allTemplatesForGenre(draft.genreId || 'default'), 5)
+}
+
+function onCustomGenre() {
+  draft.genreId = ''
+  draft.genreName = ''
+}
+
+function randomSetup() {
+  if (godfingers.value.length) {
+    const g = godfingers.value[Math.floor(Math.random() * godfingers.value.length)]
+    draft.godfinger = g.id
+    draft.godfingerCustom = ''
+  }
+  draft.hotPoints = pickRandom(HOT_POINTS, 3)
+  if (levelSystems.value.length) {
+    draft.levelSystem = levelSystems.value[Math.floor(Math.random() * levelSystems.value.length)].id
+  }
+  setMsg('已随机搭配一套设定，可继续微调')
+}
 
 const canNext = computed(() => {
   if (step.value === 0) return !!(draft.genreId || draft.genreCustom?.trim())
@@ -253,6 +320,8 @@ function pickGenre(g) {
   draft.genreId = g.id
   draft.genreName = g.name
   draft.genreCustom = ''
+  ideaPool.value = [...allTemplatesForGenre(g.id)]
+  displayedIdeas.value = pickRandom(ideaPool.value, 5)
 }
 
 function toggleHot(hp) {
@@ -266,29 +335,58 @@ function selectTitle(t) {
   if (t.hook) draft.intro = draft.intro || t.hook
 }
 
-async function generateTitles() {
+async function generateMoreIdeas() {
   busy.value = true
   setMsg('')
   try {
-    const res = await storyApi.generateTitle({ genre: genreLabel.value, prompt: draft.intro })
+    const res = await storyApi.suggestIdeas({
+      genre: genreLabel.value,
+      prompt: draft.intro,
+      exclude: ideaPool.value,
+      count: 5,
+    })
     if (res?.success) {
-      draft.titleCandidates = res.titles || [{ title: res.title, hook: res.description }]
+      ideaPool.value = mergeStringOptions(ideaPool.value, res.ideas || [])
+      displayedIdeas.value = pickRandom(ideaPool.value, 5)
+      setMsg(`已新增灵感，共 ${ideaPool.value.length} 条可选`)
+      window.dispatchEvent(new Event('credits-changed'))
+    } else handleErr(res, '生成灵感失败')
+  } finally { busy.value = false }
+}
+
+async function generateTitles(append = false) {
+  busy.value = true
+  setMsg('')
+  try {
+    const exclude = append ? draft.titleCandidates.map(t => t.title) : []
+    const res = await storyApi.generateTitle({
+      genre: genreLabel.value,
+      prompt: draft.intro,
+      exclude_titles: exclude,
+      count: 5,
+      variation: String(Date.now()),
+    })
+    if (res?.success) {
+      const incoming = res.titles || [{ title: res.title, hook: res.description }]
+      draft.titleCandidates = append
+        ? mergeTitleCandidates(draft.titleCandidates, incoming)
+        : incoming
       if (!draft.title && res.title) draft.title = res.title
-      setMsg('已生成候选书名，请点击选用')
+      setMsg(append ? `已追加，共 ${draft.titleCandidates.length} 个书名可选` : '已生成候选书名，请点击选用')
       window.dispatchEvent(new Event('credits-changed'))
     } else handleErr(res, '生成书名失败')
   } finally { busy.value = false }
 }
 
-async function generateOutline() {
+async function generateOutline(regenerate = false) {
   busy.value = true
   try {
     const res = await storyApi.generateOutline({
       title: draft.title,
-      intro: draft.intro,
+      intro: draft.intro + (regenerate ? `\n（请换一种叙事角度，变化编号${Date.now()}）` : ''),
       genre: genreLabel.value,
       hot_points: draft.hotPoints,
-      godfinger: draft.godfinger,
+      godfinger: draft.godfingerCustom || draft.godfinger,
       level_system: draft.levelSystem,
     })
     if (res?.success) {
@@ -299,9 +397,10 @@ async function generateOutline() {
   } finally { busy.value = false }
 }
 
-async function generateChapterPlans() {
+async function generateChapterPlans(regenerate = false) {
   let outline = {}
   try { outline = JSON.parse(draft.outlineText) } catch { setMsg('请先生成有效大纲', true); return }
+  if (regenerate) outline = { ...outline, _variation: Date.now() }
   busy.value = true
   try {
     const res = await storyApi.generateChapters({ outline, chapter_count: draft.chapterCount })
@@ -368,7 +467,7 @@ function buildPayload() {
     chapters = JSON.stringify([{ chapter: 1, title: '第1章', content: draft.chapterContent }])
   }
   const characters = JSON.stringify({
-    godfinger: draft.godfinger,
+    godfinger: draft.godfingerCustom || draft.godfinger,
     hot_points: draft.hotPoints,
     level_system: draft.levelSystem,
     write_style: draft.writeStyle,
@@ -391,7 +490,11 @@ onMounted(async () => {
     storyApi.levelSystems(),
     creditsApi.prices(),
   ])
-  if (g?.success) genres.value = g.genres || []
+  if (g?.success) {
+    allGenres.value = g.genres || []
+    genres.value = allGenres.value
+    displayedGenres.value = pickRandom(allGenres.value, 6)
+  }
   if (gf?.success) godfingers.value = gf.godfingers || []
   if (ls?.success) levelSystems.value = ls.systems || []
   if (p?.success) prices.value = p.prices || {}
@@ -399,6 +502,7 @@ onMounted(async () => {
   if (init.type) { draft.genreId = init.type; draft.genreName = init.type }
   if (init.prompt) draft.intro = init.prompt
   if (init.generatedTitle) draft.title = init.generatedTitle
+  refreshIdeaPool()
 })
 </script>
 
@@ -415,6 +519,8 @@ onMounted(async () => {
 .wizard-panel { background: #fff; border-radius: 14px; padding: 20px; border: 1px solid #e8f0fa; margin-bottom: 16px; }
 .wizard-panel h2 { font-size: 18px; margin-bottom: 6px; }
 .wizard-panel h3 { font-size: 14px; margin: 16px 0 8px; color: #475569; }
+.field-label { display: block; font-size: 12px; color: #64748b; margin: 12px 0 6px; font-weight: 600; }
+.count-hint { font-size: 12px; color: #64748b; margin: 10px 0 4px; }
 .hint { color: #64748b; font-size: 13px; margin-bottom: 14px; }
 .chip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 14px; }
 .chip-grid.small { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); }
