@@ -15,21 +15,22 @@
       :image-width="160"
     />
     <div v-else class="case-grid">
-      <a v-for="(c, i) in cases" :key="c.id" :href="c.url" class="case-card" target="_blank" rel="noopener">
+      <router-link v-for="(c, i) in cases" :key="c.id" :to="`/case/${c.id}`" class="case-card">
         <img :src="coverForCase(c, i)" :alt="`${c.title} 封面`" class="case-cover" loading="lazy" />
         <div class="case-body">
           <span class="cat">{{ c.category || '都市' }}</span>
           <h3>{{ c.title }}</h3>
+          <p v-if="c.excerpt" class="excerpt">{{ c.excerpt }}</p>
           <div class="meta">
             <span>{{ c.word_count }} 字</span>
             <span class="heat"><img :src="images.fire" alt="热度" width="14" height="14" /> {{ c.heat }}</span>
           </div>
         </div>
-      </a>
+      </router-link>
     </div>
 
     <div class="cta">
-      <router-link to="/workspace" class="btn-cta">用这个风格开始创作 →</router-link>
+      <router-link :to="{ path: '/workspace', query: { mode: 'new' } }" class="btn-cta">用这个风格开始创作 →</router-link>
     </div>
   </div>
 </template>
@@ -77,7 +78,8 @@ onMounted(async () => {
 .case-body { padding: 16px 20px 20px; }
 .case-card:hover { box-shadow: 0 8px 24px rgba(77,161,255,0.12); transform: translateY(-2px); border-color: #bfdbfe; }
 .cat { display: inline-block; padding: 3px 10px; background: rgba(77,161,255,0.12); color: #2563eb; border-radius: 999px; font-size: 12px; margin-bottom: 10px; }
-.case-card h3 { font-size: 16px; color: #1e2a3a; margin-bottom: 12px; line-height: 1.4; }
+.case-card h3 { font-size: 16px; color: #1e2a3a; margin-bottom: 8px; line-height: 1.4; }
+.excerpt { font-size: 12px; color: #64748b; line-height: 1.5; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .meta { display: flex; gap: 12px; font-size: 12px; color: #94a3b8; }
 .cta { text-align: center; }
 .btn-cta {

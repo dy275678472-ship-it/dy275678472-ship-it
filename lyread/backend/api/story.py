@@ -109,6 +109,17 @@ class GenerateOutlineRequest(BaseModel):
     intro: str
     genre: str
     hot_points: List[str]  # 爽点
+    godfinger: Optional[str] = None
+    level_system: Optional[str] = None
+
+
+class GenerateShortStoryRequest(BaseModel):
+    """短故事一键生成"""
+    genre: str
+    prompt: str
+    godfinger: Optional[str] = None
+    hot_points: Optional[List[str]] = None
+    word_target: int = 3000
 
 class GenerateChaptersRequest(BaseModel):
     """生成章纲请求"""
@@ -200,13 +211,18 @@ async def generate_outline(req: GenerateOutlineRequest, user: dict = Depends(get
     client = get_openai_client()
 
     hot_points = ",".join(req.hot_points)
+    extras = ""
+    if req.godfinger:
+        extras += f"\n金手指设定：{req.godfinger}"
+    if req.level_system:
+        extras += f"\n等级体系：{req.level_system}"
     
     prompt = f"""你是一个网文大纲大师，精通"起承转合"结构。
 
 书名：{req.title}
 简介：{req.intro}
 题材：{req.genre}
-爽点：{hot_points}
+爽点：{hot_points}{extras}
 
 请生成完整的四维大纲结构（起、承、转、合），每个节点包含：
 - 章节范围（如1-5章）
@@ -224,17 +240,20 @@ async def generate_outline(req: GenerateOutlineRequest, user: dict = Depends(get
 只输出JSON。"""
 
     try:
-        # 使用统一的 LLM 调用（DeepSeek优先，失败则用PollinationsAI）
         result = chat_with_llm(prompt, max_tokens=1000)
-        
-        # 解析 JSON
+        mod = check_many(result)
+        if not mod["ok"]:
+            refund(uid, job["job_id"])
+            raise HTTPException(status_code=422, detail=moderation_detail(mod["hits"]))
         import re
         json_match = re.search(r'\{.*\}', result, re.DOTALL)
         if json_match:
             outline = json.loads(json_match.group())
         else:
             outline = {}
-
+        if not outline:
+            refund(uid, job["job_id"])
+            return {"success": False, "error": "大纲解析失败，本次未扣点"}
         settle(uid, job["job_id"], estimate_points("outline"))
         return {"success": True, "outline": outline}
     except Exception as e:
@@ -340,7 +359,11 @@ async def generate_chapters(req: GenerateChaptersRequest, user: dict = Depends(g
 
         if not chapters:
             refund(uid, job["job_id"])
-            return {"success": False, "error": "章纲解析失败，请重试（本次未扣点）"}
+            return {"success": False, "error": "章纲解析失败，本次未扣点"}
+        mod = check_many(json.dumps(chapters, ensure_ascii=False))
+        if not mod["ok"]:
+            refund(uid, job["job_id"])
+            raise HTTPException(status_code=422, detail=moderation_detail(mod["hits"]))
 
         settle(uid, job["job_id"], estimate_points("chapters"))
         return {"success": True, "chapters": chapters}
@@ -644,6 +667,49 @@ async def suggest_genres():
     return {"success": True, "genres": genres}
 
 
+@router.post("/generate-short")
+async def generate_short_story(req: GenerateShortStoryRequest, user: dict = Depends(get_current_user)):
+    """短故事一键生成（约 3000 字）。扣 15 点。"""
+    from api.credits import reserve, settle, refund, estimate_points
+
+    uid = str(user["sub"])
+    _guard_content(req.prompt, label="输入")
+    points = 15
+    job = reserve(uid, points, "short_story")
+    hot = ",".join(req.hot_points or ["反转", "共鸣"])
+    gf = f"\n金手指：{req.godfinger}" if req.godfinger else ""
+    prompt = f"""你是短篇故事作家。题材：{req.genre}
+灵感：{req.prompt}
+爽点/情绪：{hot}{gf}
+请写一篇完整短篇，约 {req.word_target} 字，有开头、高潮、结尾。只输出正文。"""
+
+    try:
+        if not get_openai_client():
+            refund(uid, job["job_id"])
+            return {"success": False, "error": "AI 服务未配置，本次未扣点"}
+        result = chat_with_llm(prompt, max_tokens=4000)
+        mod = check_many(result)
+        if not mod["ok"]:
+            refund(uid, job["job_id"])
+            raise HTTPException(status_code=422, detail=moderation_detail(mod["hits"]))
+        if len(result.strip()) < 200:
+            refund(uid, job["job_id"])
+            return {"success": False, "error": "生成内容过短，本次未扣点"}
+        settle(uid, job["job_id"], points)
+        title = req.prompt[:20] + ("…" if len(req.prompt) > 20 else "")
+        return {
+            "success": True,
+            "title": title,
+            "content": result.strip(),
+            "word_count": len(result),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        refund(uid, job["job_id"])
+        return {"success": False, "error": str(e)}
+
+
 # ==================== 作品 CRUD（草稿保存 / 列表 / 详情） ====================
 
 class SaveStoryRequest(BaseModel):
@@ -901,7 +967,8 @@ async def delete_story(story_id: int, user: dict = Depends(get_current_user)):
             raise HTTPException(status_code=404, detail="作品不存在")
         if row[0] and str(row[0]) != uid:
             raise HTTPException(status_code=403, detail="无权删除该作品")
-        cursor.execute("DELETE FROM stories WHERE id=%s", (story_id,))
+        from services.story_cleanup import cascade_delete_story
+        cascade_delete_story(cursor, story_id)
         db.commit()
         return {"success": True}
     except HTTPException:

@@ -50,16 +50,22 @@ export const storyApi = {
   chapters(id) { return request(`/api/story/${id}/chapters`) },
   save(data) { return request('/api/story/save', { method: 'POST', body: JSON.stringify(data) }) },
   remove(id) { return request(`/api/story/${id}`, { method: 'DELETE' }) },
+  suggestGenres() { return request('/api/story/suggest-genres') },
+  godfingers() { return request('/api/story/godfingers') },
+  levelSystems() { return request('/api/story/level-systems') },
   generateTitle(body) { return request('/api/story/generate-title', { method: 'POST', body: JSON.stringify(body) }) },
   generateOutline(body) { return request('/api/story/generate-outline', { method: 'POST', body: JSON.stringify(body) }) },
   generateChapters(body) { return request('/api/story/generate-chapters', { method: 'POST', body: JSON.stringify(body) }) },
+  generateShort(body) { return request('/api/story/generate-short', { method: 'POST', body: JSON.stringify(body) }) },
   continue(body) { return request('/api/story/ai-continue', { method: 'POST', body: JSON.stringify(body) }) },
+  consistencyCheck(body) { return request('/api/story/consistency-check', { method: 'POST', body: JSON.stringify(body) }) },
   memory(id) { return request(`/api/story/${id}/memory`) },
   exportUrl(id, format = 'txt') { return `/api/story/${id}/export?format=${format}` },
 }
 
 export const casesApi = {
   list(limit = 20) { return request(`/api/cases?limit=${limit}`) },
+  get(id) { return request(`/api/cases/${id}`) },
 }
 
 export const ordersApi = {

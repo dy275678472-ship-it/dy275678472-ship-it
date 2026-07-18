@@ -39,10 +39,12 @@ def _level_for_xp(xp: int) -> dict:
 
 
 def _profile_from_db(uid: str) -> dict:
-    """基于作品数据推导创作者画像（无独立 xp 表时用作品量近似）。"""
+    """基于作品数据推导创作者画像，合并持久化资料。"""
     conn = _db()
     works, words, published = 0, 0, 0
     username = None
+    nickname = None
+    bio = None
     if conn:
         try:
             cursor = conn.cursor(dictionary=True)
@@ -58,6 +60,14 @@ def _profile_from_db(uid: str) -> dict:
             cursor.execute("SELECT username FROM users WHERE id=%s LIMIT 1", (uid,))
             u = cursor.fetchone()
             username = u["username"] if u else None
+            try:
+                cursor.execute("SELECT nickname, bio FROM creator_profiles WHERE user_id=%s LIMIT 1", (uid,))
+                prof = cursor.fetchone()
+                if prof:
+                    nickname = prof.get("nickname")
+                    bio = prof.get("bio")
+            except Exception:
+                pass
         except Exception as exc:
             print(f"[Creator.profile] {type(exc).__name__}: {exc}")
         finally:
@@ -69,6 +79,8 @@ def _profile_from_db(uid: str) -> dict:
     info.update({
         "user_id": uid,
         "username": username,
+        "nickname": nickname or username,
+        "bio": bio or "",
         "works": works,
         "words": words,
         "published": published,
@@ -98,4 +110,20 @@ class UpdateProfileRequest(BaseModel):
 
 @router.post("/update")
 def update_profile(req: UpdateProfileRequest, user: dict = Depends(get_current_user)):
-    return {"success": True, "profile": _profile_from_db(str(user.get("sub", "0")))}
+    uid = str(user.get("sub", "0"))
+    conn = _db()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO creator_profiles (user_id, nickname, bio) VALUES (%s,%s,%s) "
+                "ON DUPLICATE KEY UPDATE nickname=VALUES(nickname), bio=VALUES(bio)",
+                (uid, req.nickname or "", req.bio or ""),
+            )
+            conn.commit()
+        except Exception as exc:
+            print(f"[Creator.update] {exc}")
+        finally:
+            if conn.is_connected():
+                conn.close()
+    return {"success": True, "profile": _profile_from_db(uid)}

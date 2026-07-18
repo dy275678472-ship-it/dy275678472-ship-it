@@ -26,7 +26,17 @@
       </ul>
     </aside>
 
-    <main class="editor" v-if="editing">
+    <main class="editor" v-if="editing && wizardMode">
+      <div class="editor-toolbar">
+        <button class="btn-back" @click="backToList">← 返回</button>
+        <span class="toolbar-title">新建作品 · 引导创作</span>
+      </div>
+      <div class="editor-body">
+        <CreationWizard :initial="wizardInitial" @finish="finishWizard" />
+      </div>
+    </main>
+
+    <main class="editor" v-else-if="editing">
       <div v-if="welcomeBanner" class="welcome-banner">
         🎉 欢迎！已到账 <strong>30 点</strong>，试试「AI 续写正文」感受完整创作流程。
         <button class="welcome-close" @click="welcomeBanner = false">知道了</button>
@@ -42,6 +52,8 @@
         <span class="toolbar-title">{{ form.title || '未命名作品' }}</span>
         <div class="toolbar-actions">
           <button class="btn-sm" :disabled="busy" @click="save">保存</button>
+          <button class="btn-sm" @click="runConsistency">一致性</button>
+          <button class="btn-sm danger" @click="deleteStory">删除</button>
           <button class="btn-sm" @click="exportStory('txt')">导出 TXT</button>
           <button class="btn-sm" @click="exportStory('md')">导出 MD</button>
           <button class="btn-sm" @click="submitReview">提交审核</button>
@@ -143,6 +155,7 @@ import { storyApi } from '../api'
 import { IMAGES } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
 import PanelHeading from '../components/PanelHeading.vue'
+import CreationWizard from '../components/CreationWizard.vue'
 
 const images = IMAGES
 
@@ -150,6 +163,8 @@ const route = useRoute()
 const stories = ref([])
 const loading = ref(true)
 const editing = ref(false)
+const wizardMode = ref(false)
+const wizardInitial = ref({})
 const busy = ref(false)
 const msg = ref('')
 const msgErr = ref(false)
@@ -188,6 +203,7 @@ async function loadList() {
 }
 
 async function openStory(id) {
+  wizardMode.value = false
   const res = await storyApi.get(id)
   if (!res?.success) { setMsg(res?.detail || '加载失败', true); return }
   const s = res.story
@@ -229,11 +245,57 @@ async function loadMemory() {
 function newStory() {
   Object.assign(form, { id: null, title: '', genre: '', intro: '', outline: '', characters: '', chapters: '[]', status: 'draft' })
   chapterContent.value = ''; outlinePreview.value = ''; memory.summaries = []
+  wizardMode.value = true
   editing.value = true
   const q = route.query
+  wizardInitial.value = {
+    generatedTitle: q.generatedTitle,
+    prompt: q.prompt,
+    type: q.type,
+  }
   if (q.generatedTitle) form.title = q.generatedTitle
   if (q.prompt) form.intro = q.prompt
   if (q.type) form.genre = q.type
+}
+
+async function finishWizard(payload) {
+  busy.value = true
+  try {
+    Object.assign(form, payload)
+    const chs = JSON.parse(payload.chapters || '[]')
+    if (chs.length) chapterContent.value = chs[0]?.content || ''
+    outlinePreview.value = payload.outline || ''
+    const res = await storyApi.save({ ...form })
+    if (res?.success) {
+      form.id = res.story_id
+      wizardMode.value = false
+      setMsg('作品已保存，可继续编辑或续写')
+      await loadMemory()
+      await loadChapterList()
+    } else setMsg(res?.detail || '保存失败', true)
+  } finally { busy.value = false }
+}
+
+async function deleteStory() {
+  if (!form.id) { backToList(); return }
+  if (!confirm('确定删除这部作品？此操作不可恢复。')) return
+  const res = await storyApi.remove(form.id)
+  if (res?.success) backToList()
+  else setMsg(res?.detail || '删除失败', true)
+}
+
+async function runConsistency() {
+  if (!chapterContent.value) { setMsg('请先填写正文', true); return }
+  busy.value = true
+  try {
+    const res = await storyApi.consistencyCheck({ story_id: form.id, content: chapterContent.value })
+    if (res?.success) {
+      const r = res.report
+      const issues = r?.issues?.length ? r.issues.join('；') : '未发现明显冲突'
+      setMsg(r?.ok ? `检查通过：${issues}` : `发现问题：${issues}`, !r?.ok)
+      window.dispatchEvent(new Event('credits-changed'))
+    } else handleApiError(res, '检查失败')
+  } finally { busy.value = false }
 }
 
 function backToList() { editing.value = false; loadList() }
@@ -350,7 +412,8 @@ function exportStory(format) {
 onMounted(async () => {
   await loadList()
   if (route.query.welcome === '1') welcomeBanner.value = true
-  if (route.query.generatedTitle || route.query.prompt) newStory()
+  if (route.query.story) openStory(Number(route.query.story))
+  else if (route.query.generatedTitle || route.query.prompt) newStory()
 })
 </script>
 
@@ -381,6 +444,7 @@ onMounted(async () => {
 .toolbar-title { flex: 1; font-weight: 700; }
 .toolbar-actions { display: flex; gap: 8px; }
 .btn-sm { padding: 6px 12px; border-radius: 8px; border: 1px solid #dbeafe; background: #fff; cursor: pointer; font-size: 13px; }
+.btn-sm.danger { color: #dc2626; border-color: #fecaca; }
 .editor-body { padding: 20px; max-width: 900px; margin: 0 auto; width: 100%; }
 .panel { background: #fff; border-radius: 14px; padding: 20px; margin-bottom: 16px; border: 1px solid #e8f0fa; }
 .panel h3 { font-size: 15px; margin-bottom: 12px; color: #1e2a3a; }

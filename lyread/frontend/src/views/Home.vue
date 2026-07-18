@@ -145,8 +145,21 @@
         </div>
 
         <div v-if="trialResult" class="trial-result">
-          <h4>AI 为你生成的书名</h4>
-          <p class="result-title">{{ trialResult.title }}</p>
+          <h4>AI 为你生成的书名（点击选用）</h4>
+          <div v-if="trialTitles.length" class="title-pick-grid">
+            <button
+              v-for="(t, i) in trialTitles"
+              :key="i"
+              type="button"
+              class="title-pick"
+              :class="{ selected: trialResult.title === t.title }"
+              @click="pickTrialTitle(t)"
+            >
+              <strong>{{ t.title }}</strong>
+              <span>{{ t.hook || t.description }}</span>
+            </button>
+          </div>
+          <p v-else class="result-title">{{ trialResult.title }}</p>
           <p class="result-hook">{{ trialResult.description }}</p>
           <div v-if="!isLoggedIn" class="trial-cta-row">
             <button class="btn-continue-trial" @click="goRegisterContinue">
@@ -187,8 +200,13 @@ const trialType = ref('')
 const trialPrompt = ref('')
 const trialLoading = ref(false)
 const trialResult = ref(null)
+const trialTitles = ref([])
 const trialError = ref('')
 const isLoggedIn = computed(() => !!localStorage.getItem('token'))
+
+function pickTrialTitle(t) {
+  trialResult.value = { title: t.title, description: t.hook || t.description || '' }
+}
 
 function workspaceQuery() {
   const q = { type: trialType.value, prompt: trialPrompt.value }
@@ -270,6 +288,7 @@ const startTrial = async () => {
       return
     }
     trialResult.value = { title: data.title, description: data.description }
+    trialTitles.value = data.titles || [{ title: data.title, hook: data.description }]
     trackEvent('trial_success', { category: 'funnel', label: 'generate_title' })
     if (localStorage.getItem('token')) {
       goWorkspaceContinue()
@@ -607,6 +626,14 @@ const startTrial = async () => {
   border: 1px solid #bae6fd; text-align: left;
 }
 .trial-result h4 { font-size: 14px; color: #0369a1; margin-bottom: 8px; }
+.title-pick-grid { display: grid; gap: 8px; margin-bottom: 10px; }
+.title-pick {
+  text-align: left; padding: 12px; border-radius: 10px; border: 1px solid #bae6fd;
+  background: #fff; cursor: pointer; width: 100%;
+}
+.title-pick.selected { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+.title-pick strong { display: block; color: #1e2a3a; margin-bottom: 4px; }
+.title-pick span { font-size: 12px; color: #64748b; }
 .result-title { font-weight: 700; color: #1e2a3a; margin-bottom: 6px; }
 .result-hook { font-size: 13px; color: #5a6a7a; }
 .trial-cta-row { margin-top: 16px; text-align: center; }

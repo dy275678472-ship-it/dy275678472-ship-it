@@ -24,14 +24,14 @@ def list_cases(limit: int = 20, category: str = None):
         lim = max(1, min(limit, 50))
         if category:
             cursor.execute(
-                f"SELECT id, content_id, title, category, word_count, heat, score, created_at "
+                f"SELECT id, content_id, title, category, word_count, heat, score, preview_body, created_at "
                 f"FROM contents WHERE {public_case_sql_clause()} AND category=%s "
                 f"ORDER BY heat DESC, id DESC LIMIT %s",
                 (category, lim),
             )
         else:
             cursor.execute(
-                f"SELECT id, content_id, title, category, word_count, heat, score, created_at "
+                f"SELECT id, content_id, title, category, word_count, heat, score, preview_body, created_at "
                 f"FROM contents WHERE {public_case_sql_clause()} "
                 f"ORDER BY heat DESC, id DESC LIMIT %s",
                 (lim,),
@@ -48,7 +48,9 @@ def list_cases(limit: int = 20, category: str = None):
                     "word_count": int(r.get("word_count") or 0),
                     "heat": int(r.get("heat") or 0),
                     "score": float(r.get("score") or 0),
-                    "url": f"/ep/{r['id']}",
+                    "url": f"/case/{r['id']}",
+                    "excerpt": (r.get("preview_body") or "")[:120],
+                    "has_body": bool(r.get("preview_body")),
                     "created_at": str(r.get("created_at") or ""),
                 }
                 for r in rows

@@ -62,6 +62,19 @@ async def startup_event():
         start_if_enabled()
     except Exception as exc:
         print(f"[Startup] 调度器初始化失败(不影响主服务): {type(exc).__name__}: {exc}")
+    try:
+        import mysql.connector
+        from settings import database_config
+        from services.story_cleanup import sweep_stale_jobs
+        conn = mysql.connector.connect(**database_config())
+        c = conn.cursor(dictionary=True)
+        n = sweep_stale_jobs(c)
+        conn.commit()
+        conn.close()
+        if n:
+            print(f"[Startup] 已清理 {n} 个超时生成任务并退款")
+    except Exception as exc:
+        print(f"[Startup] 任务清理跳过: {type(exc).__name__}: {exc}")
 
 
 @app.get("/")
