@@ -47,19 +47,19 @@
           <PanelHeading :icon="images.features.brain">AI 创作流程</PanelHeading>
           <div class="action-grid">
             <button class="btn-action" :disabled="busy" @click="doGenerateTitle">
-              <img :src="images.workspaceActions.title" alt="" width="18" height="18" />
+              <img :src="images.workspaceActions.title" alt="生成书名" width="18" height="18" />
               <span>生成书名 <em>1点</em></span>
             </button>
             <button class="btn-action" :disabled="busy" @click="doGenerateOutline">
-              <img :src="images.workspaceActions.outline" alt="" width="18" height="18" />
+              <img :src="images.workspaceActions.outline" alt="生成大纲" width="18" height="18" />
               <span>生成大纲 <em>3点</em></span>
             </button>
             <button class="btn-action" :disabled="busy" @click="doGenerateChapters">
-              <img :src="images.workspaceActions.chapters" alt="" width="18" height="18" />
+              <img :src="images.workspaceActions.chapters" alt="生成章纲" width="18" height="18" />
               <span>生成章纲 <em>5点</em></span>
             </button>
             <button class="btn-action primary" :disabled="busy" @click="doContinue">
-              <img :src="images.workspaceActions.continue" alt="" width="18" height="18" />
+              <img :src="images.workspaceActions.continue" alt="AI续写正文" width="18" height="18" />
               <span>AI 续写正文 <em>10点</em></span>
             </button>
           </div>
@@ -115,7 +115,7 @@
     </main>
 
     <div v-if="!editing && !loading" class="welcome">
-      <img :src="images.workspace" alt="" class="welcome-banner" />
+      <img :src="images.workspace" alt="创作台欢迎横幅" class="welcome-banner" />
       <h2>创作台</h2>
       <p>从左侧选择作品，或新建一部小说开始 AI 辅助创作。</p>
       <button class="btn-new large" @click="newStory">+ 新建作品</button>

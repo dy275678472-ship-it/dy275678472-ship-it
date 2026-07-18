@@ -2,6 +2,9 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
 import './styles/theme.css'
+import { initAnalytics, trackPageView } from './utils/analytics'
+
+initAnalytics()
 
 const protectedRoutes = ['/workspace', '/wallet', '/admin']
 
@@ -29,7 +32,8 @@ router.beforeEach((to, from, next) => {
 
 router.afterEach((to) => {
   const meta = to.meta || {}
-  document.title = meta.title || 'LyRead AI'
+  const title = meta.title || 'LyRead AI'
+  document.title = title
   let descMeta = document.querySelector('meta[name="description"]')
   if (!descMeta) {
     descMeta = document.createElement('meta')
@@ -37,6 +41,14 @@ router.afterEach((to) => {
     document.head.appendChild(descMeta)
   }
   descMeta.content = meta.desc || 'LyRead AI 智能小说创作平台'
+  let canonical = document.querySelector('link[rel="canonical"]')
+  if (!canonical) {
+    canonical = document.createElement('link')
+    canonical.rel = 'canonical'
+    document.head.appendChild(canonical)
+  }
+  canonical.href = `https://lyread.cn${to.path === '/' ? '/' : to.path}`
+  trackPageView(to.fullPath, title)
 })
 
 createApp(App).use(router).mount('#app')

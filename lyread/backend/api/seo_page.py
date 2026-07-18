@@ -15,6 +15,8 @@ from api.auth import get_current_user
 
 router = APIRouter()
 
+SITE_BASE = os.getenv("SITE_URL", "https://lyread.cn").rstrip("/")
+
 def get_db():
     try:
         return mysql.connector.connect(**database_config())
@@ -33,9 +35,10 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
     <meta property="og:title" content="{title}">
     <meta property="og:description" content="{description}">
     <meta property="og:type" content="article">
-    <meta property="og:url" content="https://www.lyread.cn{url}">
+    <meta property="og:url" content="{site_base}{url}">
     <meta name="robots" content="index,follow">
-    <link rel="canonical" href="https://www.lyread.cn{url}">
+    <link rel="canonical" href="{site_base}{url}">
+    <script type="application/ld+json">{json_ld}</script>
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
         body {{
@@ -185,7 +188,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 <body>
     <div class="seo-container">
         <div class="seo-header">
-            <a href="https://www.lyread.cn" class="brand">🧠 LyRead</a>
+            <a href="{site_base}" class="brand">🧠 LyRead</a>
             <p class="seo-meta">{meta_info}</p>
         </div>
         <div class="seo-card">
@@ -195,11 +198,48 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
             </div>
         </div>
         <div class="seo-footer">
-            <p>© LyRead AI 智能小说创作平台 · <a href="https://www.lyread.cn/">首页</a></p>
+            <p>© LyRead AI 智能小说创作平台 · <a href="{site_base}/">首页</a></p>
         </div>
     </div>
 </body>
 </html>"""
+
+
+def _json_ld_article(title: str, description: str, url_path: str, genre: str = "", word_count: int = 0) -> str:
+    import json
+    data = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": title,
+        "description": description,
+        "url": f"{SITE_BASE}{url_path}",
+        "inLanguage": "zh-CN",
+        "publisher": {
+            "@type": "Organization",
+            "name": "LyRead AI",
+            "url": SITE_BASE,
+            "logo": {"@type": "ImageObject", "url": f"{SITE_BASE}/images/logo-icon.webp"},
+        },
+    }
+    if genre:
+        data["genre"] = genre
+    if word_count:
+        data["wordCount"] = word_count
+    return json.dumps(data, ensure_ascii=False)
+
+
+def _json_ld_list(title: str, description: str, url_path: str) -> str:
+    import json
+    data = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": title,
+        "description": description,
+        "url": f"{SITE_BASE}{url_path}",
+        "inLanguage": "zh-CN",
+        "isPartOf": {"@type": "WebSite", "name": "LyRead AI", "url": SITE_BASE},
+    }
+    return json.dumps(data, ensure_ascii=False)
 
 
 @router.get("/ep/{content_id}", response_class=HTMLResponse)
@@ -211,6 +251,7 @@ async def seo_content_page(content_id: int, request: Request):
     body_html = '<p style="color: #7a8ba8; text-align: center; padding: 40px;">内容未找到</p>'
     meta_info = ""
     url = str(request.url.path)
+    json_ld = _json_ld_article(title, description, url)
 
     try:
         db = get_db()
@@ -231,6 +272,10 @@ async def seo_content_page(content_id: int, request: Request):
                 description = f"{safe_title} - {safe_category}类型，{row['word_count']}字，热度{row['heat']}，AI智能创作平台"
                 keywords = f"小说,{safe_category},{safe_title},AI写小说,网文"
                 meta_info = f"分类：{safe_category} ｜ 字数：{row['word_count']:,} ｜ 热度：{row['heat']}"
+                json_ld = _json_ld_article(
+                    safe_title, description, url,
+                    genre=safe_category, word_count=int(row.get('word_count') or 0),
+                )
                 body_html = f"""
                 <div class="info-grid">
                     <div class="info-item"><strong>分类</strong><br>{safe_category}</div>
@@ -239,7 +284,7 @@ async def seo_content_page(content_id: int, request: Request):
                     <div class="info-item"><strong>评分</strong><br>{row.get('score', 'N/A')}</div>
                 </div>
                 <div class="seo-cta">
-                    <a href="https://www.lyread.cn/?utm_source=baidu&utm_medium=seo">前往 LyRead 阅读完整作品 →</a>
+                    <a href="{SITE_BASE}/?utm_source=baidu&utm_medium=seo">前往 LyRead 阅读完整作品 →</a>
                 </div>
                 """
     except Exception as e:
@@ -250,8 +295,10 @@ async def seo_content_page(content_id: int, request: Request):
         description=description,
         keywords=keywords,
         url=url,
+        site_base=SITE_BASE,
         meta_info=meta_info,
         body_html=body_html,
+        json_ld=json_ld,
     )
 
 
@@ -259,12 +306,13 @@ async def seo_content_page(content_id: int, request: Request):
 async def sitemap_xml():
     """生成搜索引擎站点地图"""
     urls = [
-        ("https://www.lyread.cn/", "weekly", "1.0"),
-        ("https://www.lyread.cn/reader", "weekly", "0.8"),
-        ("https://www.lyread.cn/distribute", "weekly", "0.7"),
-        ("https://www.lyread.cn/ip-market", "weekly", "0.7"),
-        ("https://www.lyread.cn/trending", "weekly", "0.8"),
-        ("https://www.lyread.cn/vip", "monthly", "0.6"),
+        (f"{SITE_BASE}/", "weekly", "1.0"),
+        (f"{SITE_BASE}/pricing", "weekly", "0.9"),
+        (f"{SITE_BASE}/trending", "weekly", "0.8"),
+        (f"{SITE_BASE}/login", "monthly", "0.5"),
+        (f"{SITE_BASE}/story", "weekly", "0.7"),
+        (f"{SITE_BASE}/reader", "weekly", "0.7"),
+        (f"{SITE_BASE}/ep", "weekly", "0.7"),
     ]
 
     try:
@@ -276,7 +324,7 @@ async def sitemap_xml():
             )
             for row in cursor.fetchall():
                 updated = row['updated_at'].strftime('%Y-%m-%d') if row.get('updated_at') else datetime.now().strftime('%Y-%m-%d')
-                urls.append((f"https://www.lyread.cn/ep/{row['id']}", "weekly", "0.6"))
+                urls.append((f"{SITE_BASE}/ep/{row['id']}", "weekly", "0.6"))
             cursor.close()
             db.close()
     except Exception as e:
@@ -297,9 +345,9 @@ async def sitemap_xml():
 @router.get("/robots.txt", response_class=PlainTextResponse)
 async def robots_txt():
     """爬虫规则"""
-    return """User-agent: *
+    return f"""User-agent: *
 Allow: /
-Sitemap: https://www.lyread.cn/sitemap.xml
+Sitemap: {SITE_BASE}/sitemap.xml
 
 User-agent: Baiduspider
 Allow: /
@@ -392,7 +440,7 @@ def ping_bing(urls: list[str]) -> dict:
         for url in urls:
             resp = requests.post(
                 f"https://ssl.bing.com/webmaster/api.svc/json/SubmitUrl?apikey={BING_API_KEY}",
-                json={"siteUrl": "https://www.lyread.cn", "url": url},
+                json={"siteUrl": SITE_BASE, "url": url},
                 proxies=PROXY,
                 timeout=15
             )
@@ -416,11 +464,11 @@ async def ping_baidu(urls: list[str] = None, _user: dict = Depends(get_current_u
         }
 
     if not urls:
-        urls = ["https://www.lyread.cn/sitemap.xml"]
+        urls = [f"{SITE_BASE}/sitemap.xml"]
 
     try:
         resp = requests.post(
-            f"http://data.zz.baidu.com/urls?site=https://www.lyread.cn&token={BAIDU_TOKEN}",
+            f"http://data.zz.baidu.com/urls?site={SITE_BASE}&token={BAIDU_TOKEN}",
             data="\n".join(urls),
             headers={"Content-Type": "text/plain"},
             timeout=10
@@ -433,14 +481,14 @@ async def ping_baidu(urls: list[str] = None, _user: dict = Depends(get_current_u
 @router.get("/seo/ping-sitemap")
 async def ping_search_engines(_user: dict = Depends(get_current_user)):
     """通知各大搜索引擎 sitemap 更新"""
-    sitemap_url = "https://www.lyread.cn/sitemap.xml"
+    sitemap_url = f"{SITE_BASE}/sitemap.xml"
     results = {}
 
     # Baidu（已配置 Token）
     if BAIDU_TOKEN:
         try:
             resp = requests.post(
-                f"http://data.zz.baidu.com/urls?site=https://www.lyread.cn&token={BAIDU_TOKEN}",
+                f"http://data.zz.baidu.com/urls?site={SITE_BASE}&token={BAIDU_TOKEN}",
                 data=sitemap_url,
                 headers={"Content-Type": "text/plain"},
                 timeout=10
@@ -478,7 +526,7 @@ async def seo_content_list(request: Request):
                 safe_category = escape(str(row['category']))
                 items_html += f"""
                 <li>
-                    <a href="https://www.lyread.cn/ep/{int(row['id'])}">{safe_title}</a>
+                    <a href="{SITE_BASE}/ep/{int(row['id'])}">{safe_title}</a>
                     <span class="tag">{safe_category}</span>
                     <span class="stat">{row['word_count']}字 · 热度{row['heat']}</span>
                 </li>"""
@@ -496,13 +544,18 @@ async def seo_content_list(request: Request):
     </ul>
     """
 
+    list_title = "LyRead AI 小说作品列表 - 智能小说创作平台"
+    list_desc = "LyRead AI智能小说创作平台作品列表，浏览各类热门的AI生成小说作品"
+    list_path = str(request.url.path)
     return PAGE_TEMPLATE.format(
-        title="LyRead AI 小说作品列表 - 智能小说创作平台",
-        description="LyRead AI智能小说创作平台作品列表，浏览各类热门的AI生成小说作品",
+        title=list_title,
+        description=list_desc,
         keywords="AI小说,网文列表,智能写作,小说推荐",
-        url=str(request.url.path),
-        meta_info=f"共收录作品",
+        url=list_path,
+        site_base=SITE_BASE,
+        meta_info="共收录作品",
         body_html=body_html,
+        json_ld=_json_ld_list(list_title, list_desc, list_path),
     )
 
 @router.get("/ep/", response_class=HTMLResponse)

@@ -1,7 +1,7 @@
 <template>
   <div class="placeholder-page">
     <div class="card">
-      <img :src="logo" alt="" class="icon-img" width="64" height="64" />
+      <img :src="logo" alt="LyRead AI" class="icon-img" width="64" height="64" />
       <h1>{{ title }}</h1>
       <p>{{ desc }}</p>
       <div class="actions">

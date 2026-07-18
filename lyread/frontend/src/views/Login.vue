@@ -112,6 +112,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { authApi } from '../api'
 import { IMAGES } from '../assets/images'
+import { trackEvent } from '../utils/analytics'
 
 const router = useRouter()
 const route = useRoute()
@@ -191,6 +192,7 @@ const handleLogin = async () => {
     }
     localStorage.setItem('token', res.token)
     localStorage.setItem('user', JSON.stringify(res.user || {}))
+    trackEvent('login_success', { category: 'auth', label: 'password' })
     router.push('/')
   } catch (err) {
     error.value = '登录失败，请稍后再试'
@@ -223,6 +225,7 @@ const handleRegister = async () => {
     if (res.token) {
       localStorage.setItem('token', res.token)
       localStorage.setItem('user', JSON.stringify(res.user || {}))
+      trackEvent('register_success', { category: 'auth', label: 'auto_login' })
       success.value = '注册成功，正在进入...'
       router.push('/')
       return

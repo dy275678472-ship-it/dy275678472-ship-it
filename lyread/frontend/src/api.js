@@ -81,4 +81,8 @@ export const adminApi = {
   },
 }
 
+export const statsApi = {
+  public() { return request('/api/stats/public') },
+}
+
 export const authApiMe = () => request('/api/auth/me')

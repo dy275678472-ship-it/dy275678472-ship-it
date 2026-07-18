@@ -95,3 +95,34 @@ def stories_stats(user: Optional[dict] = Depends(get_optional_user)):
 def earnings(user: Optional[dict] = Depends(get_optional_user)):
     """收益概览（当前无交易系统，返回占位结构，便于前端渲染）。"""
     return {"success": True, "total": 0.0, "month": 0.0, "currency": "CNY", "items": []}
+
+
+@router.get("/public")
+def public_stats():
+    """首页公开展示数据（真实数据库统计，禁止夸大）。"""
+    data = {
+        "users": 0,
+        "works": 0,
+        "cases": 0,
+        "total_words": 0,
+    }
+    conn = _db()
+    if not conn:
+        return {"success": True, **data}
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT COUNT(*) AS c FROM users")
+        data["users"] = int((cursor.fetchone() or {}).get("c") or 0)
+        cursor.execute("SELECT COUNT(*) AS c, COALESCE(SUM(word_count),0) AS w FROM stories")
+        row = cursor.fetchone() or {}
+        data["works"] = int(row.get("c") or 0)
+        data["total_words"] = int(row.get("w") or 0)
+        cursor.execute("SELECT COUNT(*) AS c FROM contents WHERE status='active'")
+        data["cases"] = int((cursor.fetchone() or {}).get("c") or 0)
+        return {"success": True, **data}
+    except Exception as exc:
+        print(f"[Stats.public] {type(exc).__name__}: {exc}")
+        return {"success": True, **data}
+    finally:
+        if conn.is_connected():
+            conn.close()

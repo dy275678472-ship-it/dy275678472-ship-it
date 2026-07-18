@@ -1,7 +1,7 @@
 <template>
   <div class="trending-page">
     <header class="hero">
-      <img :src="images.features.novel" alt="" class="hero-icon" width="40" height="40" />
+      <img :src="images.features.novel" alt="案例阅读" class="hero-icon" width="40" height="40" />
       <h1>案例阅读</h1>
       <p>平台真实生成案例，点击阅读全文，或用这个风格开始创作</p>
     </header>
@@ -16,13 +16,13 @@
     />
     <div v-else class="case-grid">
       <a v-for="(c, i) in cases" :key="c.id" :href="c.url" class="case-card" target="_blank" rel="noopener">
-        <img :src="coverForCase(c, i)" alt="" class="case-cover" loading="lazy" />
+        <img :src="coverForCase(c, i)" :alt="`${c.title} 封面`" class="case-cover" loading="lazy" />
         <div class="case-body">
           <span class="cat">{{ c.category || '都市' }}</span>
           <h3>{{ c.title }}</h3>
           <div class="meta">
             <span>{{ c.word_count }} 字</span>
-            <span class="heat"><img :src="images.fire" alt="" width="14" height="14" /> {{ c.heat }}</span>
+            <span class="heat"><img :src="images.fire" alt="热度" width="14" height="14" /> {{ c.heat }}</span>
           </div>
         </div>
       </a>

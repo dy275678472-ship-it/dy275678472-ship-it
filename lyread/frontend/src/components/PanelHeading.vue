@@ -1,12 +1,12 @@
 <template>
   <div class="panel-heading">
-    <img v-if="icon" :src="icon" alt="" class="panel-heading__icon" width="20" height="20" />
+    <img v-if="icon" :src="icon" :alt="iconAlt" class="panel-heading__icon" width="20" height="20" aria-hidden="true" />
     <h3 class="panel-heading__title"><slot /></h3>
   </div>
 </template>
 
 <script setup>
-defineProps({ icon: { type: String, default: '' } })
+defineProps({ icon: { type: String, default: '' }, iconAlt: { type: String, default: '' } })
 </script>
 
 <style scoped>

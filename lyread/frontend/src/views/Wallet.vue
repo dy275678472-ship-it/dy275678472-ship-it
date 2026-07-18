@@ -1,7 +1,7 @@
 <template>
   <div class="wallet-page">
     <header class="wallet-hero">
-      <img :src="images.point" alt="" class="wallet-hero-icon" width="48" height="48" />
+      <img :src="images.point" alt="点数余额" class="wallet-hero-icon" width="48" height="48" />
       <div>
         <h1>我的点数</h1>
         <p>免费额度当日有效；充值点数长期有效；生成失败自动返还。</p>
@@ -10,19 +10,19 @@
 
     <section class="balance-cards" v-if="balance">
       <div class="bal-card total">
-        <img :src="images.wallet.total" alt="" class="bal-icon" width="28" height="28" />
+        <img :src="images.wallet.total" alt="可用总额" class="bal-icon" width="28" height="28" />
         <span class="bal-label">可用总额</span>
         <span class="bal-num">{{ balance.total }}</span>
         <span class="bal-unit">点</span>
       </div>
       <div class="bal-card">
-        <img :src="images.wallet.free" alt="" class="bal-icon" width="24" height="24" />
+        <img :src="images.wallet.free" alt="免费额度" class="bal-icon" width="24" height="24" />
         <span class="bal-label">免费额度</span>
         <span class="bal-num sub">{{ balance.free }}</span>
         <span class="bal-hint">今日有效</span>
       </div>
       <div class="bal-card">
-        <img :src="images.wallet.paid" alt="" class="bal-icon" width="24" height="24" />
+        <img :src="images.wallet.paid" alt="充值点数" class="bal-icon" width="24" height="24" />
         <span class="bal-label">充值/赠送</span>
         <span class="bal-num sub">{{ balance.paid }}</span>
         <span class="bal-hint" v-if="balance.reserved">冻结 {{ balance.reserved }} 点</span>
@@ -31,11 +31,11 @@
 
     <section class="actions">
       <button class="btn-claim" :disabled="claiming" @click="claimDaily">
-        <img :src="images.wallet.free" alt="" width="18" height="18" />
+        <img :src="images.wallet.free" alt="每日免费" width="18" height="18" />
         {{ claiming ? '领取中...' : '领取今日免费 5 点' }}
       </button>
       <router-link to="/pricing" class="btn-recharge">
-        <img :src="images.pricing.gem" alt="" width="18" height="18" />
+        <img :src="images.pricing.gem" alt="充值" width="18" height="18" />
         充值点数
       </router-link>
     </section>
@@ -53,7 +53,7 @@
       />
       <ul v-else class="txn-list">
         <li v-for="(t, i) in txns" :key="i" class="txn-item">
-          <img :src="txnIcon(t.type)" alt="" class="txn-icon" width="32" height="32" />
+          <img :src="txnIcon(t.type)" :alt="typeLabel(t.type)" class="txn-icon" width="32" height="32" />
           <div class="txn-left">
             <span class="txn-type">{{ typeLabel(t.type) }}</span>
             <span class="txn-note">{{ t.note || '—' }}</span>

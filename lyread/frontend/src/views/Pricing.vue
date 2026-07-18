@@ -1,28 +1,28 @@
 <template>
   <div class="pricing-page">
     <header class="page-hero">
-      <img :src="images.pricing.gem" alt="" class="page-hero-icon" width="44" height="44" />
+      <img :src="images.pricing.gem" alt="点数计费图标" class="page-hero-icon" width="44" height="44" />
       <h1>点数计费，用多少付多少</h1>
       <p>无订阅、无终身无限套餐。生成前显示预计消耗，失败自动全额返还。</p>
     </header>
 
     <section class="highlights" v-if="info">
       <div class="highlight-card">
-        <img :src="images.pricing.gift" alt="" class="hl-icon-img" width="40" height="40" />
+        <img :src="images.pricing.gift" alt="注册赠送点数" class="hl-icon-img" width="40" height="40" />
         <div>
           <strong>新用户注册送 {{ info.signup_bonus }} 点</strong>
           <p>足够体验书名、大纲与章节生成</p>
         </div>
       </div>
       <div class="highlight-card">
-        <img :src="images.pricing.daily" alt="" class="hl-icon-img" width="40" height="40" />
+        <img :src="images.pricing.daily" alt="每日免费点数" class="hl-icon-img" width="40" height="40" />
         <div>
           <strong>每日免费 {{ info.daily_free }} 点</strong>
           <p>登录领取，当日有效，不累计</p>
         </div>
       </div>
       <div class="highlight-card">
-        <img :src="images.pricing.gem" alt="" class="hl-icon-img" width="40" height="40" />
+        <img :src="images.pricing.gem" alt="充值套餐" class="hl-icon-img" width="40" height="40" />
         <div>
           <strong>10 元 = 100 点</strong>
           <p>生成一章约 2000 字 ≈ 10 点（约 1 元）</p>
@@ -82,6 +82,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { creditsApi, ordersApi } from '../api'
 import { IMAGES } from '../assets/images'
+import { trackEvent } from '../utils/analytics'
 
 const router = useRouter()
 const info = ref(null)
@@ -123,6 +124,7 @@ const faqs = [
 const isLoggedIn = computed(() => !!localStorage.getItem('token'))
 
 onMounted(async () => {
+  trackEvent('pricing_view', { category: 'funnel', label: 'page_load' })
   try {
     const [prices, pkgs] = await Promise.all([
       creditsApi.prices(),
@@ -138,9 +140,11 @@ onMounted(async () => {
 
 async function buy(pkg) {
   if (!isLoggedIn.value) {
+    trackEvent('pricing_buy_click', { category: 'funnel', label: 'redirect_login', value: pkg.price })
     router.push('/login')
     return
   }
+  trackEvent('pricing_buy_click', { category: 'funnel', label: pkg.id, value: pkg.price })
   const key = `pkg-${pkg.id}-${Date.now()}`
   const res = await ordersApi.create(pkg.id, key)
   if (!res?.success) {

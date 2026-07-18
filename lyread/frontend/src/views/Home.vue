@@ -6,50 +6,50 @@
         <h1>让 AI 陪你写完一部长篇小说</h1>
         <p class="subtitle">从人物、大纲到连续章节，自动记住剧情和伏笔；也支持快速生成完整短故事</p>
         <div class="hero-btns">
-          <button class="btn-primary" @click="$router.push('/reader')">开始写长篇小说</button>
-          <button class="btn-secondary" @click="showTrialModal = true">快速生成短故事</button>
+          <button class="btn-primary" @click="openTrial">免费试写第一章</button>
+          <button class="btn-secondary" @click="$router.push('/trending')">查看真实案例</button>
         </div>
       </div>
     </section>
 
     <section class="features">
       <div class="feature-card">
-        <img :src="images.features.brain" alt="" class="icon-img" width="56" height="56" />
+        <img :src="images.features.brain" alt="小说大脑功能图标" class="icon-img" width="56" height="56" />
         <h3>小说大脑</h3>
         <p>人物档案、伏笔、章节摘要自动记忆，写到第 50 章也不乱</p>
       </div>
       <div class="feature-card">
-        <img :src="images.features.novel" alt="" class="icon-img" width="56" height="56" />
+        <img :src="images.features.novel" alt="长篇连载功能图标" class="icon-img" width="56" height="56" />
         <h3>长篇连载</h3>
         <p>大纲 → 章纲 → 正文续写，专为日更作者设计</p>
       </div>
       <div class="feature-card">
-        <img :src="images.features.short" alt="" class="icon-img" width="56" height="56" />
+        <img :src="images.features.short" alt="短故事功能图标" class="icon-img" width="56" height="56" />
         <h3>短故事</h3>
         <p>输入想法，几分钟生成完整短篇，适合盐选/公众号</p>
       </div>
       <div class="feature-card">
-        <img :src="images.features.credits" alt="" class="icon-img" width="56" height="56" />
+        <img :src="images.features.credits" alt="点数计费功能图标" class="icon-img" width="56" height="56" />
         <h3>点数计费</h3>
         <p>用多少付多少，注册送 30 点，每日免费 5 点</p>
       </div>
     </section>
 
-    <!-- 数据证明 -->
-    <section class="data-proof">
+    <section class="data-proof" v-if="statsLoaded">
       <div class="data-item">
         <h3>{{ stats.users }}</h3>
         <p>注册用户</p>
       </div>
       <div class="data-item">
-        <h3>{{ stats.novels }}</h3>
-        <p>AI生成小说</p>
+        <h3>{{ stats.works }}</h3>
+        <p>平台作品</p>
       </div>
       <div class="data-item">
-        <h3>{{ stats.satisfaction }}</h3>
-        <p>用户满意度</p>
+        <h3>{{ stats.cases }}</h3>
+        <p>公开案例</p>
       </div>
     </section>
+    <p class="stats-note" v-if="statsLoaded">数据来自平台实时统计，每日更新</p>
 
     <section class="pricing-cta">
       <h2>透明计费，失败全额返还</h2>
@@ -63,7 +63,7 @@
       </div>
       <div class="hot-grid">
         <div class="hot-card">
-          <img :src="images.covers[0]" alt="" class="hot-cover" />
+          <img :src="images.covers[0]" alt="都市神豪题材小说封面" class="hot-cover" />
           <div class="hot-body">
             <div class="hot-type">都市神豪</div>
             <h3>开局十个亿，我在都市横着走</h3>
@@ -71,7 +71,7 @@
           </div>
         </div>
         <div class="hot-card">
-          <img :src="images.covers[1]" alt="" class="hot-cover" />
+          <img :src="images.covers[1]" alt="战神归来题材小说封面" class="hot-cover" />
           <div class="hot-body">
             <div class="hot-type">战神归来</div>
             <h3>战神回归，发现女儿住狗窝</h3>
@@ -79,7 +79,7 @@
           </div>
         </div>
         <div class="hot-card">
-          <img :src="images.covers[2]" alt="" class="hot-cover" />
+          <img :src="images.covers[2]" alt="重生题材小说封面" class="hot-cover" />
           <div class="hot-body">
             <div class="hot-type">重生</div>
             <h3>重生2003，当首富很简单</h3>
@@ -91,15 +91,16 @@
 
     <!-- 用户评价 -->
     <section class="testimonials">
-      <SectionHeading class="testimonials-title" :icon="images.pricing.gem" center>用户评价</SectionHeading>
+      <SectionHeading class="testimonials-title" :icon="images.pricing.gem" center>创作者反馈</SectionHeading>
+      <p class="testimonials-note">以下为典型使用场景反馈（非个别用户承诺效果）</p>
       <div class="testimonial-grid">
         <div class="testimonial-card">
-          <img :src="images.avatars.author" alt="" class="avatar-img" width="56" height="56" />
+          <img :src="images.avatars.author" alt="网文作者头像" class="avatar-img" width="56" height="56" />
           <div class="name">网文作者小李</div>
           <p>"AI生成大纲太香了！10分钟搞定一本书框架"</p>
         </div>
         <div class="testimonial-card">
-          <img :src="images.avatars.studio" alt="" class="avatar-img" width="56" height="56" />
+          <img :src="images.avatars.studio" alt="工作室负责人头像" class="avatar-img" width="56" height="56" />
           <div class="name">工作室负责人</div>
           <p>"批量产出效率翻倍，团队人手必备"</p>
         </div>
@@ -150,7 +151,7 @@
         </div>
 
         <div class="trial-tips">
-          <span class="tip-badge"><img :src="images.pricing.gift" alt="" width="16" height="16" /> 游客可免费试用一次</span>
+          <span class="tip-badge"><img :src="images.pricing.gift" alt="免费试用" width="16" height="16" /> 游客可免费试用一次</span>
           <span class="tip-link" @click="$router.push('/login')">注册送 30 点 →</span>
         </div>
       </div>
@@ -159,10 +160,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { IMAGES } from '../assets/images'
 import SectionHeading from '../components/SectionHeading.vue'
+import { statsApi } from '../api'
+import { formatCount } from '../utils/format'
+import { trackEvent } from '../utils/analytics'
 
 const router = useRouter()
 const images = IMAGES
@@ -172,11 +176,31 @@ const trialType = ref('')
 const trialPrompt = ref('')
 const trialLoading = ref(false)
 const trialResult = ref(null)
+const statsLoaded = ref(false)
 
 const stats = ref({
-  users: '10万+',
-  novels: '50万+',
-  satisfaction: '98%'
+  users: '—',
+  works: '—',
+  cases: '—',
+})
+
+function openTrial() {
+  trackEvent('trial_open', { category: 'funnel', label: 'hero_cta' })
+  showTrialModal.value = true
+}
+
+onMounted(async () => {
+  try {
+    const res = await statsApi.public()
+    if (res?.success) {
+      stats.value = {
+        users: formatCount(res.users),
+        works: formatCount(res.works),
+        cases: formatCount(res.cases),
+      }
+      statsLoaded.value = true
+    }
+  } catch { /* 隐藏数据区 */ }
 })
 
 const startTrial = async () => {
@@ -185,6 +209,7 @@ const startTrial = async () => {
     return
   }
 
+  trackEvent('trial_submit', { category: 'funnel', label: trialType.value })
   trialLoading.value = true
   trialResult.value = null
   try {
@@ -202,6 +227,7 @@ const startTrial = async () => {
       return
     }
     trialResult.value = { title: data.title, description: data.description }
+    trackEvent('trial_success', { category: 'funnel', label: 'generate_title' })
     if (localStorage.getItem('token')) {
       router.push({
         path: '/workspace',
@@ -397,7 +423,8 @@ const startTrial = async () => {
   margin-right: 8px;
 }
 
-.testimonials { padding: 40px 24px; max-width: 1200px; margin: 0 auto; text-align: center; }
+.testimonials-note { font-size: 13px; color: #94a3b8; margin: -20px 0 24px; }
+.stats-note { text-align: center; font-size: 12px; color: #94a3b8; margin: -40px auto 48px; max-width: 1200px; }
 .testimonials-title { margin-bottom: 32px; font-size: 24px; }
 .testimonial-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
 .testimonial-card {

@@ -20,7 +20,7 @@
           <router-link to="/workspace" class="nav-link nav-link-primary" @click="menuOpen = false">创作台</router-link>
           <router-link v-if="isAdmin" to="/admin" class="nav-link" @click="menuOpen = false">后台</router-link>
           <router-link to="/wallet" class="nav-credits" @click="menuOpen = false" title="我的点数">
-            <img :src="pointIcon" alt="" class="credits-icon-img" width="14" height="14" />
+            <img :src="pointIcon" alt="点数" class="credits-icon-img" width="14" height="14" />
             <span class="credits-num">{{ credits === null ? '—' : credits }}</span>
             <span class="credits-label">点</span>
           </router-link>
@@ -31,7 +31,7 @@
     </nav>
     <router-view @credits-changed="fetchCredits" />
     <footer class="site-footer">
-      <img :src="logo" alt="" width="20" height="20" />
+      <img :src="logo" alt="LyRead AI" width="20" height="20" />
       <span>LyRead AI · 智能小说创作平台</span>
     </footer>
   </div>

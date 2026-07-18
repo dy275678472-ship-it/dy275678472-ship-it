@@ -1,6 +1,6 @@
 <template>
   <div class="empty-state">
-    <img v-if="image" :src="image" alt="" class="empty-state__img" :width="imageWidth" loading="lazy" />
+    <img v-if="image" :src="image" :alt="imageAlt || title || '插图'" class="empty-state__img" :width="imageWidth" loading="lazy" />
     <h3 v-if="title" class="empty-state__title">{{ title }}</h3>
     <p v-if="description" class="empty-state__desc">{{ description }}</p>
     <slot />
@@ -10,6 +10,7 @@
 <script setup>
 defineProps({
   image: { type: String, default: '' },
+  imageAlt: { type: String, default: '' },
   title: { type: String, default: '' },
   description: { type: String, default: '' },
   imageWidth: { type: Number, default: 200 },
