@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>新闻动态 — 中科国瓷</title><meta name="description" content="中科国瓷最新新闻与行业动态">
+<link rel="canonical" href="https://kdgc.cc/news/"><link rel="stylesheet" href="/assets/css/style.css">
+</head><body><nav class="nav"><div class="nav-inner">
+<a href="/" class="nav-logo">中科<span>国瓷</span></a>
+<div class="nav-links">
+<a href="/products/">产品</a><a href="/technology/">技术</a><a href="/applications/">应用</a>
+<a href="/cases/">案例</a><a href="/about/">关于</a><a href="/news/">新闻</a><a href="/knowledge/">知识库</a>
+<a href="/contact/" class="nav-cta">获取方案</a>
+</div>
+<button class="menu-toggle" aria-label="菜单">☰</button>
+</div></nav><main><section class="page-hero"><div class="container"><h1>新闻动态</h1></div></section>
+<section><div class="container" id="news-list"><p>加载中...</p></div></section>
+<script>fetch('/api/news').then(r=>r.json()).then(items=>{document.getElementById('news-list').innerHTML=items.map(n=>`<div class="content-block"><span class="tag">${(n.published_at||'').slice(0,10)}</span><h3><a href="/news/${n.slug}.html">${n.title}</a></h3><p>${n.summary}</p></div>`).join('')}).catch(()=>{});</script></main><footer><div class="footer-grid container" style="padding:0">
+<div><h4>中科国瓷</h4><p style="font-size:14px;margin-top:8px">高导热陶瓷基板与电子陶瓷材料方案商</p></div>
+<div><h4>产品</h4><a href="/products/aln-substrate.html">氮化铝基板</a><a href="/products/dbc-amb.html">DBC/AMB基板</a></div>
+<div><h4>公司</h4><a href="/about/">关于我们</a><a href="/news/">新闻</a><a href="/contact/">联系</a></div>
+<div><h4>联系</h4><a href="mailto:info@kdgc.cc">info@kdgc.cc</a></div>
+</div>
+<div class="footer-bottom">© 2026 安徽中科国瓷新型元器件有限公司 · 皖ICP备XXXXXXXX号 [待公司提供]</div></footer>
+<script src="/assets/js/main.js"></script></body></html>

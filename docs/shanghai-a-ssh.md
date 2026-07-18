@@ -50,8 +50,11 @@ ssh -i ~/.ssh/shanghai_a_deploy ubuntu@150.158.42.39
 ssh -i ~/.ssh/shanghai_a_deploy ubuntu@150.158.42.39 "hostname && uptime"
 ```
 
-## 服务器当前状态（2026-07-18）
+## 服务器当前状态（2026-07-18，已验证）
 
-- nginx/1.24.0 + Next.js（CosGo 等站点）
-- 开放端口：22, 80, 443, 8080, 3306, 6379
-- 建议：将 MySQL(3306)、Redis(6379) 限制为内网访问
+- 主机名：`VM-0-8-ubuntu`，已运行 14 天
+- 系统：Ubuntu，内核 6.8.0，3.6GB 内存，磁盘 69G（已用 75%）
+- Web：nginx active，站点包括 cosgo、esnlink.cn、yoco.chat 等
+- 应用：uvicorn:8000、python3:3000/8095、Redis:6379
+- 开放端口：22, 80, 443, 3000, 6379, 8000, 8089, 8095
+- 建议：将 Redis(6379) 限制为内网访问；磁盘使用率偏高，留意清理
