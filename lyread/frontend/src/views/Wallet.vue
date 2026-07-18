@@ -1,22 +1,28 @@
 <template>
   <div class="wallet-page">
     <header class="wallet-hero">
-      <h1>我的点数</h1>
-      <p>免费额度当日有效；充值点数长期有效；生成失败自动返还。</p>
+      <img :src="images.point" alt="" class="wallet-hero-icon" width="48" height="48" />
+      <div>
+        <h1>我的点数</h1>
+        <p>免费额度当日有效；充值点数长期有效；生成失败自动返还。</p>
+      </div>
     </header>
 
     <section class="balance-cards" v-if="balance">
       <div class="bal-card total">
+        <img :src="images.wallet.total" alt="" class="bal-icon" width="28" height="28" />
         <span class="bal-label">可用总额</span>
         <span class="bal-num">{{ balance.total }}</span>
         <span class="bal-unit">点</span>
       </div>
       <div class="bal-card">
+        <img :src="images.wallet.free" alt="" class="bal-icon" width="24" height="24" />
         <span class="bal-label">免费额度</span>
         <span class="bal-num sub">{{ balance.free }}</span>
         <span class="bal-hint">今日有效</span>
       </div>
       <div class="bal-card">
+        <img :src="images.wallet.paid" alt="" class="bal-icon" width="24" height="24" />
         <span class="bal-label">充值/赠送</span>
         <span class="bal-num sub">{{ balance.paid }}</span>
         <span class="bal-hint" v-if="balance.reserved">冻结 {{ balance.reserved }} 点</span>
@@ -25,18 +31,29 @@
 
     <section class="actions">
       <button class="btn-claim" :disabled="claiming" @click="claimDaily">
+        <img :src="images.wallet.free" alt="" width="18" height="18" />
         {{ claiming ? '领取中...' : '领取今日免费 5 点' }}
       </button>
-      <router-link to="/pricing" class="btn-recharge">充值点数</router-link>
+      <router-link to="/pricing" class="btn-recharge">
+        <img :src="images.pricing.gem" alt="" width="18" height="18" />
+        充值点数
+      </router-link>
     </section>
     <p v-if="claimMsg" class="claim-msg" :class="{ ok: claimOk }">{{ claimMsg }}</p>
 
     <section class="transactions">
       <h2>消费记录</h2>
       <div v-if="loading" class="empty">加载中...</div>
-      <div v-else-if="!txns.length" class="empty">暂无记录</div>
+      <EmptyState
+        v-else-if="!txns.length"
+        :image="images.emptyCreate"
+        title="暂无消费记录"
+        description="开始创作或领取每日免费点数后，记录会显示在这里"
+        :image-width="140"
+      />
       <ul v-else class="txn-list">
         <li v-for="(t, i) in txns" :key="i" class="txn-item">
+          <img :src="txnIcon(t.type)" alt="" class="txn-icon" width="32" height="32" />
           <div class="txn-left">
             <span class="txn-type">{{ typeLabel(t.type) }}</span>
             <span class="txn-note">{{ t.note || '—' }}</span>
@@ -56,7 +73,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { creditsApi } from '../api'
+import { IMAGES } from '../assets/images'
+import EmptyState from '../components/EmptyState.vue'
 
+const images = IMAGES
 const balance = ref(null)
 const txns = ref([])
 const loading = ref(true)
@@ -74,6 +94,18 @@ const TYPE_LABELS = {
 }
 
 function typeLabel(t) { return TYPE_LABELS[t] || t }
+
+function txnIcon(type) {
+  const map = {
+    signup_bonus: images.pricing.gift,
+    daily_grant: images.wallet.free,
+    recharge: images.pricing.gem,
+    refund: images.wallet.paid,
+    settle: images.point,
+    reserve: images.point,
+  }
+  return map[type] || images.point
+}
 
 function formatTime(s) {
   if (!s) return ''
@@ -120,18 +152,25 @@ onMounted(load)
 
 <style scoped>
 .wallet-page { max-width: 720px; margin: 0 auto; padding: 32px 20px 80px; }
-.wallet-hero { margin-bottom: 28px; }
-.wallet-hero h1 { font-size: 28px; color: #1e2a3a; margin-bottom: 8px; }
-.wallet-hero p { color: #5a6a7a; font-size: 14px; }
+.wallet-hero {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 28px;
+  padding: 20px; background: linear-gradient(135deg, #f0f7ff, #fff);
+  border-radius: 16px; border: 1px solid #e8f0fa;
+}
+.wallet-hero-icon { flex-shrink: 0; }
+.wallet-hero h1 { font-size: 28px; color: #1e2a3a; margin: 0 0 6px; }
+.wallet-hero p { color: #5a6a7a; font-size: 14px; margin: 0; }
 
 .balance-cards { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; margin-bottom: 24px; }
 .bal-card {
-  background: #fff; border-radius: 14px; padding: 20px;
+  position: relative; background: #fff; border-radius: 14px; padding: 20px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #e8f0fa;
 }
+.bal-icon { margin-bottom: 8px; display: block; }
 .bal-card.total {
   background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff; border: none;
 }
+.bal-card.total .bal-icon { filter: brightness(1.2); }
 .bal-label { display: block; font-size: 13px; opacity: 0.85; margin-bottom: 8px; }
 .bal-num { font-size: 36px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .bal-num.sub { font-size: 28px; color: #2563eb; }
@@ -142,6 +181,7 @@ onMounted(load)
 
 .actions { display: flex; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
 .btn-claim, .btn-recharge {
+  display: inline-flex; align-items: center; gap: 8px; justify-content: center;
   padding: 12px 22px; border-radius: 10px; font-weight: 600; font-size: 14px;
   border: none; cursor: pointer; text-decoration: none; text-align: center;
 }
@@ -163,6 +203,8 @@ onMounted(load)
   display: flex; justify-content: space-between; align-items: center;
   padding: 14px 18px; border-bottom: 1px solid #f0f4f8; gap: 12px;
 }
+.txn-icon { flex-shrink: 0; border-radius: 8px; }
+.txn-left { flex: 1; min-width: 0; }
 .txn-item:last-child { border-bottom: none; }
 .txn-type { display: block; font-weight: 600; color: #1e2a3a; font-size: 14px; }
 .txn-note { display: block; font-size: 12px; color: #94a3b8; margin-top: 2px; }
@@ -172,6 +214,7 @@ onMounted(load)
 .txn-time { font-size: 11px; color: #cbd5e1; }
 
 @media (max-width: 600px) {
+  .wallet-hero { flex-direction: column; text-align: center; }
   .balance-cards { grid-template-columns: 1fr; }
   .actions { flex-direction: column; }
   .btn-claim, .btn-recharge { width: 100%; }

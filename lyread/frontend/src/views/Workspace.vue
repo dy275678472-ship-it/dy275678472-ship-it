@@ -6,7 +6,15 @@
         <button class="btn-new" @click="newStory">+ 新建</button>
       </div>
       <div v-if="loading" class="empty">加载中...</div>
-      <div v-else-if="!stories.length" class="empty">还没有作品，点击新建开始创作</div>
+      <EmptyState
+        v-else-if="!stories.length"
+        :image="images.emptyCreate"
+        title="还没有作品"
+        description="创建第一部小说，开始 AI 辅助创作"
+        :image-width="160"
+      >
+        <button class="btn-new" @click="newStory">+ 新建作品</button>
+      </EmptyState>
       <ul v-else class="story-list">
         <li v-for="s in stories" :key="s.id" @click="openStory(s.id)" class="story-item">
           <span class="s-title">{{ s.title || '未命名' }}</span>
@@ -29,35 +37,47 @@
 
       <div class="editor-body">
         <section class="panel">
-          <h3>基本信息</h3>
+          <PanelHeading>基本信息</PanelHeading>
           <input v-model="form.title" placeholder="书名" class="input" />
           <input v-model="form.genre" placeholder="题材（如：都市神豪）" class="input" />
           <textarea v-model="form.intro" placeholder="简介 / 故事钩子" class="textarea" rows="3"></textarea>
         </section>
 
         <section class="panel actions">
-          <h3>AI 创作流程</h3>
+          <PanelHeading :icon="images.features.brain">AI 创作流程</PanelHeading>
           <div class="action-grid">
-            <button class="btn-action" :disabled="busy" @click="doGenerateTitle">① 生成书名 (1点)</button>
-            <button class="btn-action" :disabled="busy" @click="doGenerateOutline">② 生成大纲 (3点)</button>
-            <button class="btn-action" :disabled="busy" @click="doGenerateChapters">③ 生成章纲 (5点)</button>
-            <button class="btn-action primary" :disabled="busy" @click="doContinue">④ AI 续写正文 (10点)</button>
+            <button class="btn-action" :disabled="busy" @click="doGenerateTitle">
+              <img :src="images.workspaceActions.title" alt="" width="18" height="18" />
+              <span>生成书名 <em>1点</em></span>
+            </button>
+            <button class="btn-action" :disabled="busy" @click="doGenerateOutline">
+              <img :src="images.workspaceActions.outline" alt="" width="18" height="18" />
+              <span>生成大纲 <em>3点</em></span>
+            </button>
+            <button class="btn-action" :disabled="busy" @click="doGenerateChapters">
+              <img :src="images.workspaceActions.chapters" alt="" width="18" height="18" />
+              <span>生成章纲 <em>5点</em></span>
+            </button>
+            <button class="btn-action primary" :disabled="busy" @click="doContinue">
+              <img :src="images.workspaceActions.continue" alt="" width="18" height="18" />
+              <span>AI 续写正文 <em>10点</em></span>
+            </button>
           </div>
           <p v-if="msg" class="msg" :class="{ err: msgErr }">{{ msg }}</p>
         </section>
 
         <section class="panel" v-if="outlinePreview">
-          <h3>大纲</h3>
+          <PanelHeading :icon="images.features.novel">大纲</PanelHeading>
           <pre class="code">{{ outlinePreview }}</pre>
         </section>
 
         <section class="panel">
-          <h3>章节内容</h3>
+          <PanelHeading :icon="images.features.short">章节内容</PanelHeading>
           <textarea v-model="chapterContent" class="textarea content-area" placeholder="在此编辑或 AI 续写正文..."></textarea>
         </section>
 
         <section class="panel" v-if="chapterList.length">
-          <h3>章节列表</h3>
+          <PanelHeading>章节列表</PanelHeading>
           <ul class="chapter-list">
             <li v-for="ch in chapterList" :key="ch.idx || ch.chapter" @click="loadChapter(ch)">
               {{ ch.title || `第${ch.idx || ch.chapter}章` }} <span class="wc">{{ ch.word_count || (ch.content||'').length }}字</span>
@@ -65,8 +85,8 @@
           </ul>
         </section>
 
-        <section class="panel" v-if="memory.characters?.length || memory.foreshadowings?.length">
-          <h3>🧠 小说大脑</h3>
+        <section class="panel brain-panel" v-if="memory.characters?.length || memory.foreshadowings?.length">
+          <PanelHeading :icon="images.features.brain">小说大脑</PanelHeading>
           <div v-if="memory.characters?.length" class="brain-block">
             <h4>人物</h4>
             <p v-for="c in memory.characters" :key="c.id"><strong>{{ c.name }}</strong> {{ c.profile }}</p>
@@ -83,8 +103,8 @@
           </div>
         </section>
 
-        <section class="panel" v-else-if="memory.summaries && memory.summaries.length">
-          <h3>🧠 小说大脑 · 章节摘要</h3>
+        <section class="panel brain-panel" v-else-if="memory.summaries && memory.summaries.length">
+          <PanelHeading :icon="images.features.brain">小说大脑 · 章节摘要</PanelHeading>
           <ul class="memory-list">
             <li v-for="m in memory.summaries" :key="m.chapter_idx">
               <strong>第{{ m.chapter_idx }}章</strong> {{ m.summary }}
@@ -95,6 +115,7 @@
     </main>
 
     <div v-if="!editing && !loading" class="welcome">
+      <img :src="images.workspace" alt="" class="welcome-banner" />
       <h2>创作台</h2>
       <p>从左侧选择作品，或新建一部小说开始 AI 辅助创作。</p>
       <button class="btn-new large" @click="newStory">+ 新建作品</button>
@@ -106,6 +127,11 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { storyApi } from '../api'
+import { IMAGES } from '../assets/images'
+import EmptyState from '../components/EmptyState.vue'
+import PanelHeading from '../components/PanelHeading.vue'
+
+const images = IMAGES
 
 const route = useRoute()
 const stories = ref([])
@@ -315,7 +341,9 @@ onMounted(async () => {
 .s-title { display: block; font-weight: 600; font-size: 14px; color: #1e2a3a; }
 .s-meta { font-size: 12px; color: #94a3b8; }
 .empty { color: #94a3b8; font-size: 14px; padding: 20px 0; }
-.welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #5a6a7a; }
+.welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #5a6a7a; padding: 40px 24px; }
+.welcome-banner { width: min(480px, 90%); border-radius: 16px; box-shadow: 0 8px 24px rgba(37,99,235,0.12); margin-bottom: 8px; }
+.welcome h2 { color: #1e2a3a; font-size: 24px; margin: 0; }
 .editor { flex: 1; display: flex; flex-direction: column; }
 .editor-toolbar { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #e8f0fa; }
 .btn-back { border: none; background: none; color: #2563eb; cursor: pointer; font-weight: 600; }
@@ -328,8 +356,16 @@ onMounted(async () => {
 .input, .textarea { width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px; margin-bottom: 10px; font-family: inherit; }
 .content-area { min-height: 280px; line-height: 1.8; }
 .action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-.btn-action { padding: 12px; border-radius: 10px; border: 1px solid #dbeafe; background: #f8fbff; cursor: pointer; font-size: 13px; font-weight: 600; color: #2563eb; }
+.btn-action {
+  display: flex; align-items: center; gap: 8px; justify-content: flex-start;
+  padding: 12px 14px; border-radius: 10px; border: 1px solid #dbeafe; background: #f8fbff;
+  cursor: pointer; font-size: 13px; font-weight: 600; color: #2563eb;
+}
+.btn-action img { flex-shrink: 0; }
+.btn-action em { font-style: normal; font-weight: 500; opacity: 0.75; margin-left: auto; font-size: 12px; }
 .btn-action.primary { background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff; border: none; }
+.btn-action.primary em { opacity: 0.9; }
+.brain-panel { background: linear-gradient(180deg, #f8fbff 0%, #fff 100%); }
 .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
 .msg { font-size: 13px; margin-top: 10px; color: #16a34a; }
 .msg.err { color: #ef4444; }

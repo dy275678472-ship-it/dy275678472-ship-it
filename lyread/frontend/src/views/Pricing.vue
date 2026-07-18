@@ -1,6 +1,7 @@
 <template>
   <div class="pricing-page">
     <header class="page-hero">
+      <img :src="images.pricing.gem" alt="" class="page-hero-icon" width="44" height="44" />
       <h1>点数计费，用多少付多少</h1>
       <p>无订阅、无终身无限套餐。生成前显示预计消耗，失败自动全额返还。</p>
     </header>
@@ -165,6 +166,7 @@ async function buy(pkg) {
 <style scoped>
 .pricing-page { max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
 .page-hero { text-align: center; margin-bottom: 40px; }
+.page-hero-icon { display: block; margin: 0 auto 12px; }
 .page-hero h1 { font-size: 32px; color: #1e2a3a; margin-bottom: 12px; }
 .page-hero p { color: #5a6a7a; font-size: 16px; }
 

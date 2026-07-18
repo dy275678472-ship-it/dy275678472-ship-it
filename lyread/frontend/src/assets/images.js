@@ -2,7 +2,10 @@
 export const IMAGES = {
   logo: '/images/logo-icon.webp',
   hero: '/images/hero-banner.webp',
+  workspace: '/images/workspace-banner.webp',
+  emptyCreate: '/images/empty-create.webp',
   point: '/images/icon-point.webp',
+  fire: '/images/icon-fire.webp',
   features: {
     brain: '/images/icon-brain.webp',
     novel: '/images/icon-novel.webp',
@@ -22,6 +25,17 @@ export const IMAGES = {
     gift: '/images/icon-gift.webp',
     daily: '/images/icon-daily.webp',
     gem: '/images/icon-gem.webp',
+  },
+  wallet: {
+    total: '/images/icon-gem.webp',
+    free: '/images/icon-daily.webp',
+    paid: '/images/icon-credits.webp',
+  },
+  workspaceActions: {
+    title: '/images/icon-novel.webp',
+    outline: '/images/icon-brain.webp',
+    chapters: '/images/icon-short.webp',
+    continue: '/images/icon-point.webp',
   },
 }
 

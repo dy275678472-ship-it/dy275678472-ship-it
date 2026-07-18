@@ -59,7 +59,7 @@
 
     <section class="hot-section">
       <div class="section-header">
-        <h2>📚 创作案例</h2>
+        <SectionHeading :icon="images.features.novel">创作案例</SectionHeading>
       </div>
       <div class="hot-grid">
         <div class="hot-card">
@@ -91,7 +91,7 @@
 
     <!-- 用户评价 -->
     <section class="testimonials">
-      <h2>⭐ 用户评价</h2>
+      <SectionHeading class="testimonials-title" :icon="images.pricing.gem" center>用户评价</SectionHeading>
       <div class="testimonial-grid">
         <div class="testimonial-card">
           <img :src="images.avatars.author" alt="" class="avatar-img" width="56" height="56" />
@@ -110,7 +110,7 @@
     <div class="modal-overlay" v-if="showTrialModal" @click.self="showTrialModal = false">
       <div class="modal-content">
         <button class="modal-close" @click="showTrialModal = false">×</button>
-        <h3>🎯 免费体验AI创作</h3>
+        <SectionHeading tag="h3" :icon="images.logo" center>免费体验 AI 创作</SectionHeading>
         <p class="trial-desc">3步生成你的第一本小说！</p>
         
         <div class="trial-steps">
@@ -139,18 +139,18 @@
           </select>
           <input v-model="trialPrompt" placeholder="描述你的故事想法...例如：主角意外获得神豪系统，在都市纵横" class="trial-input" @keyup.enter="startTrial" />
           <button class="btn-start-trial" :disabled="trialLoading" @click="startTrial">
-            {{ trialLoading ? '生成中...' : '🚀 开始创作' }}
+            {{ trialLoading ? '生成中...' : '开始创作' }}
           </button>
         </div>
 
         <div v-if="trialResult" class="trial-result">
-          <h4>✨ AI 为你生成的书名</h4>
+          <h4>AI 为你生成的书名</h4>
           <p class="result-title">{{ trialResult.title }}</p>
           <p class="result-hook">{{ trialResult.description }}</p>
         </div>
 
         <div class="trial-tips">
-          <span>🎁 游客可免费试用一次</span>
+          <span class="tip-badge"><img :src="images.pricing.gift" alt="" width="16" height="16" /> 游客可免费试用一次</span>
           <span class="tip-link" @click="$router.push('/login')">注册送 30 点 →</span>
         </div>
       </div>
@@ -162,6 +162,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { IMAGES } from '../assets/images'
+import SectionHeading from '../components/SectionHeading.vue'
 
 const router = useRouter()
 const images = IMAGES
@@ -357,7 +358,8 @@ const startTrial = async () => {
   margin: 0 auto 24px;
   padding: 0 24px;
 }
-.section-header h2 { color: var(--lyread-text-dark); }
+.section-header h2,
+.section-header :deep(.section-heading) { font-size: 24px; color: var(--lyread-text-dark); }
 
 .hot-section { padding: 40px 24px; max-width: 1200px; margin: 0 auto; }
 .hot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
@@ -396,7 +398,7 @@ const startTrial = async () => {
 }
 
 .testimonials { padding: 40px 24px; max-width: 1200px; margin: 0 auto; text-align: center; }
-.testimonials h2 { margin-bottom: 32px; color: var(--lyread-text-dark); }
+.testimonials-title { margin-bottom: 32px; font-size: 24px; }
 .testimonial-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
 .testimonial-card {
   background: var(--lyread-card-bg);
@@ -491,9 +493,13 @@ const startTrial = async () => {
   margin-top: 20px;
   font-size: 13px;
 }
-.trial-tips span:first-child {
-  color: var(--lyread-primary-blue-end); /* 使用蓝色 */
-  background: rgba(77, 161, 255, 0.12); /* 修复无效的 rgba(var()) 写法 */
+.trial-tips span:first-child,
+.tip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--lyread-primary-blue-end);
+  background: rgba(77, 161, 255, 0.12);
   padding: 4px 12px;
   border-radius: 20px;
 }

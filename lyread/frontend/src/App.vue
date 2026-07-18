@@ -30,6 +30,10 @@
       </div>
     </nav>
     <router-view @credits-changed="fetchCredits" />
+    <footer class="site-footer">
+      <img :src="logo" alt="" width="20" height="20" />
+      <span>LyRead AI · 智能小说创作平台</span>
+    </footer>
   </div>
 </template>
 
@@ -98,7 +102,12 @@ body {
   min-height: 100vh;
 }
 
-#app { min-height: 100vh; }
+#app { min-height: 100vh; display: flex; flex-direction: column; background: #f1f6fa; }
+.site-footer {
+  margin-top: auto; padding: 20px; text-align: center; font-size: 13px; color: #94a3b8;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  border-top: 1px solid #e8f0fa; background: #fff;
+}
 
 .navbar {
   display: flex;
