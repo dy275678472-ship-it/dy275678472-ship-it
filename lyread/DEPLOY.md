@@ -32,6 +32,9 @@ APScheduler 后台任务：每 EVOLUTION_INTERVAL_SECONDS 执行一次自进化�
 | `DEEPSEEK_API_KEY` / `DEEPSEEK_BASE_URL` / `DEEPSEEK_MODEL` | 创作 AI（缺失时回退 Pollinations 免费接口） |
 | `AUTO_EVOLUTION` | `1` 启动时自动开启调度器（默认开） |
 | `EVOLUTION_INTERVAL_SECONDS` | 自进化周期间隔（默认 900s） |
+| `ADMIN_USERNAMES` | 管理员用户名白名单（逗号分隔） |
+| `MAX_CONCURRENT_JOBS` | 单用户并发生成上限（默认 2） |
+| `ALIPAY_*` | 支付宝收款（见 IMPLEMENTATION-STATUS.md） |
 
 ### 重新部署后端
 

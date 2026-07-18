@@ -140,6 +140,10 @@ async function buy(pkg) {
     window.dispatchEvent(new Event('credits-changed'))
     return
   }
+  if (res.pay_url) {
+    window.location.href = res.pay_url
+    return
+  }
   alert('请完成支付宝支付（支付页面即将上线）')
 }
 </script>

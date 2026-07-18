@@ -6,6 +6,7 @@
 - 所有变更写不可变流水 credit_transactions；账户行用 SELECT ... FOR UPDATE 加锁，保证并发安全。
 """
 
+import os
 import mysql.connector
 from datetime import date
 
@@ -112,6 +113,13 @@ def reserve(uid: str, points: int, job_type: str, story_id=None) -> dict:
         cursor = conn.cursor(dictionary=True)
         conn.start_transaction()
         _ensure_account(cursor, uid)
+        max_jobs = int(os.getenv("MAX_CONCURRENT_JOBS", "2"))
+        cursor.execute(
+            "SELECT COUNT(*) AS n FROM generation_jobs WHERE user_id=%s AND status='running'", (uid,)
+        )
+        if int((cursor.fetchone() or {}).get("n") or 0) >= max_jobs:
+            conn.rollback()
+            raise HTTPException(status_code=429, detail="同时进行的生成任务过多，请稍后再试")
         acc = _fetch_account(cursor, uid)
         total = acc["free_balance"] + acc["paid_balance"]
         if total < points:

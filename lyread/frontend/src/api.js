@@ -57,3 +57,21 @@ export const ordersApi = {
     return request(`/api/orders/sandbox/confirm/${outTradeNo}`, { method: 'POST' })
   },
 }
+
+export const adminApi = {
+  stats() { return request('/api/admin/stats') },
+  users(limit = 50) { return request(`/api/admin/users?limit=${limit}`) },
+  stories(limit = 50) { return request(`/api/admin/stories?limit=${limit}`) },
+  orders(limit = 50) { return request(`/api/admin/orders?limit=${limit}`) },
+  jobs(limit = 50) { return request(`/api/admin/jobs?limit=${limit}`) },
+  reviews(result = 'pending') { return request(`/api/admin/reviews?result=${result}`) },
+  approveReview(id) { return request(`/api/admin/reviews/${id}/approve`, { method: 'POST' }) },
+  rejectReview(id, reason) { return request(`/api/admin/reviews/${id}/reject`, { method: 'POST', body: JSON.stringify({ reason }) }) },
+  adjustCredits(userId, points, note, target = 'paid') {
+    return request(`/api/admin/users/${userId}/credits`, {
+      method: 'POST', body: JSON.stringify({ points, note, target }),
+    })
+  },
+}
+
+export const authApiMe = () => request('/api/auth/me')

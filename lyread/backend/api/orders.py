@@ -85,6 +85,14 @@ def create_order(req: CreateOrderRequest, user: dict = Depends(get_current_user)
             conn.close()
 
     alipay_configured = bool(os.getenv("ALIPAY_APP_ID") and os.getenv("ALIPAY_PRIVATE_KEY"))
+    pay_url = None
+    if alipay_configured:
+        try:
+            from services.alipay import build_page_pay_url
+            pay_url = build_page_pay_url(out_trade_no, str(pkg["price_yuan"]), f"LyRead {pkg['name']} {pkg['points']}点")
+        except Exception as exc:
+            print(f"[Orders] 支付宝下单失败: {exc}")
+
     return {
         "success": True,
         "out_trade_no": out_trade_no,
@@ -92,8 +100,9 @@ def create_order(req: CreateOrderRequest, user: dict = Depends(get_current_user)
         "amount_yuan": pkg["price_yuan"],
         "amount_fen": amount_fen,
         "alipay_ready": alipay_configured,
+        "pay_url": pay_url,
         "sandbox": os.getenv("ALIPAY_SANDBOX", "0") == "1",
-        "message": "支付宝参数未配置时，可使用沙箱确认接口完成测试充值" if not alipay_configured else "请跳转支付宝完成支付",
+        "message": "请跳转支付宝完成支付" if pay_url else "支付宝参数未配置时，可使用沙箱确认接口完成测试充值",
     }
 
 
@@ -162,17 +171,18 @@ async def alipay_notify(request: Request):
     """支付宝异步回调 — 必须验签后入账（生产环境）。"""
     body = await request.form()
     params = dict(body)
+
+    from services.alipay import verify_notify_params
+    if not verify_notify_params(params):
+        print("[Alipay notify] 验签失败")
+        return "fail"
+
     out_trade_no = params.get("out_trade_no")
     trade_no = params.get("trade_no")
     total_amount = params.get("total_amount")
-
-    if not out_trade_no or not trade_no:
-        return "fail"
-
-    # 生产环境应使用 alipay SDK 验签；此处检查关键配置存在
-    if not os.getenv("ALIPAY_PUBLIC_KEY"):
-        print("[Alipay notify] ALIPAY_PUBLIC_KEY 未配置，拒绝入账")
-        return "fail"
+    trade_status = params.get("trade_status")
+    if trade_status not in ("TRADE_SUCCESS", "TRADE_FINISHED"):
+        return "success"
 
     conn = _db()
     try:

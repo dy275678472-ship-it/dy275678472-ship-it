@@ -433,9 +433,105 @@ async def ai_continue(req: AIContinueRequest, user: dict = Depends(get_current_u
         return {"success": False, "error": str(e)}
 
 
+@router.post("/consistency-check")
+async def consistency_check(req: AIContinueRequest, user: dict = Depends(get_current_user)):
+    """一致性检测：人物/设定冲突。扣 2 点。"""
+    from api.credits import reserve, settle, refund, estimate_points
+    uid = str(user["sub"])
+    job = reserve(uid, estimate_points("consistency"), "consistency", story_id=req.story_id)
+    content = req.content or req.context
+    if not content:
+        refund(uid, job["job_id"])
+        raise HTTPException(status_code=422, detail="请提供待检测内容")
+    prompt = f"""你是网文编辑，检查下面内容是否存在人物姓名混乱、设定冲突、时间线矛盾。
+只输出 JSON：{{"ok": true/false, "issues": ["问题1", ...], "suggestion": "修改建议"}}
+
+内容：
+{content[:5000]}"""
+    try:
+        result = chat_with_llm(prompt, max_tokens=600)
+        import re
+        m = re.search(r"\{.*\}", result, re.DOTALL)
+        report = json.loads(m.group()) if m else {"ok": True, "issues": [], "suggestion": ""}
+        settle(uid, job["job_id"], estimate_points("consistency"))
+        return {"success": True, "report": report}
+    except Exception as e:
+        refund(uid, job["job_id"])
+        return {"success": False, "error": str(e)}
+
+
 @router.post("/publish")
 async def publish_story(req: PublishRequest, user: dict = Depends(get_current_user)):
-    """步骤7：发布 + 版权存证 + 保存到数据库"""
+    """提交发布审核（不再直接公开，需管理员通过）。"""
+    uid = str(user.get("sub", "0"))
+    word_count = sum(len(ch.get("content", "")) for ch in req.chapters)
+    db = _db()
+    try:
+        cursor = db.cursor()
+        story_id = int(time.time() * 1000)
+        cursor.execute(
+            "INSERT INTO stories (id, user_id, title, genre, intro, chapters, status, word_count, created_at, updated_at) "
+            "VALUES (%s,%s,%s,%s,%s,%s,'pending_review',%s,NOW(),NOW())",
+            (story_id, uid, req.title, req.genre, req.intro,
+             json.dumps(req.chapters, ensure_ascii=False), word_count),
+        )
+        cursor.execute(
+            "INSERT INTO content_reviews (target_type, target_id, user_id, title, result) "
+            "VALUES ('story', %s, %s, %s, 'pending')",
+            (story_id, uid, req.title),
+        )
+        db.commit()
+        return {
+            "success": True,
+            "story_id": story_id,
+            "word_count": word_count,
+            "status": "pending_review",
+            "message": "已提交审核，通过后将在案例区展示",
+        }
+    except Exception as e:
+        db.rollback()
+        print(f"[Publish] 失败: {e}")
+        raise HTTPException(status_code=500, detail="提交审核失败")
+    finally:
+        if db.is_connected():
+            db.close()
+
+
+@router.post("/{story_id}/submit-review")
+async def submit_review(story_id: int, user: dict = Depends(get_current_user)):
+    """将已有草稿提交审核。"""
+    uid = str(user["sub"])
+    db = _db()
+    try:
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT user_id, title, status FROM stories WHERE id=%s LIMIT 1", (story_id,))
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="作品不存在")
+        if str(row["user_id"]) != uid:
+            raise HTTPException(status_code=403, detail="无权操作")
+        cursor.execute(
+            "SELECT id FROM content_reviews WHERE target_type='story' AND target_id=%s AND result='pending' LIMIT 1",
+            (story_id,),
+        )
+        if cursor.fetchone():
+            return {"success": True, "message": "已在审核队列中"}
+        cursor2 = db.cursor()
+        cursor2.execute(
+            "INSERT INTO content_reviews (target_type, target_id, user_id, title, result) VALUES ('story',%s,%s,%s,'pending')",
+            (story_id, uid, row["title"]),
+        )
+        cursor2.execute("UPDATE stories SET status='pending_review' WHERE id=%s", (story_id,))
+        db.commit()
+        return {"success": True, "message": "已提交审核"}
+    finally:
+        if db.is_connected():
+            db.close()
+
+
+@router.post("/publish-legacy")
+async def publish_story_legacy(req: PublishRequest, user: dict = Depends(get_current_user)):
+    """旧版直接发布（保留兼容，内部使用）。"""
     from services.copyright import generate_copyright_fingerprint
     import hashlib
     import mysql.connector

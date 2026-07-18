@@ -5,7 +5,7 @@ V1.9 流量自进化系统 - 核心入口
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from api import behavior, hot_model, evolution, seo, scheduler, story, auth, seo_page, stats, creator, credits, cases, orders
+from api import behavior, hot_model, evolution, seo, scheduler, story, auth, seo_page, stats, creator, credits, cases, orders, admin
 from settings import ALLOWED_ORIGINS, APP_ENV, APP_VERSION, validate_production_settings
 from api.auth import get_current_user
 
@@ -41,6 +41,7 @@ app.include_router(creator.router, prefix="/api/creator", tags=["创作者中心
 app.include_router(credits.router, prefix="/api/credits", tags=["点数计费"])
 app.include_router(cases.router, prefix="/api/cases", tags=["案例阅读"])
 app.include_router(orders.router, prefix="/api/orders", tags=["充值订单"])
+app.include_router(admin.router, prefix="/api/admin", tags=["运营后台"])
 app.include_router(seo_page.router, prefix="", tags=["SEO落地页"])
 
 # 前端统一使用 /api 前缀；保留上面的旧路径，避免破坏已有调用。

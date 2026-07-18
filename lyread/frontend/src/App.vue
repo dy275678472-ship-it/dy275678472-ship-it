@@ -18,6 +18,7 @@
         <router-link to="/pricing" class="nav-link" @click="menuOpen = false">价格</router-link>
         <template v-if="isLoggedIn">
           <router-link to="/workspace" class="nav-link nav-link-primary" @click="menuOpen = false">创作台</router-link>
+          <router-link v-if="isAdmin" to="/admin" class="nav-link" @click="menuOpen = false">后台</router-link>
           <router-link to="/wallet" class="nav-credits" @click="menuOpen = false" title="我的点数">
             <span class="credits-icon">◆</span>
             <span class="credits-num">{{ credits === null ? '—' : credits }}</span>
@@ -38,7 +39,7 @@ import { creditsApi } from './api'
 export default {
   name: 'App',
   data() {
-    return { menuOpen: false, credits: null }
+    return { menuOpen: false, credits: null, isAdmin: false }
   },
   computed: {
     isLoggedIn() {
@@ -52,13 +53,22 @@ export default {
     }
   },
   mounted() {
-    if (this.isLoggedIn) this.fetchCredits()
+    if (this.isLoggedIn) { this.fetchCredits(); this.fetchMe() }
     window.addEventListener('credits-changed', this.fetchCredits)
   },
   beforeUnmount() {
     window.removeEventListener('credits-changed', this.fetchCredits)
   },
   methods: {
+    async fetchMe() {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) return
+        const res = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+        const d = await res.json()
+        this.isAdmin = d?.role === 'admin'
+      } catch (e) { /* ignore */ }
+    },
     async fetchCredits() {
       if (!this.isLoggedIn) { this.credits = null; return }
       try {

@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
 import './styles/theme.css'
 
-const protectedRoutes = ['/workspace', '/wallet']
+const protectedRoutes = ['/workspace', '/wallet', '/admin']
 
 const routes = [
   { path: '/', component: () => import('./views/Home.vue'), meta: { title: 'LyRead AI - 让 AI 陪你写完一部长篇小说', desc: 'LyRead AI 智能小说创作平台，支持长篇小说、短故事、人物伏笔记忆与点数计费。' }},
@@ -14,6 +14,7 @@ const routes = [
   { path: '/reader', component: () => import('./views/Workspace.vue'), meta: { title: '长篇小说 - LyRead AI', desc: '开始你的长篇小说创作。' }},
   { path: '/story', component: () => import('./views/Workspace.vue'), meta: { title: '短故事 - LyRead AI', desc: '快速生成完整短故事。' }},
   { path: '/trending', component: () => import('./views/Trending.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '浏览平台生成案例。' }},
+  { path: '/admin', component: () => import('./views/Admin.vue'), meta: { title: '运营后台 - LyRead AI', desc: '管理员控制台。' }},
 ]
 
 const router = createRouter({ history: createWebHistory(), routes })

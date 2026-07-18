@@ -1,54 +1,55 @@
 # LyRead V2 实施状态
 
-最后更新：2026-07-18
+最后更新：2026-07-18（第二阶段）
 
-## 已完成（P0）
+## 已完成
 
-| 模块 | 状态 | 说明 |
-|------|------|------|
-| 注册/登录 | ✅ | bcrypt + JWT，12 位用户 ID，注册送 30 点 |
-| 点数账户 | ✅ | free/paid 分账，reserve/settle/refund |
-| 每日免费额度 | ✅ | `/api/credits/daily-claim`，每日 5 点 |
-| 生成扣费 | ✅ | 书名/大纲/章纲/续写均已接入 |
-| 作品 CRUD | ✅ | save/list/get/update/delete，用户隔离 |
-| 创作台前端 | ✅ | `/workspace` 完整流程 |
-| 价格/钱包页 | ✅ | `/pricing` `/wallet` |
-| 案例阅读 | ✅ | `/api/cases` + `/trending` |
-| 导出 | ✅ | `/api/story/{id}/export?format=txt\|md` |
-| 小说大脑（基础） | ✅ | `chapter_summaries` + 续写上下文 + 摘要自动更新 |
-| 订单/充值骨架 | ✅ | 创建订单 + 沙箱确认 + 支付宝回调骨架 |
-| 进化调度器 | ✅ | APScheduler 真实周期任务 |
-| SSH 部署文档 | ✅ | `docs/lyread-ssh.md` |
-| 前端已部署 | ✅ | lyread.cn |
+### P0 核心
+- 注册/登录、点数计费、创作台、价格/钱包、案例阅读、导出、小说大脑基础、沙箱充值
 
-## 部分完成 / 待加强
+### 第二阶段新增
+| 模块 | 状态 |
+|------|------|
+| 运营后台 `/api/admin` + `/admin` 页面 | ✅ |
+| 内容审核队列 `content_reviews` | ✅ |
+| 发布走审核（通过后进案例区） | ✅ |
+| 管理员额度调整 `admin_adjust` | ✅ |
+| 一致性检测 API `/consistency-check` | ✅ |
+| 并发任务限制 429 | ✅ |
+| 支付宝 RSA2 签名 + 支付 URL 生成 | ✅（需配置密钥） |
+| 支付宝回调验签 | ✅ |
 
-| 模块 | 状态 | 缺口 |
-|------|------|------|
-| 支付宝正式支付 | 🟡 | 需配置 `ALIPAY_APP_ID` / 公私钥；沙箱可用 |
-| 章节独立表 | 🟡 | 仍用 `stories.chapters` JSON；`chapters` 表未迁移 |
-| 一致性检测 API | 🟡 | 价目有 `consistency:2`，独立接口待补 |
-| 内容审核队列 | 🟡 | `content_reviews` 表未建 |
-| 运营后台 | ❌ | `/api/admin` 未实现 |
-| 找回密码 | ❌ | V2.1 |
-| 并发任务限制 | ❌ | 429 未实现 |
-| IP 市场/全网分发 | ⏸️ | 已下线（V2 决定） |
+## 待完成（P1/P2）
 
-## 环境变量（生产）
+| 模块 | 说明 |
+|------|------|
+| 支付宝商户密钥 | 配置 `ALIPAY_APP_ID` / `ALIPAY_PRIVATE_KEY` / `ALIPAY_PUBLIC_KEY` |
+| 章节独立表 `chapters` | 仍用 JSON，功能可用 |
+| 找回密码 | V2.1 |
+| 完整小说大脑 | 人物/伏笔/设定分表 |
 
-见 `lyread/DEPLOY.md`。支付额外需要：
+## 管理员配置
 
-```
+在服务器 `/tmp/lyread.env` 添加：
+
+```bash
+# 方式一：用户名白名单（逗号分隔）
+ADMIN_USERNAMES=你的用户名
+
+# 方式二：数据库
+# UPDATE users SET role='admin' WHERE username='你的用户名';
+
+# 支付宝（正式收款）
 ALIPAY_APP_ID=
 ALIPAY_PRIVATE_KEY=
 ALIPAY_PUBLIC_KEY=
-ALIPAY_SANDBOX=1   # 测试时开启沙箱确认
+ALIPAY_NOTIFY_URL=https://lyread.cn/api/orders/alipay/notify
+ALIPAY_RETURN_URL=https://lyread.cn/wallet
+ALIPAY_SANDBOX=0
+
+MAX_CONCURRENT_JOBS=2
 ```
 
-## 验收对照
+## 验收链路
 
-参见 `v2-spec/10-ACCEPTANCE-TESTS.md`。核心链路：
-
-> 免费试写 → 注册 → 创作台生成大纲/章纲/续写 → 点数扣费 → 导出
-
-该链路已可端到端走通（沙箱充值可用）。
+> 创作 → 提交审核 → 管理员通过 → 案例区展示 → 用户充值（沙箱/支付宝）

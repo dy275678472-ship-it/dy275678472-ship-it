@@ -117,7 +117,7 @@ async def login(req: LoginRequest):
     try:
         cursor = conn.cursor(dictionary=True)
         cursor.execute(
-            "SELECT id, username, email, password_hash, vip_level, balance, created_at "
+            "SELECT id, username, email, password_hash, vip_level, balance, role, created_at "
             "FROM users WHERE username = %s LIMIT 1",
             (req.username,),
         )
@@ -138,6 +138,7 @@ async def login(req: LoginRequest):
                 "id": user["id"], "username": user["username"], "email": user["email"],
                 "vip_level": user["vip_level"], "balance": float(user["balance"]),
                 "created_at": str(user["created_at"]),
+                "role": user.get("role") or "user",
             },
         }
     except HTTPException:
@@ -192,4 +193,18 @@ async def register(req: RegisterRequest):
 
 @router.get("/me")
 async def me(user: dict = Depends(get_current_user)):
-    return {"id": user["sub"], "username": user.get("username")}
+    conn = get_db()
+    role = "user"
+    if conn:
+        try:
+            c = conn.cursor(dictionary=True)
+            c.execute("SELECT role, username, email, vip_level FROM users WHERE id=%s LIMIT 1", (user["sub"],))
+            row = c.fetchone()
+            if row:
+                role = row.get("role") or "user"
+                return {"id": user["sub"], "username": row.get("username") or user.get("username"),
+                        "email": row.get("email"), "vip_level": row.get("vip_level"), "role": role}
+        finally:
+            if conn.is_connected():
+                conn.close()
+    return {"id": user["sub"], "username": user.get("username"), "role": role}
