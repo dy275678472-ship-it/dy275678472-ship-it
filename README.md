@@ -13,6 +13,7 @@ Building autonomous content & SEO systems. Open-source tools, niche sites, zero-
 | [**g.zhenxi.hk.cn**](https://g.zhenxi.hk.cn) | Luxury Lifestyle (5 languages) | 730+ |
 | [**yoko.hk.cn**](https://yoko.hk.cn) | FemTech Reviews | 860 |
 | [**tianshu.online**](https://tianshu.online) | AI Content Platform | — |
+| [**lyread.cn**](https://lyread.cn) | AI Novel Writing Platform | 36 |
 
 ---
 
