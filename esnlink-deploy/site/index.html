@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>翼星科技 esnlink | AI外呼·短信平台·物联网 | 比大厂便宜30%</title>
+    <meta name="description" content="翼星科技（esnlink）提供 AI 智能外呼、短信平台、物联网一站式企业通信云服务。短信 0.03 元/条起，API 5 分钟接入，免费试用 14 天。链接创造价值。">
+    <meta name="keywords" content="翼星科技, esnlink, 智能呼叫中心, 短信平台, 物联网, 企业通信">
+    <meta name="360-site-verification" content="0ae8aa254ad18dd84b4de4a59ff2d43f" />
+    <link rel="canonical" href="https://www.esnlink.cn/">
+    <meta name="baidu-site-verification" content="codeva-RWoGSVXoTd" />
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="esnlink · 翼星科技 | 智能通信 · 万物互联">
+    <meta property="og:description" content="翼星科技（esnlink）—— 提供智能呼叫中心、短信平台、物联网通信等企业级智能通信解决方案。链接创造价值，赋能万物互联。">
+    <meta property="og:url" content="https://www.esnlink.cn/">
+    <meta property="og:site_name" content="esnlink · 翼星科技">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:image" content="https://www.esnlink.cn/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="esnlink · 翼星科技 | 智能通信 · 万物互联">
+    <meta name="twitter:description" content="翼星科技（esnlink）提供 AI 智能外呼、短信平台、物联网一站式企业通信云服务。短信 0.03 元/条起，免费试用 14 天。">
+    <meta name="twitter:image" content="https://www.esnlink.cn/og-image.png">
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "翼星科技",
+        "alternateName": "esnlink",
+        "url": "https://www.esnlink.cn/",
+        "slogan": "链接创造价值",
+        "description": "翼星科技（esnlink）—— 企业智能通信解决方案提供商，提供智能呼叫中心、短信平台、物联网通信等服务。"
+    }
+    </script>
+    
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: sans-serif;
+            background: #ffffff;
+            color: #1e293b;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
+
+        /* 按钮 */
+        .btn-primary, .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            border: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb, #0891b2);
+            color: white;
+            box-shadow: 0 8px 20px -6px rgba(37,99,235,0.35);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 28px -10px rgba(37,99,235,0.45);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: #1e293b;
+            border: 1.5px solid #cbd5e1;
+        }
+        .btn-secondary:hover {
+            border-color: #2563eb;
+            background: #f0f7ff;
+            transform: translateY(-2px);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 5rem 0 6rem;
+            background: linear-gradient(160deg, #ffffff 0%, #f0f7ff 40%, #e0f2fe 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 60%;
+            height: 80%;
+            background: radial-gradient(circle, rgba(37,99,235,0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero::after {
+            content: "";
+            position: absolute;
+            bottom: -15%;
+            left: -8%;
+            width: 50%;
+            height: 60%;
+            background: radial-gradient(circle, rgba(6,182,212,0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+        .hero-content { max-width: 600px; text-align: left; }
+        .hero-visual { position: relative; }
+        .hero-mockup {
+            background: #0f172a;
+            border-radius: 16px;
+            padding: 1rem;
+            box-shadow: 0 25px 60px -15px rgba(37,99,235,0.35);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .mockup-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 0.8rem;
+        }
+        .mockup-bar span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #334155;
+        }
+        .mockup-bar span:first-child { background: #ef4444; }
+        .mockup-bar span:nth-child(2) { background: #f59e0b; }
+        .mockup-bar span:nth-child(3) { background: #22c55e; }
+        .mockup-body {
+            background: linear-gradient(160deg, #1e293b, #0f172a);
+            border-radius: 10px;
+            padding: 1.2rem;
+            min-height: 260px;
+        }
+        .mockup-stat-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+        }
+        .mockup-stat {
+            background: rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 0.7rem;
+            text-align: center;
+        }
+        .mockup-stat .val {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+        .mockup-stat .lbl {
+            font-size: 0.65rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        .mockup-chart {
+            height: 80px;
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            padding: 0 0.5rem;
+        }
+        .mockup-chart .bar {
+            flex: 1;
+            background: linear-gradient(180deg, #2563eb, #0891b2);
+            border-radius: 4px 4px 0 0;
+            opacity: 0.85;
+        }
+        .btn-trial {
+            background: linear-gradient(135deg, #f59e0b, #ea580c) !important;
+            box-shadow: 0 8px 20px -6px rgba(245,158,11,0.4) !important;
+        }
+        .btn-trial:hover {
+            box-shadow: 0 14px 28px -10px rgba(245,158,11,0.5) !important;
+        }
+        .trust-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        .trust-bar span {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .trust-bar strong { color: #2563eb; }
+        @media (max-width: 960px) {
+            .hero-layout { grid-template-columns: 1fr; text-align: center; }
+            .hero-content { max-width: 100%; text-align: center; margin: 0 auto; }
+            .hero-buttons { justify-content: center; }
+            .trust-bar { justify-content: center; }
+            .hero-visual { max-width: 420px; margin: 0 auto; }
+        }
+        .badge {
+            display: inline-block;
+            background: rgba(37,99,235,0.1);
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2563eb;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(37,99,235,0.12);
+        }
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            background: linear-gradient(to right, #0f172a, #2563eb);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1.2rem;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            color: #475569;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 3.5rem;
+            flex-wrap: wrap;
+        }
+        .hero-stat { text-align: center; }
+        .hero-stat .num {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #2563eb, #0891b2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .hero-stat .label { font-size: 0.9rem; color: #64748b; margin-top: 0.2rem; }
+
+        /* Section 通用 */
+        section { padding: 5rem 0; }
+        .section-title {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.8rem;
+            color: #0f172a;
+        }
+        .section-sub {
+            text-align: center;
+            color: #64748b;
+            max-width: 650px;
+            margin: 0 auto 3rem;
+            font-size: 1.05rem;
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #2563eb, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* 产品卡片 */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+        .product-card {
+            background: white;
+            border-radius: 2rem;
+            padding: 2.2rem 2rem;
+            box-shadow: 0 12px 30px -12px rgba(0,0,0,0.05);
+            transition: all 0.35s cubic-bezier(0.2,0.9,0.4,1.1);
+            border: 1px solid #eef2f6;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .product-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #2563eb, #06b6d4);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .product-card:hover::before { opacity: 1; }
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 45px -14px rgba(37,99,235,0.12);
+            border-color: #dbeafe;
+        }
+        .product-icon {
+            width: 72px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 24px;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+        }
+        .product-icon.blue { background: #eff6ff; color: #2563eb; }
+        .product-icon.cyan { background: #ecfeff; color: #0891b2; }
+        .product-icon.green { background: #f0fdf4; color: #16a34a; }
+        .product-icon.purple { background: #faf5ff; color: #9333ea; }
+        .product-card h3 { font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 700; }
+        .product-card p { color: #475569; line-height: 1.6; font-size: 0.95rem; }
+        .product-features {
+            list-style: none;
+            margin-top: 1.2rem;
+            text-align: left;
+            display: inline-block;
+        }
+        .product-features li {
+            padding: 0.35rem 0;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+        .product-features li i {
+            color: #2563eb;
+            margin-right: 0.5rem;
+            width: 16px;
+        }
+        .product-card .btn-outline {
+            display: inline-block;
+            margin-top: 1.2rem;
+            padding: 0.5rem 1.5rem;
+            border: 1.5px solid #2563eb;
+            color: #2563eb;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .product-card .btn-outline:hover {
+            background: #2563eb;
+            color: white;
+        }
+        .scene-tags {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            margin: 1rem 0 0.3rem;
+        }
+        .scene-tags .tag {
+            background: #f1f5f9;
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: 0.78rem;
+            color: #475569;
+            font-weight: 500;
+        }
+        .product-highlight {
+            margin-top: 0.8rem;
+            color: #2563eb;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .product-highlight i { margin-right: 4px; }
+
+        /* 优势区域 */
+        .why-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.8rem;
+        }
+        .why-card {
+            padding: 1.8rem;
+            border-radius: 1.5rem;
+            background: white;
+            border: 1px solid #f0f2f5;
+            text-align: center;
+            transition: 0.3s;
+        }
+        .why-card:hover {
+            border-color: #dbeafe;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px -10px rgba(37,99,235,0.08);
+        }
+        .why-card i {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #2563eb, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+        }
+        .why-card h4 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .why-card p { color: #64748b; font-size: 0.9rem; }
+
+        /* 客户案例 */
+        .cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .case-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.8rem;
+            border: 1px solid #f0f2f5;
+            transition: 0.3s;
+        }
+        .case-card:hover {
+            border-color: #dbeafe;
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px -12px rgba(0,0,0,0.06);
+        }
+        .case-card .industry {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #2563eb;
+            background: #eff6ff;
+            display: inline-block;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            margin-bottom: 0.8rem;
+        }
+        .case-card h4 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.4rem; }
+        .case-card p { color: #64748b; font-size: 0.9rem; margin-bottom: 1rem; }
+        .case-card .result {
+            display: flex;
+            gap: 1.5rem;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 0.8rem;
+        }
+        .case-card .result span { font-size: 0.85rem; color: #475569; }
+        .case-card .result strong { color: #2563eb; font-weight: 700; }
+
+        /* 联系区域 */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 3rem;
+            background: #ffffff;
+            border-radius: 2.5rem;
+            padding: 2.5rem;
+            box-shadow: 0 15px 40px -15px rgba(0,0,0,0.04);
+            border: 1px solid #ecf3fa;
+        }
+        .contact-info h3 { font-size: 1.8rem; margin-bottom: 0.8rem; font-weight: 700; }
+        .contact-details { margin: 1.8rem 0; display: flex; flex-direction: column; gap: 1rem; }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: #334155;
+        }
+        .contact-item i {
+            width: 38px;
+            height: 38px;
+            background: #eff6ff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: #2563eb;
+        }
+        .contact-form { display: flex; flex-direction: column; gap: 1rem; }
+        .contact-form input, .contact-form textarea {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            border-radius: 1.2rem;
+            border: 1px solid #e2e8f0;
+            font-family: sans-serif;
+            font-size: 1rem;
+            transition: 0.2s;
+            background: #fafcff;
+        }
+        .contact-form input:focus, .contact-form textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+        }
+        .contact-form button {
+            background: linear-gradient(135deg, #2563eb, #0891b2);
+            color: white;
+            padding: 0.9rem;
+            border: none;
+            border-radius: 1.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+        .contact-form button:hover {
+            transform: scale(0.98);
+            box-shadow: 0 8px 20px rgba(37,99,235,0.3);
+        }
+
+        /* 响应式 */
+        /* 移动端全局优化 */
+        img { max-width: 100%; height: auto; }
+        a, button, [role="button"] { -webkit-tap-highlight-color: transparent; }
+
+        @media (max-width: 880px) {
+            .container { padding: 0 1.5rem; }
+            .hero h1 { font-size: 2.5rem; }
+            .contact-grid { grid-template-columns: 1fr; }
+            .section-title { font-size: 1.9rem; }
+        }
+        @media (max-width: 640px) {
+            .hero { padding: 3rem 0; }
+            .hero h1 { font-size: 2rem; }
+            .hero-stats { gap: 1rem; }
+            .hero-stat { flex: 1; min-width: 80px; }
+            .hero-stat .num { font-size: 1.5rem; }
+            section { padding: 3rem 0; }
+        }
+
+        /* 动画辅助 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+        /* ===== 滚动动画 ===== */
+        .reveal { opacity:0; transform:translateY(30px); transition:opacity 0.6s cubic-bezier(0.2,0.9,0.4,1), transform 0.6s cubic-bezier(0.2,0.9,0.4,1); }
+        .reveal.visible { opacity:1; transform:translateY(0); }
+        .reveal-delay-1 { transition-delay:0.1s; }
+        .reveal-delay-2 { transition-delay:0.2s; }
+        .reveal-delay-3 { transition-delay:0.3s; }
+        .reveal-delay-4 { transition-delay:0.4s; }
+
+        /* ===== 返回顶部 ===== */
+        .back-to-top { position:fixed; bottom:30px; right:30px; width:48px; height:48px; background:linear-gradient(135deg,#2563eb,#0891b2); color:white; border:none; border-radius:50%; font-size:1.3rem; cursor:pointer; box-shadow:0 4px 15px rgba(37,99,235,0.3); z-index:99; opacity:0; transform:scale(0.8); transition:opacity 0.3s, transform 0.3s; display:flex; align-items:center; justify-content:center; }
+        .back-to-top.show { opacity:1; transform:scale(1); }
+        .back-to-top:hover { transform:scale(1.1); box-shadow:0 6px 20px rgba(37,99,235,0.4); }
+
+        /* ===== 行业场景 ===== */
+        .scene-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; }
+        .scene-card { background:white; border-radius:1.5rem; padding:1.8rem; border:1px solid #f0f2f5; transition:0.3s; }
+        .scene-card:hover { border-color:#dbeafe; transform:translateY(-4px); box-shadow:0 12px 25px -10px rgba(37,99,235,0.08); }
+        .scene-card .icon-bg { font-size:2rem; margin-bottom:0.8rem; }
+        .scene-card h4 { font-size:1.15rem; font-weight:700; margin-bottom:0.4rem; }
+        .scene-card p { color:#64748b; font-size:0.9rem; }
+
+        /* ===== 合作伙伴 ===== */
+        .partner-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1.5rem; align-items:center; }
+        .partner-item { background:white; border-radius:1.5rem; padding:1.5rem 1rem; border:1px solid #f0f2f5; text-align:center; transition:0.3s; font-size:0.95rem; font-weight:600; color:#475569; }
+        .partner-item:hover { border-color:#dbeafe; transform:translateY(-4px); box-shadow:0 12px 25px -10px rgba(37,99,235,0.08); }
+        .partner-item i { font-size:2rem; display:block; margin-bottom:0.5rem; background:linear-gradient(135deg,#2563eb,#06b6d4); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .partner-item span { display:block; }
+
+        /* ===== Breadcrumbs ===== */
+        .breadcrumbs {
+            background: #f8fafc;
+            padding: 0.7rem 0;
+            border-bottom: 1px solid #eef2f6;
+            font-size: 0.88rem;
+            font-weight: 500;
+        }
+        .breadcrumbs .container {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .breadcrumbs a {
+            color: #64748b;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .breadcrumbs a:hover { color: #2563eb; }
+        .breadcrumbs span { color: #94a3b8; }
+        .breadcrumbs .current { color: #1e293b; font-weight: 600; }
+        .breadcrumbs i { font-size: 0.7rem; color: #94a3b8; }
+    </style>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页","item":"https://www.esnlink.cn/"}]}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "合肥翼星智能科技有限公司",
+  "alternateName": "esnlink",
+  "url": "https://www.esnlink.cn",
+  "description": "esnlink · 链接创造价值。提供智能呼叫中心、AI语音外呼、短信平台、IoT物联网等服务。",
+  "foundingDate": "2024",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "合肥市蜀山区蔚蓝商务港城市广场A座520号",
+    "addressCountry": "CN"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "400-000-0000",
+    "contactType": "customer service"
+  }
+}
+</script>
+    <link rel="stylesheet" href="/css/header-footer.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "翼星科技提供什么服务？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "翼星科技（esnlink）提供企业级智能通信解决方案，包括智能呼叫中心、短信平台、物联网通信、AI语音通知等产品，覆盖政企客户服务、应急指挥、营销外呼等场景。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "翼星的呼叫中心有什么优势？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "翼星智能呼叫中心支持AI语音交互、智能路由分配、通话质检分析、多渠道接入（电话/网页/微信），帮助企业提升客服效率并降低人力成本。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "翼星科技支持哪些通信方式？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "翼星科技支持语音通话、短信、物联网卡、卫星通信（天通卫星电话代理）等多种通信方式，可灵活组合满足不同行业场景需求。"
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<!-- 导航栏 -->
+<nav class="navbar">
+    <div class="container nav-container">
+        <div class="logo">
+            <span>esnlink · 翼星科技</span>
+            <span class="logo-slogan">链接创造价值</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">首页</a>
+            <a href="call-center.html">智能外呼</a>
+            <a href="sms.html">短信平台</a>
+            <a href="iot.html">物联网</a>
+            <a href="pricing.html">定价</a>
+            <a href="blog/">博客</a>
+            <a href="about.html">关于</a>
+            <a href="booking.html" class="nav-btn btn-trial">免费试用</a>
+            <a href="#contact" class="nav-btn"><span class="icon-emoji">🎧</span> 咨询</a>
+        </div>
+        <button class="hamburger">☰</button>
+    </div>
+</nav>
+
+<!-- Breadcrumbs -->
+<nav class="breadcrumbs" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <div class="container">
+        <a href="index.html" itemprop="item"><span itemprop="name">首页</span></a>
+        <span class="icon-emoji">•</span>
+        <span class="current" itemprop="name">首页</span>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section id="home" class="hero">
+    <div class="container hero-layout">
+        <div class="hero-content">
+            <span class="badge"><span class="icon-emoji">📶</span> 华东企业通信云 · <strong>比大厂便宜 30%</strong></span>
+            <h1>让企业通信更智能、更省钱</h1>
+            <p style="font-size:1.15rem;font-weight:600;color:#2563eb;margin-bottom:0.8rem;">AI 外呼 · 短信平台 · 物联网 · 一站式接入</p>
+            <p>翼星科技（esnlink）为企业提供智能外呼、短信 API、物联网模组与云平台。API 5 分钟接入，专属客户经理 1 对 1 服务，免费试用 14 天。</p>
+            <div class="hero-buttons">
+                <a href="booking.html" class="btn-primary btn-trial"><span class="icon-emoji">→</span> 免费试用 14 天</a>
+                <a href="pricing.html" class="btn-secondary"><span class="icon-emoji">◇</span> 查看定价</a>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="num">500+</div>
+                    <div class="label">服务企业</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="num">99.9%</div>
+                    <div class="label">短信到达率</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="num">1000万+</div>
+                    <div class="label">日发送量</div>
+                </div>
+            </div>
+            <div class="trust-bar">
+                <span>✓ <strong>短信 0.03 元/条</strong> 起</span>
+                <span>✓ <strong>外呼 0.08 元/分钟</strong> 起</span>
+                <span>✓ <strong>5 分钟</strong> API 接入</span>
+                <span>✓ <strong>7×24</strong> 技术支持</span>
+            </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+            <div class="hero-mockup">
+                <div class="mockup-bar"><span></span><span></span><span></span></div>
+                <div class="mockup-body">
+                    <div style="color:#94a3b8;font-size:0.75rem;margin-bottom:0.8rem;">esnlink 控制台 · 实时数据</div>
+                    <div class="mockup-stat-row">
+                        <div class="mockup-stat"><div class="val">12,847</div><div class="lbl">今日外呼</div></div>
+                        <div class="mockup-stat"><div class="val">99.2%</div><div class="lbl">接通率</div></div>
+                        <div class="mockup-stat"><div class="val">3.2M</div><div class="lbl">短信发送</div></div>
+                    </div>
+                    <div class="mockup-chart">
+                        <div class="bar" style="height:45%"></div>
+                        <div class="bar" style="height:65%"></div>
+                        <div class="bar" style="height:55%"></div>
+                        <div class="bar" style="height:80%"></div>
+                        <div class="bar" style="height:70%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:75%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 产品服务 -->
+<section id="products">
+    <div class="container">
+        <h2 class="section-title">核心产品 <span class="text-gradient">· 驱动增长</span></h2>
+        <div class="section-sub">四大产品矩阵，覆盖企业通信与物联网全场景需求。esnlink 以技术驱动，让连接创造价值。</div>
+        <div class="products-grid reveal">
+            <div class="product-card">
+                <div class="product-icon blue"><span class="icon-emoji">📞</span></div>
+                <h3>智能呼叫中心</h3>
+                <p>AI 语音外呼 + 人机协同，支持智能路由、通话质检、CRM 对接，帮助企业降本增效。</p>
+                <ul class="product-features">
+                    <li><span class="icon-emoji">✓</span> AI 语音识别准确率 95%+</li>
+                    <li><span class="icon-emoji">✓</span> 预测式外呼，效率提升 3 倍</li>
+                    <li><span class="icon-emoji">✓</span> 全渠道接入（电话/网页/微信）</li>
+                    <li><span class="icon-emoji">✓</span> 通话录音 & 智能质检分析</li>
+                    <li><span class="icon-emoji">✓</span> 无缝对接 CRM / ERP 系统</li>
+                </ul>
+                <div class="scene-tags">
+                    <span class="tag">📢 营销外呼</span>
+                    <span class="tag">🎧 智能客服</span>
+                    <span class="tag">📋 满意度回访</span>
+                    <span class="tag">🏫 招生外呼</span>
+                </div>
+                <div class="product-highlight"><span class="icon-emoji">•</span> 外呼 0.08 元/分钟起</div>
+                <a href="call-center.html" class="btn-outline">了解详情 <span class="icon-emoji">→</span></a>
+            </div>
+            <div class="product-card">
+                <div class="product-icon cyan"><span class="icon-emoji">💬</span></div>
+                <h3>短信平台</h3>
+                <p>业界领先的企业级短信服务平台，三网合一通道直达，高并发低延迟，让每一次消息传递都精准可靠。</p>
+                <ul class="product-features">
+                    <li><span class="icon-emoji">✓</span> 三网通道直连，短信 5 秒内到达</li>
+                    <li><span class="icon-emoji">✓</span> 国际短信覆盖 200+ 国家及地区</li>
+                    <li><span class="icon-emoji">✓</span> 智能路由 & 自动容灾切换</li>
+                    <li><span class="icon-emoji">✓</span> 可视化发送报表 & 实时状态回调</li>
+                    <li><span class="icon-emoji">✓</span> API / SDK 极简接入，5 分钟集成</li>
+                </ul>
+                <div class="scene-tags">
+                    <span class="tag">🔐 验证码</span>
+                    <span class="tag">📬 通知提醒</span>
+                    <span class="tag">🎯 精准营销</span>
+                    <span class="tag">🌍 国际业务</span>
+                </div>
+                <div class="product-highlight"><span class="icon-emoji">•</span> 到达率 99%+，日处理量千万级</div>
+                <a href="sms.html" class="btn-outline">了解详情 <span class="icon-emoji">→</span></a>
+            </div>
+            <div class="product-card">
+                <div class="product-icon green"><span class="icon-emoji">💻</span></div>
+                <h3>物联网产品</h3>
+                <p>从终端模组到云平台的一站式物联网解决方案，让每一台设备互联互通、智能可控。</p>
+                <ul class="product-features">
+                    <li><span class="icon-emoji">✓</span> NB-IoT / 4G / 5G 多模通信模组</li>
+                    <li><span class="icon-emoji">✓</span> 设备管理 & 数据采集云平台</li>
+                    <li><span class="icon-emoji">✓</span> 边缘计算 & OTA 远程固件升级</li>
+                    <li><span class="icon-emoji">✓</span> 规则引擎 & 告警联动策略</li>
+                    <li><span class="icon-emoji">✓</span> 开放 API，支持私有化部署</li>
+                </ul>
+                <div class="scene-tags">
+                    <span class="tag">🏭 智慧能源</span>
+                    <span class="tag">🚗 车联网</span>
+                    <span class="tag">🏙️ 智慧城市</span>
+                    <span class="tag">🌾 智慧农业</span>
+                </div>
+                <div class="product-highlight"><span class="icon-emoji">•</span> 支持百万级设备并发接入</div>
+                <a href="iot.html" class="btn-outline">了解详情 <span class="icon-emoji">→</span></a>
+            </div>
+            <div class="product-card">
+                <div class="product-icon purple"><span class="icon-emoji">🎓</span></div>
+                <h3>教育AI语音</h3>
+                <p>面向教培行业的AI语音解决方案，AI招生外呼、智能客服、数据治理，用AI赋能教育全链路。</p>
+                <ul class="product-features">
+                    <li><span class="icon-emoji">✓</span> AI招生外呼，自动筛选意向学员</li>
+                    <li><span class="icon-emoji">✓</span> 智能客服 7×24 小时应答咨询</li>
+                    <li><span class="icon-emoji">✓</span> 学员数据自动归档与分析</li>
+                    <li><span class="icon-emoji">✓</span> 多轮对话理解，精准匹配课程</li>
+                    <li><span class="icon-emoji">✓</span> 无缝对接CRM/教务系统</li>
+                </ul>
+                <div class="scene-tags">
+                    <span class="tag">🏫 教培机构</span>
+                    <span class="tag">📚 高校招生</span>
+                    <span class="tag">🎧 智能客服</span>
+                    <span class="tag">📊 数据治理</span>
+                </div>
+                <div class="product-highlight"><span class="icon-emoji">•</span> 招生转化率提升 40%+</div>
+                <a href="edu.html" class="btn-outline">了解详情 <span class="icon-emoji">→</span></a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 核心优势 -->
+<section id="about" style="background: #f8fafc;">
+    <div class="container">
+        <h2 class="section-title">为什么选择 <span class="text-gradient">翼星</span></h2>
+        <div class="section-sub">十年技术积淀，服务于金融、政务、电商、制造等核心行业</div>
+        <div class="why-grid reveal">
+            <div class="why-card">
+                <span class="icon-emoji">🛡</span>
+                <h4>稳定可靠</h4>
+                <p>99.99% SLA 可用性承诺，金融级数据安全，多活容灾架构</p>
+            </div>
+            <div class="why-card">
+                <span class="icon-emoji">⚡</span>
+                <h4>极速响应</h4>
+                <p>7×24 小时技术支持，30 分钟故障响应，全国 200+ 城市上门服务</p>
+            </div>
+            <div class="why-card">
+                <span class="icon-emoji">⚙️</span>
+                <h4>灵活定制</h4>
+                <p>开放 API 与 SDK，支持私有化部署，深度适配企业现有系统</p>
+            </div>
+            <div class="why-card">
+                <span class="icon-emoji">📈</span>
+                <h4>降本增效</h4>
+                <p>智能路由与 AI 优化，平均降低通信成本 30%，提升运营效率 50%</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 客户案例 -->
+<section id="cases">
+    <div class="container">
+        <h2 class="section-title">客户案例 <span class="text-gradient">· 实力见证</span></h2>
+        <div class="section-sub">来自不同行业的信赖，用效果说话</div>
+        <div class="cases-grid reveal">
+            <div class="case-card">
+                <span class="industry">金融</span>
+                <h4>某大型银行智能客服中心</h4>
+                <p>全渠道云呼叫中心替换传统 IVR，AI 语音导航分流 70% 人工来电。</p>
+                <div class="result">
+                    <span>接通率 <strong>↑ 35%</strong></span>
+                    <span>成本 <strong>↓ 40%</strong></span>
+                </div>
+            </div>
+            <div class="case-card">
+                <span class="industry">电商</span>
+                <h4>头部电商平台消息服务</h4>
+                <p>日处理 500 万+ 短信通知，三网智能路由保障 99.9% 到达率。</p>
+                <div class="result">
+                    <span>日发送量 <strong>500万+</strong></span>
+                    <span>到达率 <strong>99.9%</strong></span>
+                </div>
+            </div>
+            <div class="case-card">
+                <span class="industry">智慧城市</span>
+                <h4>市级智慧市政物联网项目</h4>
+                <p>10 万+ 终端设备接入，实时采集水电燃气数据，远程智能管控。</p>
+                <div class="result">
+                    <span>设备接入 <strong>10万+</strong></span>
+                    <span>运维效率 <strong>↑ 60%</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 联系 -->
+
+<!-- 行业场景 -->
+<section id="scenes" style="background:#f8fafc;">
+    <div class="container">
+        <h2 class="section-title reveal">行业场景 <span class="text-gradient">· 赋能百业</span></h2>
+        <div class="section-sub reveal">翼星科技产品方案覆盖多个关键行业场景</div>
+        <div class="scene-grid reveal">
+            <div class="scene-card reveal reveal-delay-1">
+                <div class="icon-bg">📞</div>
+                <h4>客户服务与售后</h4>
+                <p>全渠道智能呼叫中心，AI语音导航+在线客服+工单系统，一站式解决客户问题，满意度提升40%。</p>
+            </div>
+            <div class="scene-card reveal reveal-delay-2">
+                <div class="icon-bg">📊</div>
+                <h4>电话营销与回访</h4>
+                <p>智能外呼系统+精准客户画像，自动完成产品推广、满意度回访、调研问卷，效率提升10倍。</p>
+            </div>
+            <div class="scene-card reveal reveal-delay-3">
+                <div class="icon-bg">🔐</div>
+                <h4>身份验证与通知</h4>
+                <p>短信验证码秒级到达，三网智能路由保障99.9%到达率，适用于登录验证、交易确认、系统告警。</p>
+            </div>
+            <div class="scene-card reveal reveal-delay-4">
+                <div class="icon-bg">🏭</div>
+                <h4>智慧工厂与能源</h4>
+                <p>物联网终端实时采集生产数据，边缘计算+云平台智能分析，助力工业4.0与能源数字化转型。</p>
+            </div>
+            <div class="scene-card reveal reveal-delay-1">
+                <div class="icon-bg">🌾</div>
+                <h4>智慧农业</h4>
+                <p>环境传感器+智能灌溉+远程监控，实现农业生产的数字化管理，降本增效。</p>
+            </div>
+            <div class="scene-card reveal reveal-delay-2">
+                <div class="icon-bg">🏙️</div>
+                <h4>智慧城市</h4>
+                <p>城市级物联网设备接入与管理平台，覆盖路灯、停车、水务、安防等公共设施智能管控。</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <div class="container" id="contact">
+        <h2 class="section-title">开始合作 <span class="text-gradient">· 共筑未来</span></h2>
+        <div class="section-sub">免费为您定制方案，专业顾问一对一服务</div>
+        <div class="contact-grid reveal">
+            <div class="contact-info">
+                <h3>让连接创造价值</h3>
+                <p style="color: #475569;">无论您需要呼叫中心升级、短信接入还是物联网方案，翼星科技为您提供端到端服务。</p>
+                <div class="contact-details">
+                    <div class="contact-item"><span class="icon-emoji">📍</span> <span>合肥市蜀山区蔚蓝商务港城市广场A座520号</span></div>
+                    <div class="contact-item"><span class="icon-emoji">✉</span> <span>business@esnlink.cn</span></div>
+                    <div class="contact-item"><span class="icon-emoji">•</span> <span>400-888-翼星</span></div>
+                    <div class="contact-item"><span class="icon-emoji">⏰</span> <span>工作日 9:00 - 18:00</span></div>
+                </div>
+            </div>
+            <form class="contact-form" id="contactForm">
+                <input type="text" placeholder="您的姓名" required>
+                <input type="text" placeholder="公司名称" required>
+                <input type="tel" placeholder="联系电话" required>
+                <select style="width:100%;padding:0.9rem 1.2rem;border-radius:1.2rem;border:1px solid #e2e8f0;font-family:'Inter',sans-serif;font-size:1rem;background:#fafcff;color:#334155;appearance:auto;">
+                    <option>请选择产品意向</option>
+                    <option>智能呼叫中心</option>
+                    <option>短信平台</option>
+                    <option>物联网产品</option>
+                    <option>综合方案</option>
+                </select>
+                <textarea rows="3" placeholder="请描述您的需求..."></textarea>
+                <button type="submit"><span class="icon-emoji">✈</span> 提交咨询</button>
+            </form>
+        </div>
+    </div>
+
+<!-- 合作伙伴 -->
+<section id="partners" style="background:#fff;">
+    <div class="container">
+        <h2 class="section-title reveal">合作伙伴 <span class="text-gradient">· 携手共赢</span></h2>
+        <div class="section-sub reveal">与翼星科技并肩前行的优秀合作伙伴</div>
+        <div class="partner-grid reveal">
+            <div class="partner-item reveal reveal-delay-1"><span class="icon-emoji">🛰</span><span>中国星网</span></div>
+            <div class="partner-item reveal reveal-delay-2"><span class="icon-emoji">📶</span><span>中国电信</span></div>
+            <div class="partner-item reveal reveal-delay-3"><span class="icon-emoji">📶</span><span>中国移动</span></div>
+            <div class="partner-item reveal reveal-delay-4"><span class="icon-emoji">🌐</span><span>中国联通</span></div>
+                    </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="logo">
+                    <span>esnlink · 翼星科技</span>
+                </div>
+                <p>智能通信与物联网解决方案提供商<br><strong style="color:#60a5fa;font-size:1.1rem;letter-spacing:0.08em;">链接创造价值</strong></p>
+            </div>
+            <div class="footer-col">
+                <h5>产品</h5>
+                <a href="call-center.html">智能呼叫中心</a>
+                <a href="sms.html">短信平台</a>
+                <a href="iot.html">物联网模组</a>
+                <a href="edu.html">教育 AI</a>
+            </div>
+            <div class="footer-col">
+                <h5>支持</h5>
+                <a href="faq.html">帮助中心</a>
+                <a href="pricing.html">定价方案</a>
+                <a href="booking.html">预约演示</a>
+                <a href="blog/">技术博客</a>
+            </div>
+            <div class="footer-col">
+                <h5>关于</h5>
+                <a href="about.html">公司简介</a>
+                <a href="blog/">新闻动态</a>
+                <a href="#contact">联系我们</a>
+                <a href="solutions/community-hospital.html">行业方案</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2025 合肥翼星智能科技有限公司 All Rights Reserved.</span>
+            <span style="margin-left:1rem"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="color:#94a3b8;text-decoration:none">皖ICP备2026012968号-1</a></span>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // 表单提交演示
+    const form = document.getElementById('contactForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = form.querySelector('input[placeholder="您的姓名"]').value.trim();
+            const company = form.querySelector('input[placeholder="公司名称"]').value.trim();
+            const phone = form.querySelector('input[placeholder="联系电话"]').value.trim();
+            if (!name || !company || !phone) {
+                alert('📋 请完整填写姓名、公司和联系电话，我们将尽快与您联系！');
+            } else {
+                alert('✅ 感谢您的咨询！翼星科技顾问将在 30 分钟内联系您，请保持电话畅通。');
+                form.reset();
+            }
+        });
+    }
+
+    // 滚动渐入动画
+    // Hamburger menu
+    (function(){
+        var h = document.querySelector('.hamburger');
+        var n = document.querySelector('.nav-links');
+        if (h && n) {
+            h.addEventListener('click', function(e){
+                e.stopPropagation();
+                n.classList.toggle('open');
+            });
+            n.querySelectorAll('a').forEach(function(a){
+                a.addEventListener('click', function(){ n.classList.remove('open'); });
+            });
+            document.addEventListener('click', function(e){
+                if (!n.contains(e.target) && !h.contains(e.target)) { n.classList.remove('open'); }
+            });
+        }
+    })();
+
+    // Scroll reveal
+    var observer = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+            if (entry.isIntersecting) { entry.target.classList.add('visible'); }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(function(el){
+        el.classList.add('fade-in');
+        observer.observe(el);
+    });
+
+    // Back to top
+    (function(){
+        var btn = document.createElement('button');
+        btn.className = 'back-to-top';
+        btn.innerHTML = '↑';
+        btn.onclick = function(){ window.scrollTo({top:0,behavior:'smooth'}); };
+        document.body.appendChild(btn);
+        window.addEventListener('scroll', function(){
+            if (window.scrollY > 400) { btn.classList.add('show'); }
+            else { btn.classList.remove('show'); }
+        });
+    })();
+
+    // 导航平滑滚动
+    document.querySelectorAll('.nav-links a[href^="#"], .hero-buttons a[href^="#"]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href && href !== '#') {
+                const target = document.querySelector(href);
+                if (target) {
+                    e.preventDefault();
+                    const top = target.getBoundingClientRect().top + window.scrollY - 70;
+                    window.scrollTo({ top, behavior: 'smooth' });
+                }
+            }
+        });
+    });
+
+    // scroll-margin-top for sticky nav
+    document.querySelectorAll('section[id]').forEach(s => s.style.scrollMarginTop = '80px');
+</script>
+<!-- 百度统计：请注册后替换 SITE_ID_PLACEHOLDER 为真实ID -->
+<!-- Baidu Analytics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?SITE_ID_PLACEHOLDER";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</body>
+</html>
