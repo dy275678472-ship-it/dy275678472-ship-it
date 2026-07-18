@@ -77,7 +77,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { creditsApi } from '../api'
+import { creditsApi, ordersApi } from '../api'
 
 const router = useRouter()
 const info = ref(null)
@@ -121,12 +121,26 @@ onMounted(async () => {
   } catch (e) { /* 使用默认展示 */ }
 })
 
-function buy(pkg) {
+async function buy(pkg) {
   if (!isLoggedIn.value) {
     router.push('/login')
     return
   }
-  alert(`支付宝充值（${pkg.name} ¥${pkg.price}）即将上线，请先使用每日免费额度体验。`)
+  const key = `pkg-${pkg.id}-${Date.now()}`
+  const res = await ordersApi.create(pkg.id, key)
+  if (!res?.success) {
+    alert(res?.detail || '创建订单失败')
+    return
+  }
+  if (res.sandbox || !res.alipay_ready) {
+    const ok = confirm(`沙箱模式：模拟支付 ¥${pkg.price} 获得 ${pkg.credits} 点？`)
+    if (!ok) return
+    const paid = await ordersApi.sandboxConfirm(res.out_trade_no)
+    alert(paid?.message || paid?.detail || '充值完成')
+    window.dispatchEvent(new Event('credits-changed'))
+    return
+  }
+  alert('请完成支付宝支付（支付页面即将上线）')
 }
 </script>
 

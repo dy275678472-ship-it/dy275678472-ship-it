@@ -11,6 +11,7 @@ import requests
 import mysql.connector
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 from openai import OpenAI
 from api.auth import get_current_user, get_optional_user
@@ -108,9 +109,11 @@ class GenerateChaptersRequest(BaseModel):
 
 class AIContinueRequest(BaseModel):
     """AI续写请求"""
-    context: str
+    context: str = ""
     content: str = ""
     style: Optional[str] = "网文"
+    story_id: Optional[int] = None
+    chapter_title: Optional[str] = "当前章节"
 
 class PublishRequest(BaseModel):
     """发布请求"""
@@ -332,51 +335,99 @@ async def generate_chapters(req: GenerateChaptersRequest, user: dict = Depends(g
 
 @router.post("/ai-continue")
 async def ai_continue(req: AIContinueRequest, user: dict = Depends(get_current_user)):
-    """步骤6：AI流式续写（带隐形水印）。扣 10 点，失败返还。"""
+    """步骤6：AI续写（带小说大脑上下文 + 隐形水印）。扣 10 点，失败返还。"""
     from api.credits import reserve, settle, refund, estimate_points
-    uid = str(user["sub"])
-    client = get_openai_client()
+    from services.story_memory import build_memory_context, parse_chapters, extract_summary_prompt
+    from services.copyright import inject_watermark
 
-    if not client:
+    uid = str(user["sub"])
+    if not get_openai_client():
         return {"success": False, "error": "AI服务未配置"}
 
-    job = reserve(uid, estimate_points("continue"), "continue")
-    from services.copyright import inject_watermark
-    
+    job = reserve(uid, estimate_points("continue"), "continue", story_id=req.story_id)
+    memory_ctx = req.context or req.content
+    story_row = None
+
+    if req.story_id:
+        db = _db()
+        try:
+            cursor = db.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM stories WHERE id=%s LIMIT 1", (req.story_id,))
+            story_row = cursor.fetchone()
+            if story_row and str(story_row.get("user_id")) != uid:
+                refund(uid, job["job_id"])
+                raise HTTPException(status_code=403, detail="无权续写该作品")
+            summaries = []
+            try:
+                cursor.execute(
+                    "SELECT chapter_idx, summary FROM chapter_summaries WHERE story_id=%s ORDER BY chapter_idx",
+                    (req.story_id,),
+                )
+                summaries = cursor.fetchall()
+            except Exception:
+                summaries = []
+            if story_row:
+                chapters = parse_chapters(story_row.get("chapters"))
+                memory_ctx = build_memory_context(
+                    story_row.get("title") or "",
+                    story_row.get("intro") or "",
+                    story_row.get("outline") or "",
+                    story_row.get("characters") or "",
+                    chapters,
+                    summaries,
+                )
+                if req.content:
+                    memory_ctx += f"\n\n当前编辑内容：\n{req.content[-4000:]}"
+        finally:
+            if db.is_connected():
+                db.close()
+
     prompt = f"""你是一个网文作家，擅长写爽点密集的网文。
 
+【全书记忆】
+{memory_ctx}
+
 风格要求：{req.style}
-当前已有内容：
-{req.content}
 
-请续写后续内容，要求：
-1. 保持原有风格
+请续写后续正文（约 800–1200 字），要求：
+1. 人物姓名、关系、设定与上文一致
 2. 情节要有爽点（打脸、装逼、逆袭等）
-3. 每段200字左右
-4. 在关键位置注入零宽字符作为隐形水印（用于版权追踪）
-
-直接输出续写内容。"""
+3. 直接输出正文，不要标题和说明"""
 
     try:
-        response = client.chat.completions.create(
-            model="deepseek-chat",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.8,
-            stream=False
-        )
-        
-        new_content = response.choices[0].message.content
-        
-        # 注入隐形零宽水印（按当前登录用户）
-        watermarked = inject_watermark(new_content, user_id=str(user.get("sub", "0")))
+        new_content = chat_with_llm(prompt, max_tokens=2000)
+        watermarked = inject_watermark(new_content, user_id=uid)
+
+        # 更新章节摘要（小说大脑）
+        if req.story_id and new_content:
+            try:
+                db2 = _db()
+                cursor2 = db2.cursor()
+                cursor2.execute(
+                    "SELECT COALESCE(MAX(chapter_idx),0)+1 FROM chapter_summaries WHERE story_id=%s",
+                    (req.story_id,),
+                )
+                idx = cursor2.fetchone()[0]
+                summary = chat_with_llm(extract_summary_prompt(req.chapter_title, new_content), max_tokens=200)
+                cursor2.execute(
+                    "INSERT INTO chapter_summaries (story_id, chapter_idx, summary) VALUES (%s,%s,%s) "
+                    "ON DUPLICATE KEY UPDATE summary=VALUES(summary)",
+                    (req.story_id, idx, summary[:500]),
+                )
+                db2.commit()
+                db2.close()
+            except Exception as mem_exc:
+                print(f"[ai-continue] 摘要更新失败: {mem_exc}")
 
         settle(uid, job["job_id"], estimate_points("continue"))
         return {
             "success": True,
             "content": new_content,
             "watermarked": watermarked,
-            "length": len(new_content)
+            "length": len(new_content),
         }
+    except HTTPException:
+        raise
     except Exception as e:
         refund(uid, job["job_id"])
         return {"success": False, "error": str(e)}
@@ -588,6 +639,80 @@ async def list_stories(status: Optional[str] = None, user: dict = Depends(get_cu
     except Exception as exc:
         print(f"[Story.list] 失败: {type(exc).__name__}: {exc}")
         raise HTTPException(status_code=500, detail="获取作品列表失败")
+    finally:
+        if db.is_connected():
+            db.close()
+
+
+@router.get("/{story_id}/export")
+async def export_story(story_id: int, format: str = "txt", user: dict = Depends(get_current_user)):
+    """导出作品为 TXT 或 Markdown。"""
+    uid = str(user.get("sub", "0"))
+    db = _db()
+    try:
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM stories WHERE id=%s LIMIT 1", (story_id,))
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="作品不存在")
+        if row.get("user_id") and str(row["user_id"]) != uid:
+            raise HTTPException(status_code=403, detail="无权导出该作品")
+        from services.story_memory import parse_chapters
+        chapters = parse_chapters(row.get("chapters"))
+        title = row.get("title") or "未命名"
+        lines = [f"# {title}" if format == "md" else title, ""]
+        if row.get("intro"):
+            lines += [row["intro"], ""]
+        for i, ch in enumerate(chapters, 1):
+            if not isinstance(ch, dict):
+                continue
+            ct = ch.get("title") or f"第{i}章"
+            body = ch.get("content") or ch.get("summary") or ""
+            if format == "md":
+                lines += [f"## {ct}", "", body, ""]
+            else:
+                lines += [ct, body, ""]
+        text = "\n".join(lines)
+        media = "text/markdown" if format == "md" else "text/plain"
+        ext = "md" if format == "md" else "txt"
+        return PlainTextResponse(
+            content=text,
+            media_type=media,
+            headers={"Content-Disposition": f'attachment; filename="{title}.{ext}"'},
+        )
+    finally:
+        if db.is_connected():
+            db.close()
+
+
+@router.get("/{story_id}/memory")
+async def story_memory(story_id: int, user: dict = Depends(get_current_user)):
+    """小说大脑视图：章节摘要列表。"""
+    uid = str(user.get("sub", "0"))
+    db = _db()
+    try:
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT user_id, title, characters, outline FROM stories WHERE id=%s LIMIT 1", (story_id,))
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="作品不存在")
+        if row.get("user_id") and str(row["user_id"]) != uid:
+            raise HTTPException(status_code=403, detail="无权查看")
+        cursor.execute(
+            "SELECT chapter_idx, summary, created_at FROM chapter_summaries WHERE story_id=%s ORDER BY chapter_idx",
+            (story_id,),
+        )
+        summaries = cursor.fetchall()
+        return {
+            "success": True,
+            "title": row.get("title"),
+            "characters": row.get("characters"),
+            "outline": row.get("outline"),
+            "summaries": [
+                {"chapter_idx": s["chapter_idx"], "summary": s["summary"], "created_at": str(s.get("created_at") or "")}
+                for s in summaries
+            ],
+        }
     finally:
         if db.is_connected():
             db.close()

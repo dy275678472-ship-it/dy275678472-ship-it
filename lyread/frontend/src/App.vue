@@ -53,6 +53,10 @@ export default {
   },
   mounted() {
     if (this.isLoggedIn) this.fetchCredits()
+    window.addEventListener('credits-changed', this.fetchCredits)
+  },
+  beforeUnmount() {
+    window.removeEventListener('credits-changed', this.fetchCredits)
   },
   methods: {
     async fetchCredits() {
