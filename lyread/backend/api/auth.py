@@ -1,0 +1,188 @@
+"""LyRead 认证 API：bcrypt 密码、限时 JWT 和服务端鉴权。"""
+import hashlib
+import os
+import secrets
+from datetime import datetime, timedelta, timezone
+from typing import Optional
+
+import bcrypt
+import mysql.connector
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
+from pydantic import BaseModel, EmailStr, Field
+
+from settings import database_config
+
+router = APIRouter()
+bearer_scheme = HTTPBearer(auto_error=False)
+JWT_ALGORITHM = "HS256"
+
+
+def get_db():
+    try:
+        return mysql.connector.connect(**database_config())
+    except Exception:
+        return None
+
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt(rounds=12)).decode("utf-8")
+
+
+def verify_password(password: str, stored_hash: str) -> tuple[bool, bool]:
+    """返回（是否匹配，是否为需要迁移的旧 SHA-256）。"""
+    if stored_hash.startswith("$2"):
+        return bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8")), False
+    legacy = hashlib.sha256(password.encode("utf-8")).hexdigest()
+    return secrets.compare_digest(legacy, stored_hash), True
+
+
+def jwt_secret() -> str:
+    secret = os.getenv("JWT_SECRET", "")
+    if len(secret) < 32:
+        raise HTTPException(status_code=503, detail="认证服务未正确配置")
+    return secret
+
+
+def generate_token(user_id: str, username: str) -> str:
+    now = datetime.now(timezone.utc)
+    minutes = int(os.getenv("JWT_EXPIRE_MINUTES", "60"))
+    return jwt.encode(
+        {
+            "sub": str(user_id), "username": username, "iat": now,
+            "exp": now + timedelta(minutes=minutes), "jti": secrets.token_hex(16),
+        },
+        jwt_secret(),
+        algorithm=JWT_ALGORITHM,
+    )
+
+
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+) -> dict:
+    if not credentials or credentials.scheme.lower() != "bearer":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="请先登录")
+    try:
+        payload = jwt.decode(credentials.credentials, jwt_secret(), algorithms=[JWT_ALGORITHM])
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="登录已失效")
+    if not payload.get("sub"):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="无效登录凭证")
+    return payload
+
+
+def get_optional_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+) -> Optional[dict]:
+    """宽松鉴权：有有效令牌时返回用户，否则返回 None（用于免费试用等公开接口）。"""
+    if not credentials or credentials.scheme.lower() != "bearer":
+        return None
+    try:
+        payload = jwt.decode(credentials.credentials, jwt_secret(), algorithms=[JWT_ALGORITHM])
+    except (JWTError, HTTPException):
+        return None
+    if not payload.get("sub"):
+        return None
+    return payload
+
+
+def _generate_user_id(cursor) -> str:
+    """生成 12 位数字用户 ID，兼容 users.id varchar(12) 且避免碰撞。"""
+    for _ in range(6):
+        uid = str(secrets.randbelow(900_000_000_000) + 100_000_000_000)  # 恒为 12 位
+        cursor.execute("SELECT 1 FROM users WHERE id = %s LIMIT 1", (uid,))
+        if not cursor.fetchone():
+            return uid
+    raise HTTPException(status_code=500, detail="生成用户ID失败，请重试")
+
+
+class LoginRequest(BaseModel):
+    username: str = Field(min_length=3, max_length=64, pattern=r"^[\w.@+-]+$")
+    # 登录兼容旧系统曾允许的较短密码；成功后会迁移旧哈希。
+    password: str = Field(min_length=1, max_length=128)
+
+
+class RegisterRequest(BaseModel):
+    username: str = Field(min_length=3, max_length=64, pattern=r"^[\w.@+-]+$")
+    password: str = Field(min_length=8, max_length=128)
+    email: Optional[EmailStr] = None
+
+
+@router.post("/login")
+async def login(req: LoginRequest):
+    conn = get_db()
+    if not conn:
+        raise HTTPException(status_code=503, detail="服务暂时不可用")
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT id, username, email, password_hash, vip_level, balance, created_at "
+            "FROM users WHERE username = %s LIMIT 1",
+            (req.username,),
+        )
+        user = cursor.fetchone()
+        matched, legacy = verify_password(req.password, user["password_hash"]) if user else (False, False)
+        if not matched:
+            raise HTTPException(status_code=401, detail="用户名或密码错误")
+        if legacy:
+            cursor.execute(
+                "UPDATE users SET password_hash = %s WHERE id = %s",
+                (hash_password(req.password), user["id"]),
+            )
+            conn.commit()
+        return {
+            "token": generate_token(user["id"], user["username"]),
+            "token_type": "bearer",
+            "user": {
+                "id": user["id"], "username": user["username"], "email": user["email"],
+                "vip_level": user["vip_level"], "balance": float(user["balance"]),
+                "created_at": str(user["created_at"]),
+            },
+        }
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=500, detail="登录失败")
+    finally:
+        if conn.is_connected():
+            conn.close()
+
+
+@router.post("/register", status_code=201)
+async def register(req: RegisterRequest):
+    conn = get_db()
+    if not conn:
+        raise HTTPException(status_code=503, detail="服务暂时不可用")
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id FROM users WHERE username = %s LIMIT 1", (req.username,))
+        if cursor.fetchone():
+            raise HTTPException(status_code=409, detail="用户名已存在")
+        user_id = _generate_user_id(cursor)
+        cursor.execute(
+            "INSERT INTO users (id, username, password_hash, email) VALUES (%s, %s, %s, %s)",
+            (user_id, req.username, hash_password(req.password), str(req.email) if req.email else None),
+        )
+        conn.commit()
+        return {
+            "success": True,
+            "message": "注册成功",
+            "token": generate_token(user_id, req.username),
+            "token_type": "bearer",
+            "user": {"id": user_id, "username": req.username, "email": str(req.email) if req.email else None, "vip_level": 0, "balance": 0.0},
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        conn.rollback()
+        print(f"[Register] 失败: {type(exc).__name__}: {exc}")
+        raise HTTPException(status_code=500, detail="注册失败")
+    finally:
+        if conn.is_connected():
+            conn.close()
+
+
+@router.get("/me")
+async def me(user: dict = Depends(get_current_user)):
+    return {"id": user["sub"], "username": user.get("username")}
