@@ -30,10 +30,7 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="tel:{PHONE}">{PHONE_DISPLAY}</a>
 <p style="font-size:13px;margin-top:8px">{ADDRESS}</p></div>
 </div>
-<div class="footer-bottom">© 2026 安徽中科国瓷新型元器件有限公司 ·
-<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{BEIAN_ICP}</a> ·
-<a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="" style="height:14px;display:inline;vertical-align:middle;margin-right:4px">{BEIAN_GA}</a> ·
-<a href="/en/">English</a></div></footer>
+<div class="footer-bottom">© 2026 安徽中科国瓷新型元器件有限公司<span class="sep">·</span><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{BEIAN_ICP}</a><span class="sep">·</span><a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="">{BEIAN_GA}</a><span class="sep">·</span><a href="/en/">English</a> <span class="sep">|</span> <a href="/">中文</a></div></footer>
 <script src="/assets/js/main.js"></script>"""
 
 NAV = """<nav class="nav"><div class="nav-inner">
@@ -68,7 +65,7 @@ FOOTER_EN = f"""<footer><div class="footer-grid container" style="padding:0">
 <div><h4>Company</h4><a href="/en/about.html">About</a><a href="/contact/">Contact</a></div>
 <div><h4>Contact</h4><a href="mailto:{EMAIL}">{EMAIL}</a></div>
 </div>
-<div class="footer-bottom">© 2026 Anhui ZK Guoci New Components Co., Ltd. · <a href="/">中文站</a></div></footer>
+<div class="footer-bottom">© 2026 Anhui ZK Guoci New Components Co., Ltd.<span class="sep">·</span><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{BEIAN_ICP}</a><span class="sep">·</span><a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="">{BEIAN_GA}</a><span class="sep">·</span><a href="/en/">English</a> <span class="sep">|</span> <a href="/">中文</a></div></footer>
 <script src="/assets/js/main.js"></script>"""
 
 
