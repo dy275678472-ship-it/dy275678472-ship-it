@@ -437,3 +437,23 @@
 ---
 
 *下一步建议：先执行 P0（SEO 归一 + 预约表单 + IndexNow），再进入 30 天内容与小红书计划。*
+
+---
+
+## P0 执行记录（已完成 · 2026-07-19）
+
+| 修复项 | 状态 | 验证 |
+|--------|------|------|
+| 城市/路线页预约表单（替换 `#cta` 自指） | ✅ | `bookingForm` 出现；`POST /api/book` → ok |
+| nginx `/api/` 代理 4003→8081 | ✅ | 公网预约不再 502 |
+| Sitemap 主机名 `www` → apex | ✅ | 417 URL 全为 `https://greentrace.com.cn/` |
+| 博客写入 sitemap | ✅ | `/blog/` × 16 |
+| www → apex 301 | ✅ | `www.greentrace.com.cn` → 301 |
+| 移除 SearchAction（`/search` 404） | ✅ | 首页无 SearchAction；JSON-LD 有效 |
+| IndexNow 密钥轮换并提交 | ✅ | key `eb4d11db...`；提交 HTTP 202 |
+| CSP `connect-src` 去掉 cosgo 残留 | ✅ | |
+| 页脚年份 2025→2026 | ✅ | |
+
+部署脚本：`scripts/greentrace-p0-seo.py`
+
+**P0 后剩余（P1）**：Cloudflare CDN、博客 Article schema、邮箱订阅、Klook 上移城市页、小红书获客统一域名、评价数据可信度清洗。
