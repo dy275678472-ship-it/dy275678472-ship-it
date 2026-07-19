@@ -114,7 +114,12 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <script src="/assets/js/main.js"></script>"""
 
 NAV = """<nav class="nav"><div class="nav-inner">
-<a href="/" class="nav-logo"><img src="/assets/images/logo.png" alt="中科国瓷" style="height:36px;width:auto">中科<span>国瓷</span><span class="nav-tagline">科技感知未来</span></a>
+<a href="/" class="nav-logo" aria-label="中科国瓷 KDGC">
+<picture>
+<source srcset="/assets/images/logo.webp" type="image/webp">
+<img src="/assets/images/logo.png" alt="安徽中科国瓷新型元器件有限公司 KDGC" class="nav-logo-img" width="238" height="96">
+</picture>
+</a>
 <div class="nav-links">
 <a href="/">首页</a>
 <a href="/products/">产品中心</a>
@@ -129,7 +134,12 @@ NAV = """<nav class="nav"><div class="nav-inner">
 </div></nav>"""
 
 NAV_EN = """<nav class="nav"><div class="nav-inner">
-<a href="/en/" class="nav-logo">ZK <span>Guoci</span><span class="nav-tagline">Oxygen Sensors</span></a>
+<a href="/en/" class="nav-logo" aria-label="KDGC Zhongke Guoci">
+<picture>
+<source srcset="/assets/images/logo.webp" type="image/webp">
+<img src="/assets/images/logo.png" alt="KDGC — Anhui Zhongke Guoci New Components Co., Ltd." class="nav-logo-img" width="238" height="96">
+</picture>
+</a>
 <div class="nav-links">
 <a href="/en/">Home</a>
 <a href="/en/products.html">Products</a>
