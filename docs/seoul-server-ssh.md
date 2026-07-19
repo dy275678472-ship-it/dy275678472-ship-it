@@ -237,3 +237,42 @@ WireGuard 内网：`10.60.0.2`（首尔）↔ `10.60.0.3`（追踪）↔ `10.60.
 - ✅ 最新攻略展示 3 → 6 篇
 - ✅ 新增「漫展季」顶部横幅 → `/activities`
 - ✅ IndexNow 批量提交
+
+---
+
+## P0 SEO 修复（2026-07-19）
+
+针对增长诊断中的 P0 问题，已在服务器 `/opt/zhenxi` 执行：
+
+| 问题 | 修复 | 验证 |
+|------|------|------|
+| `sitemap.xml` 404 | `start.sh` 增加 `public` 符号链接；nginx 直出兜底 | ✅ HTTP 200 |
+| `og-image.png` 404 | 同上 | ✅ HTTP 200 |
+| 全站 canonical 指向首页 | 移除 `layout.tsx` 全局 canonical；各路由独立设置 | ✅ `/blog` → `/blog` |
+| `/en` hreflang 404 | 移除无效 `en` 语言 alternate | ✅ 无 `/en` 引用 |
+| SearchAction → `/search` 404 | 移除 JSON-LD SearchAction | ✅ 无 SearchAction |
+| `logo.png` 404 | Schema.org logo 改为 `og-image.png` | ✅ |
+
+### 变更文件（服务器）
+
+- `/opt/zhenxi/start.sh` — 增加 `public` symlink
+- `/opt/zhenxi/src/lib/seo.ts` — `pageCanonical()` 辅助函数
+- `/opt/zhenxi/src/app/layout.tsx` — 移除全局 canonical、en hreflang、SearchAction
+- `/opt/zhenxi/src/app/*/page.tsx` — 各页面独立 canonical
+- `/opt/zhenxi/src/app/contact/layout.tsx` — 联系页 metadata（client 组件分离）
+- `/etc/nginx/sites-enabled/traffic-override.conf` — sitemap/og-image 直出
+
+### 部署脚本
+
+```bash
+scp scripts/zhenxi-p0-seo.py ubuntu@43.128.145.79:/tmp/
+ssh ubuntu@43.128.145.79 'python3 /tmp/zhenxi-p0-seo.py'
+```
+
+### 验证命令
+
+```bash
+curl -sI https://zhenxi.hk.cn/sitemap.xml | head -1
+curl -sI https://zhenxi.hk.cn/og-image.png | head -1
+curl -s https://zhenxi.hk.cn/blog | grep canonical
+```
