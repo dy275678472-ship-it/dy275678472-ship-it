@@ -7,7 +7,9 @@ Note: santa6.kdjc.cc does not resolve; content mirrored from www.kdgc.cc.
 
 from pathlib import Path
 
-DIST = Path(__file__).parent / "frontend" / "dist"
+ROOT = Path(__file__).parent
+DIST = ROOT / "frontend" / "dist"
+NEWS_CONTENT = ROOT / "content" / "news"
 
 BEIAN_ICP = "皖ICP备2021010166号"
 BEIAN_GA = "皖公网安备34019202001633号"
@@ -324,6 +326,7 @@ NEWS = [
     {
         "slug": "team-building-2022",
         "date": "2022-01-16",
+        "cover": "/assets/images/news/team-building-2022.jpg",
         "title": "2022年1月国瓷团建户外活动！新年新气象！虎年虎虎生威！",
         "title_en": "ZK Guoci 2022 Outdoor Team Building — New Year, New Energy",
         "summary": "新年伊始，国瓷公司进行周末全员户外团建，增强部门协作与凝聚力。",
@@ -338,6 +341,7 @@ NEWS = [
     {
         "slug": "nox-sensor-market",
         "date": "2021-06-01",
+        "cover": "/assets/images/news/nox-sensor-market.png",
         "title": "国内车用氮氧传感器市场超百亿元",
         "title_en": "China Automotive NOx Sensor Market Exceeds RMB 10 Billion",
         "summary": "气体传感器是机动车尾气后处理系统关键零部件，国Ⅵ排放标准下国内氮氧传感器市场空间超百亿元。",
@@ -355,25 +359,12 @@ NEWS = [
     {
         "slug": "understand-o2-sensor",
         "date": "2021-05-01",
+        "cover": "/assets/images/news/understand-o2-sensor.jpg",
         "title": "一文读懂氧传感器",
         "title_en": "Oxygen Sensors Explained",
-        "summary": "从发动机故障灯到氧化锆/氧化钛氧传感器原理、结构、分类与未来发展方向的科普解读。",
-        "summary_en": "From check-engine lights to zirconia/titania oxygen sensor principles, structure, types, and future directions.",
-        "body": """<p>开车的朋友有时会发现汽车发动机仪表盘上突然出现故障灯。如果车辆年限较久，很多情况下这个故障灯会和发动机氧传感器相关。接下来，我们就和大家一起聊一聊这个与汽车发动机紧密相关的氧传感器。</p>
-<h3>氧传感器与电喷发动机</h3>
-<p>对汽车发动机而言，氧传感器并不是一开始就存在的。为满足环保部门日益严格的汽车排放要求，电喷发动机越来越得到广泛应用，氧传感器则是电喷发动机中的一个非常重要的部件。</p>
-<p>在使用三元催化转换器减少排气污染的发动机上，氧传感器是必不可少的元件。由于混合气的空燃比一旦偏离理论空燃比，三元催化剂对 CO、HC 和 NOx 的净化能力将急剧下降，故在排气管中安装氧传感器，用以检测排气中氧的浓度，并向 ECU 发出反馈信号，再由 ECU 控制喷油持续时间。</p>
-<p>同时，氧传感器还能弥补由于机械及其它件磨损而引起空燃比的误差。可以说，它是电喷系统中唯一有“智能”的传感器。</p>
-<h3>概念及工作原理</h3>
-<p>氧传感器是利用陶瓷敏感元件测量各类加热炉或排气管道中的氧电势，由化学平衡原理计算出对应的氧浓度，从而达到监测和控制燃烧空燃比，以保证产品质量及尾气排放达标的测量元件。它还广泛应用于各类煤燃烧、油燃烧、气燃烧等炉体的气成分控制。</p>
-<p>氧传感器利用了 Nernst 原理。其核心元件是一种多孔的 ZrO₂ 陶瓷管，它是一种固态电解质，两侧面分别烧结上多孔铂（Pt）电极。在一定温度下，由于两侧氧浓度不同产生电位差，浓度差越大，电位差越大。</p>
-<p>根据氧传感器的电压信号，电脑按照尽可能接近 14.7：1 的理论最佳空燃比来稀释或加浓混合气。氧传感器只有在高温时（端部达到 300°C 以上）其特性才能充分体现；约 800°C 时，对混合气的变化反应最快。</p>
-<h3>分类及特点</h3>
-<p>实际应用的氧传感器有氧化锆式氧传感器和氧化钛式氧传感器两种。常见又有单引线、双引线和三根引线之分；原则上三种引线方式的氧传感器不能替代使用。</p>
-<p><strong>氧化锆式氧传感器</strong>优点：结构简单、响应迅速、维护容易、使用方便、测量准确。缺点：特性只有在温度较高时（约 600℃）才充分体现。</p>
-<p><strong>氧化钛式氧传感器</strong>利用多孔状导体 TiO₂ 的导电性随排气中氧含量的变化而变化，又称电阻性氧传感器。结构简单、体积小、成本低，但电阻值随温度变化较大，须用温度补偿提高精度。</p>
-<h3>未来发展方向</h3>
-<p>从目前情况看，针对氧传感器材料的研究重点包括：改进保护层材料提高抗劣化性；提高环境适应性与使用寿命；扩大空/燃比控制测量区域实现广域反馈控制；提高测量与反馈信号精确度。</p>""",
+        "summary": "从发动机故障灯到氧化锆/氧化钛氧传感器原理、结构、分类、检测与行业应用的完整科普。",
+        "summary_en": "Full primer on zirconia/titania oxygen sensors — principles, types, diagnostics, and industry applications.",
+        "body": (NEWS_CONTENT / "understand-o2-sensor.body.html").read_text(encoding="utf-8"),
     },
 ]
 
@@ -464,7 +455,9 @@ def main():
         for p in PRODUCTS
     )
     news_cards = "".join(
-        f"""<a href="/news/{n['slug']}.html" class="card"><div class="card-body">
+        f"""<a href="/news/{n['slug']}.html" class="card news-card">
+<img src="{n['cover']}" alt="{n['title']}" class="card-img" loading="lazy">
+<div class="card-body">
 <span class="tag">{n['date']}</span><h3>{n['title']}</h3><p>{n['summary']}</p></div></a>"""
         for n in NEWS
     )
@@ -486,7 +479,7 @@ def main():
 <span><strong>质保 5 年</strong> 诚信为本</span>
 </div></div>
 <section><div class="container">
-<div class="section-header"><div class="section-label">Products</div><h2>产品中心</h2><p>与 www.kdgc.cc 产品中心一致，完整规格与详情</p></div>
+<div class="section-header"><div class="section-label">Products</div><h2>产品中心</h2><p>探头型、插针型与面罩用氧传感器，完整规格与详情</p></div>
 <div class="grid-3">{prod_cards}</div>
 </div></section>
 <section style="background:var(--white)"><div class="container">
@@ -505,7 +498,7 @@ def main():
     pages["products/index.html"] = page(
         "产品中心 — 中科国瓷",
         "KD0100 系列氧气传感器探头/插针、面罩用氧传感器",
-        f"""<section class="page-hero"><div class="container"><h1>产品中心</h1><p>Product Center · 完整复刻 www.kdgc.cc 已上架产品</p></div></section>
+        f"""<section class="page-hero"><div class="container"><h1>产品中心</h1><p>KD0100 系列探头 / 插针 · 面罩用氧传感器</p></div></section>
 <section><div class="container grid-3">{prod_cards}</div></section>""",
         "/products/",
     )
@@ -546,31 +539,47 @@ def main():
 <div class="grid-3">{honor_html}</div>
 <h2 style="margin:40px 0 16px">合作伙伴</h2>
 <div class="grid-3">{partner_html}</div>
-<p style="margin-top:24px;font-size:13px;color:var(--muted)">内容来源：www.kdgc.cc 关于中科国瓷栏目（产品、证书与团队公开信息）</p>
+<p style="margin-top:24px;font-size:13px;color:var(--muted)">以上信息来自公司公开资料（团队、证书与合作伙伴）</p>
 </div></section>""",
         "/about/",
     )
 
     # News
     news_list = "".join(
-        f"""<a href="/news/{n['slug']}.html" class="content-block" style="display:block">
-<span class="tag">{n['date']}</span><h3 style="margin:8px 0">{n['title']}</h3><p>{n['summary']}</p></a>"""
+        f"""<a href="/news/{n['slug']}.html" class="news-list-item">
+<img src="{n['cover']}" alt="{n['title']}" class="news-list-cover" loading="lazy">
+<div class="news-list-body">
+<span class="tag">{n['date']}</span>
+<h3>{n['title']}</h3>
+<p>{n['summary']}</p>
+<span class="news-read-more">阅读全文 →</span>
+</div></a>"""
         for n in NEWS
     )
     pages["news/index.html"] = page(
         "新闻资讯 — 中科国瓷",
         "中科国瓷新闻资讯：团建活动、氮氧传感器市场、氧传感器科普",
-        f"""<section class="page-hero"><div class="container"><h1>新闻资讯</h1><p>全部来自 www.kdgc.cc 新闻资讯栏目</p></div></section>
-<section><div class="container">{news_list}</div></section>""",
+        f"""<section class="page-hero"><div class="container"><h1>新闻资讯</h1><p>公司动态 · 行业观察 · 技术科普</p></div></section>
+<section><div class="container news-list">{news_list}</div></section>""",
         "/news/",
     )
     for n in NEWS:
         pages[f"news/{n['slug']}.html"] = page(
             f"{n['title']} — 中科国瓷",
             n["summary"],
-            f"""<section class="page-hero"><div class="container"><h1>{n['title']}</h1><span class="tag">{n['date']}</span></div></section>
-<section><div class="container content-block">{n['body']}
-<p style="margin-top:24px"><a href="/news/">← 返回新闻列表</a></p></div></section>""",
+            f"""<article class="article">
+<section class="page-hero article-hero"><div class="container">
+<p class="article-meta"><span class="tag">{n['date']}</span><span class="tag">新闻资讯</span></p>
+<h1>{n['title']}</h1>
+<p class="article-deck">{n['summary']}</p>
+</div></section>
+<section class="article-section"><div class="container article-layout">
+<figure class="article-cover"><img src="{n['cover']}" alt="{n['title']}"></figure>
+<div class="article-body content-block">{n['body']}
+<p class="article-back"><a href="/news/">← 返回新闻列表</a>
+<a href="/contact/" class="btn btn-primary" style="margin-left:12px">咨询选型</a></p>
+</div></div></section>
+</article>""",
             f"/news/{n['slug']}.html",
         )
 
@@ -651,6 +660,7 @@ def main():
         "中科国瓷知识库建设规划：氧传感器选型、原理、应用与维护",
         """<section class="page-hero"><div class="container"><h1>知识库建设规划</h1><p>当前栏目为规划稿；正式文章将按下列结构持续补充</p></div></section>
 <section><div class="container content-block">
+<div class="plan-banner"><strong>状态：建设规划（中英文已对齐）</strong> · 正式文章上线前，本页用于对齐选题、规范与节奏。优化建议详见站内文档与下方「优化要点」。</div>
 <h2>一、建设目标</h2>
 <p>围绕公司真实产品线（变频氧传感器 / 氮氧传感器），建立可检索、可转化线索的技术内容资产，服务工程师选型与采购决策，并与新闻、产品详情互相内链。</p>
 <h2>二、栏目结构（建议 4 层）</h2>
@@ -684,6 +694,16 @@ def main():
 </ul>
 <h2>五、上线节奏</h2>
 <p>先完成 P0 四篇并挂到导航；再按应用行业补 P1；P2 作为 SEO 长尾持续产出。知识库列表页增加分类筛选与站内搜索。</p>
+<h2>六、优化要点（摘要）</h2>
+<ul>
+<li><strong>访客可见性</strong>：规划页应尽快被「正式文章列表」替换；导航可暂时标注「建设中」，避免被当成空栏目。</li>
+<li><strong>中英文对齐</strong>：英文页目前为摘要版，建议与中文 12 选题逐条对齐，并为每篇准备英文摘要（200–300 词）+ 链到中文全文。</li>
+<li><strong>内容复用</strong>：把《一文读懂氧传感器》按章节拆成 3–4 篇知识库（原理 / 分类 / 检测 / 行业），比从零写更快。</li>
+<li><strong>转化路径</strong>：每篇固定「相关产品」模块（探头/插针/面罩）+ 咨询表单锚点，避免纯科普无出口。</li>
+<li><strong>素材缺口</strong>：优先补原理示意图、接线定义图、量程/精度曲线图（可用产品规格书矢量图），再写长文。</li>
+</ul>
+<p style="margin-top:20px"><a href="/en/knowledge.html" class="btn btn-ghost" style="color:var(--navy);border-color:var(--border)">English roadmap</a>
+<a href="/contact/" class="btn btn-primary" style="margin-left:8px">提交选题需求</a></p>
 </div></section>""",
         "/knowledge/",
     )
@@ -694,8 +714,9 @@ def main():
         "中科国瓷产品案例栏目完整建设方案：结构、素材、模板与上线节奏",
         """<section class="page-hero"><div class="container"><h1>产品案例建设方案</h1><p>当前案例过简；以下为可执行的完整建设方案</p></div></section>
 <section><div class="container content-block">
+<div class="plan-banner"><strong>状态：建设方案（中英文已对齐）</strong> · 待业务方提供真实项目素材后，本页将替换为正式案例列表。</div>
 <h2>一、问题诊断</h2>
-<p>现有案例仅少量文字、无现场图/产品图、缺量化结果与客户场景，无法支撑 B2B 信任转化。官网 www.kdgc.cc 亦未单独开设案例库，本站需新建高质量案例栏目，而不是继续用占位文案。</p>
+<p>现有案例仅少量文字、无现场图/产品图、缺量化结果与客户场景，无法支撑 B2B 信任转化。原官网亦未单独开设案例库，本站需新建高质量案例栏目，而不是继续用占位文案。</p>
 <h2>二、案例页标准结构（每篇必须具备）</h2>
 <ol>
 <li><strong>封面图</strong>：产品实拍或应用场景图（≥1200px）</li>
@@ -716,7 +737,7 @@ def main():
 </table>
 <h2>四、视觉与交互</h2>
 <ul>
-<li>列表：左图右文卡片，行业标签 + 关键结果数字</li>
+<li>列表：左图右文，行业标签 + 关键结果数字（避免无信息卡片堆砌）</li>
 <li>详情：顶部大图 + sticky「咨询同款方案」；中部挑战/方案/结果三栏；底部相关产品</li>
 <li>禁止纯文字无图上线；无客户授权时使用自有实验室/产品图并标注「示意」</li>
 </ul>
@@ -724,6 +745,16 @@ def main():
 <p>销售/项目经理提交《案例采集表》→ 技术审核参数 → 市场撰写 → 法务脱敏 → 上线。每月至少新增 1 篇；季度复盘转化（案例页 → 咨询表单）。</p>
 <h2>六、近期交付</h2>
 <p>在业务方提供 1 组真实项目素材后，48 小时内按本模板上线首个完整案例页，并替换本规划页为正式案例列表。</p>
+<h2>七、优化要点（摘要）</h2>
+<ul>
+<li><strong>先做 1 个「样板案例」</strong>：宁可只有一篇完整案例，也不要四篇空壳；优先航空面罩或工业在线监测（素材相对可控）。</li>
+<li><strong>中英文策略</strong>：英文页可先发「Challenge / Solution / Results」三段摘要 + 中文详案链接；全量英译成本高，摘要即可支撑海外询盘。</li>
+<li><strong>量化结果是硬门槛</strong>：没有 ≥2 个数字指标（如响应时间、精度带、失效率、交付周期）不上线。</li>
+<li><strong>法务前置</strong>：客户名称、照片、台架数据需书面授权；默认脱敏模板写进采集表。</li>
+<li><strong>与产品中心联动</strong>：每个案例详情底部固定挂对应 SKU；产品详情页增加「相关案例」入口（有内容后再显示）。</li>
+</ul>
+<p style="margin-top:20px"><a href="/en/cases.html" class="btn btn-ghost" style="color:var(--navy);border-color:var(--border)">English roadmap</a>
+<a href="/contact/" class="btn btn-primary" style="margin-left:8px">提交案例素材</a></p>
 </div></section>""",
         "/cases/",
     )
@@ -776,9 +807,11 @@ def main():
         for p in PRODUCTS
     )
     en_news_cards = "".join(
-        f"""<a href="/news/{n['slug']}.html" class="card"><div class="card-body">
+        f"""<a href="/news/{n['slug']}.html" class="card news-card">
+<img src="{n['cover']}" alt="{n['title_en']}" class="card-img" loading="lazy">
+<div class="card-body">
 <span class="tag">{n['date']}</span><h3>{n['title_en']}</h3><p>{n['summary_en']}</p>
-<p style="font-size:13px;color:var(--muted);margin:0">Full article available in Chinese →</p></div></a>"""
+<p style="font-size:13px;color:var(--muted);margin:0">Full article in Chinese →</p></div></a>"""
         for n in NEWS
     )
 
@@ -801,7 +834,7 @@ def main():
 </div></div>
 <section><div class="container">
 <div class="section-header"><div class="section-label">Products</div><h2>Product Center</h2>
-<p>Same catalog as www.kdgc.cc — probe, pin, and mask oxygen sensors</p></div>
+<p>Probe, pin, and mask oxygen sensors with full specifications</p></div>
 <div class="grid-3">{en_prod_cards}</div>
 </div></section>
 <section style="background:var(--white)"><div class="container">
@@ -821,7 +854,7 @@ def main():
         "Products — ZK Guoci",
         "KD0100 probe/pin oxygen sensors and aviation mask oxygen sensors",
         f"""<section class="page-hero"><div class="container"><h1>Product Center</h1>
-<p>Full specs mirrored from www.kdgc.cc product catalog</p></div></section>
+<p>KD0100 probe / pin series · Aviation mask oxygen sensors</p></div></section>
 <section><div class="container grid-3">{en_prod_cards}</div></section>""",
         "/en/products.html",
         lang="en",
@@ -913,7 +946,7 @@ def main():
 <div class="grid-3">{honor_en}</div>
 <h2 style="margin:40px 0 16px">Partners</h2>
 <div class="grid-3">{partner_en}</div>
-<p style="margin-top:24px;font-size:13px;color:var(--muted)">Source: public information on www.kdgc.cc</p>
+<p style="margin-top:24px;font-size:13px;color:var(--muted)">Based on publicly available company information</p>
 </div></section>""",
         "/en/about.html",
         lang="en",
@@ -923,12 +956,17 @@ def main():
         "News — ZK Guoci",
         "ZK Guoci news: team building, NOx sensor market, oxygen sensor primer",
         f"""<section class="page-hero"><div class="container"><h1>News &amp; Insights</h1>
-<p>All articles from the www.kdgc.cc news center (full text in Chinese)</p></div></section>
-<section><div class="container">{"".join(
-            f"""<a href="/news/{n['slug']}.html" class="content-block" style="display:block">
-<span class="tag">{n['date']}</span><h3 style="margin:8px 0">{n['title_en']}</h3>
+<p>Company updates · Industry notes · Technical primers</p></div></section>
+<section><div class="container news-list">{"".join(
+            f"""<a href="/news/{n['slug']}.html" class="news-list-item">
+<img src="{n['cover']}" alt="{n['title_en']}" class="news-list-cover" loading="lazy">
+<div class="news-list-body">
+<span class="tag">{n['date']}</span>
+<h3>{n['title_en']}</h3>
 <p>{n['summary_en']}</p>
-<p style="font-size:13px;color:var(--muted)">Original Chinese title: {n['title']}</p></a>"""
+<p style="font-size:13px;color:var(--muted);margin:8px 0 0">Chinese title: {n['title']}</p>
+<span class="news-read-more">Read full article (Chinese) →</span>
+</div></a>"""
             for n in NEWS
         )}</div></section>""",
         "/en/news.html",
@@ -941,6 +979,7 @@ def main():
         """<section class="page-hero"><div class="container"><h1>Knowledge Base Roadmap</h1>
 <p>Planning page — articles will be published following this structure</p></div></section>
 <section><div class="container content-block">
+<div class="plan-banner"><strong>Status: roadmap (ZH/EN aligned)</strong> · Formal articles will replace this page. See optimization notes below.</div>
 <h2>Goals</h2>
 <p>Build searchable technical content around variable-frequency / NOx oxygen sensing to support engineer selection and lead conversion, with cross-links to products and news.</p>
 <h2>Pillars</h2>
@@ -961,9 +1000,21 @@ def main():
 <tr><td>6</td><td>Key metrics for aviation mask O₂ sensors</td><td>P1</td></tr>
 <tr><td>7</td><td>Reading accuracy curves (1–100 kPa)</td><td>P1</td></tr>
 <tr><td>8</td><td>Avoiding tip burns and permanent damage</td><td>P1</td></tr>
-<tr><td>9–12</td><td>Materials, China VI market, diagnostics, datasheet reading</td><td>P2</td></tr>
+<tr><td>9</td><td>Solid-electrolyte ceramics in gas sensing</td><td>P2</td></tr>
+<tr><td>10</td><td>China VI and the NOx sensor market</td><td>P2</td></tr>
+<tr><td>11</td><td>Check-engine lights vs O₂ sensor faults</td><td>P2</td></tr>
+<tr><td>12</td><td>How to read datasheets and tolerances</td><td>P2</td></tr>
 </table>
-<p style="margin-top:20px"><a href="/knowledge/" class="btn btn-primary">View Chinese plan</a></p>
+<h2>Optimization notes</h2>
+<ul>
+<li>Replace this roadmap ASAP with a real article list; mark nav as “Coming soon” until then.</li>
+<li>Keep EN as 200–300 word abstracts + link to Chinese full text (full EN translation is optional).</li>
+<li>Split the existing “Oxygen Sensors Explained” news into 3–4 knowledge articles first.</li>
+<li>Every article needs a related-product block + inquiry CTA.</li>
+<li>Ship diagrams (wiring, range/accuracy curves) before long-form copy.</li>
+</ul>
+<p style="margin-top:20px"><a href="/knowledge/" class="btn btn-primary">View Chinese plan</a>
+<a href="/en/contact.html" class="btn btn-ghost" style="margin-left:8px;color:var(--navy);border-color:var(--border)">Suggest a topic</a></p>
 </div></section>""",
         "/en/knowledge.html",
         lang="en",
@@ -973,8 +1024,9 @@ def main():
         "Case Studies Plan — ZK Guoci",
         "Case study structure and first verticals for ZK Guoci oxygen sensors",
         """<section class="page-hero"><div class="container"><h1>Case Studies Roadmap</h1>
-<p>www.kdgc.cc has no case library yet — this site will build one with full structure</p></div></section>
+<p>Planning page — building a structured B2B case library</p></div></section>
 <section><div class="container content-block">
+<div class="plan-banner"><strong>Status: roadmap (ZH/EN aligned)</strong> · This page becomes a case list once real project assets arrive.</div>
 <h2>Required structure per case</h2>
 <ol>
 <li>Cover image (≥1200px)</li>
@@ -993,6 +1045,13 @@ def main():
 <tr><td>Compact pin-header OEM integration</td><td>KD0100-02S-TO</td><td>Dimensions, weight, pinout</td></tr>
 <tr><td>Diesel SCR / OBD gas sensing (planned)</td><td>NOx / O₂ path</td><td>Customer approval, dyno data</td></tr>
 </table>
+<h2>Optimization notes</h2>
+<ul>
+<li>Ship one complete flagship case before adding more stubs.</li>
+<li>EN can be a Challenge / Solution / Results abstract linking to the Chinese full write-up.</li>
+<li>No publish without ≥2 quantified results and asset rights clearance.</li>
+<li>Cross-link every case to its SKU; add “Related cases” on product pages once live.</li>
+</ul>
 <p style="margin-top:20px"><a href="/cases/" class="btn btn-primary">View Chinese plan</a>
 <a href="/en/contact.html" class="btn btn-ghost" style="margin-left:8px;color:var(--navy);border-color:var(--border)">Share a case</a></p>
 </div></section>""",
