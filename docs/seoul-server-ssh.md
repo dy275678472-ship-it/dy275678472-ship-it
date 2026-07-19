@@ -276,3 +276,29 @@ curl -sI https://zhenxi.hk.cn/sitemap.xml | head -1
 curl -sI https://zhenxi.hk.cn/og-image.png | head -1
 curl -s https://zhenxi.hk.cn/blog | grep canonical
 ```
+
+---
+
+## P2 性能优化（2026-07-19）
+
+| 项目 | 动作 | 状态 |
+|------|------|------|
+| Swap 缓解 | `vm.swappiness` 50 → 10（持久化 `/etc/sysctl.d/99-seoul-tuning.conf`） | ✅ |
+| PM2 冲突 | 删除 root PM2 中指向 `/data/www/cosgo` 的 crash-loop cosgo（systemd 已管理） | ✅ |
+| zhenxi 静态缓存 | nginx 增加 `/_next/static/` 1年 immutable + 图片 7天缓存 | ✅ |
+| zhenxi HTML 缓存 | `max-age=3600` → `s-maxage=3600, stale-while-revalidate=86400` | ✅ |
+| 30 天内容计划 | 见 `docs/zhenxi-content-plan-30d.md` | ✅ 文档 |
+| P3 路线图 | 见 `docs/growth-roadmap-p3.md` | ✅ 文档 |
+
+### 部署脚本
+
+```bash
+scp scripts/seoul-p2-optimize.py ubuntu@43.128.145.79:/tmp/
+ssh ubuntu@43.128.145.79 'python3 /tmp/seoul-p2-optimize.py'
+```
+
+### 已知限制（移交 P3）
+
+- Swap 仍 ~2.1G（Hermes agent + MySQL 为主要占用；需升配或迁出 Hermes）
+- Cloudflare CDN 需 DNS 权限
+- 邮件收集 / 付费测评需第三方服务接入
