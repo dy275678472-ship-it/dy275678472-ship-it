@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>预约演示 | 翼星科技 ESNLINK — 智能通信与AI解决方案</title>
+    <meta name="description" content="预约翼星科技专业顾问，免费获取智能呼叫中心、短信平台、物联网及AI教育语音解决方案的定制方案与产品演示。">
+    <meta name="keywords" content="翼星科技, esnlink, 预约演示, 智能呼叫中心, AI语音, 物联网, 通信解决方案">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="翼星科技 ESNLINK">
+    <meta property="og:title" content="预约演示 | 翼星科技 ESNLINK">
+    <meta property="og:description" content="预约翼星科技专业顾问，获取通信与AI解决方案定制方案与产品演示。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.esnlink.cn/booking.html">
+    <meta property="og:image" content="https://www.esnlink.cn/og-image.png">
+    <meta property="og:site_name" content="翼星科技">
+    <link rel="canonical" href="https://www.esnlink.cn/booking.html">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://www.esnlink.cn/" },
+            { "@type": "ListItem", "position": 2, "name": "预约演示", "item": "https://www.esnlink.cn/booking.html" }
+        ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "预约演示 — 翼星科技",
+        "description": "预约翼星科技专业顾问，免费获取智能通信与AI解决方案定制方案与产品演示。",
+        "url": "https://www.esnlink.cn/booking.html",
+        "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://www.esnlink.cn/" },
+                { "@type": "ListItem", "position": 2, "name": "预约演示", "item": "https://www.esnlink.cn/booking.html" }
+            ]
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "翼星科技",
+            "alternateName": "ESNLINK",
+            "slogan": "链接创造价值"
+        }
+    }
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+            background: #ffffff;
+            color: #1e293b;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            background: #f8fafc;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #eef2f6;
+        }
+        .breadcrumb .container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        .breadcrumb a {
+            color: #2563eb;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .breadcrumb a:hover { color: #1e3a5f; }
+        .breadcrumb .sep { color: #94a3b8; }
+
+        /* Hero */
+        .booking-hero {
+            background: linear-gradient(160deg, #ffffff 0%, #f0f7ff 40%, #e0f2fe 100%);
+            padding: 4rem 0 5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .booking-hero::before {
+            content: "";
+            position: absolute;
+            top: -30%;
+            right: -10%;
+            width: 50%;
+            height: 80%;
+            background: radial-gradient(circle, rgba(37,99,235,0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .booking-hero h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #0f172a, #2563eb);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+        }
+        .booking-hero p {
+            font-size: 1.1rem;
+            color: #475569;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        .booking-hero .badge {
+            display: inline-block;
+            background: rgba(37,99,235,0.1);
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #2563eb;
+            margin-bottom: 1.2rem;
+            border: 1px solid rgba(37,99,235,0.12);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 预约区域 */
+        .booking-section {
+            padding: 4rem 0;
+            background: #ffffff;
+        }
+        .booking-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        /* 左侧信息 */
+        .booking-info h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 1rem;
+        }
+        .booking-info .slogan {
+            display: inline-block;
+            background: linear-gradient(135deg, #1e3a5f, #2563eb);
+            color: #fff;
+            padding: 0.25rem 1rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        .booking-info .desc {
+            color: #475569;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+        .booking-info .features {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .booking-info .features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            font-size: 0.9rem;
+            color: #334155;
+        }
+        .booking-info .features li i {
+            color: #2563eb;
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+            margin-top: 2px;
+        }
+        .booking-info .contact-meta {
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eef2f6;
+        }
+        .booking-info .contact-meta p {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0.4rem;
+        }
+        .booking-info .contact-meta i {
+            color: #2563eb;
+            width: 20px;
+        }
+
+        /* 右侧表单 */
+        .booking-form-wrapper {
+            background: #ffffff;
+            border-radius: 2rem;
+            padding: 2.5rem 2.2rem;
+            box-shadow: 0 20px 50px -16px rgba(0,0,0,0.08);
+            border: 1px solid #eef2f6;
+            position: relative;
+            overflow: hidden;
+        }
+        .booking-form-wrapper::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #1e3a5f, #2563eb, #06b6d4);
+        }
+        .booking-form-wrapper .form-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+        .booking-form-wrapper .form-sub {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 1.8rem;
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.4rem;
+        }
+        .form-group label .required {
+            color: #ef4444;
+            margin-left: 2px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.85rem 1.1rem;
+            border-radius: 1rem;
+            border: 1.5px solid #e2e8f0;
+            font-family: -apple-system, 'Noto Sans SC', sans-serif;
+            font-size: 0.95rem;
+            background: #fafcff;
+            color: #1e293b;
+            transition: all 0.25s ease;
+            outline: none;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37,99,235,0.08);
+            background: #ffffff;
+        }
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #94a3b8;
+        }
+        .form-group select {
+            appearance: auto;
+            cursor: pointer;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .form-submit {
+            margin-top: 0.5rem;
+        }
+        .form-submit button {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #2563eb, #0891b2);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px -6px rgba(37,99,235,0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+        }
+        .form-submit button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 28px -10px rgba(37,99,235,0.45);
+        }
+        .form-submit button:active {
+            transform: translateY(-1px);
+        }
+        .form-tip {
+            text-align: center;
+            margin-top: 0.8rem;
+            font-size: 0.78rem;
+            color: #94a3b8;
+        }
+
+        /* 信任标识 */
+        .trust-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            padding: 2.5rem 0;
+            flex-wrap: wrap;
+            border-top: 1px solid #eef2f6;
+            margin-top: 3rem;
+        }
+        .trust-bar .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        .trust-bar .trust-item i {
+            color: #2563eb;
+            font-size: 1.1rem;
+        }
+
+        /* 按钮通用 */
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            border: none;
+            background: linear-gradient(135deg, #2563eb, #0891b2);
+            color: white;
+            box-shadow: 0 8px 20px -6px rgba(37,99,235,0.35);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 28px -10px rgba(37,99,235,0.45);
+        }
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1.5px solid #cbd5e1;
+            background: transparent;
+            color: #1e293b;
+        }
+        .btn-secondary:hover {
+            border-color: #2563eb;
+            background: #f0f7ff;
+            transform: translateY(-2px);
+        }
+
+        /* Toast 消息 */
+        .toast {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #0f172a;
+            color: #fff;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 12px 30px -10px rgba(0,0,0,0.25);
+            z-index: 999;
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            pointer-events: none;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast i { font-size: 1.2rem; }
+        .toast.success i { color: #22c55e; }
+        .toast.error i { color: #ef4444; }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .booking-grid { grid-template-columns: 1fr; }
+            .booking-hero h1 { font-size: 2rem; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+.trust-bar { gap: 1rem; }
+            .booking-form-wrapper { padding: 1.8rem 1.2rem; }
+            .booking-hero { padding: 3rem 0; }
+            .booking-hero h1 { font-size: 1.6rem; }
+        }
+
+        /* 滚动渐入 */
+        .fade-in { opacity: 0; transform: translateY(24px); transition: all 0.6s cubic-bezier(0.2,0.9,0.4,1.1); }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+    </style>
+    <link rel="stylesheet" href="/css/header-footer.css?v=20260719b">
+</head>
+<body>
+<!-- site-chrome-nav -->
+<nav class="navbar">
+    <div class="container nav-container">
+        <a href="/" class="logo">
+            <span>esnlink · 翼星科技</span>
+            <span class="logo-slogan">链接创造价值</span>
+        </a>
+        <div class="nav-links">
+            <a href="/">首页</a>
+            <a href="/call-center.html">智能外呼</a>
+            <a href="/sms.html">短信平台</a>
+            <a href="/iot.html">物联网</a>
+            <a href="/pricing.html">定价</a>
+            <a href="/docs/">文档</a>
+            <a href="/blog/">博客</a>
+            <a href="/cases/">案例</a>
+            <a href="/en/">EN</a>
+            <a href="/booking.html" class="nav-btn btn-trial">免费试用</a>
+            <a href="/#contact" class="nav-btn">咨询</a>
+        </div>
+        <button class="hamburger" aria-label="菜单">☰</button>
+    </div>
+</nav>
+
+
+</div>
+</div>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <div class="container">
+        <a href="/"><span class="icon-emoji">🏠</span> 首页</a>
+        <span class="sep">›</span>
+        <span>预约演示</span>
+    </div>
+</div>
+
+<!-- Hero -->
+<div class="booking-hero">
+    <div class="container">
+        <div class="badge"><span class="icon-emoji">•</span> 免费预约 · 一对一服务</div>
+        <h1>预约产品演示</h1>
+        <p>填写以下信息，翼星科技专业顾问将在30分钟内联系您，为您免费定制解决方案。</p>
+    </div>
+</div>
+
+<!-- 预约主体 -->
+<div class="booking-section">
+    <div class="container">
+        <div class="booking-grid">
+            <!-- 左侧：品牌信息 -->
+            <div class="booking-info fade-in">
+                <div class="slogan">链接创造价值</div>
+                <h2>为什么选择翼星科技？</h2>
+                <p class="desc">
+                    翼星科技（ESNLINK）是领先的智能通信与物联网解决方案提供商，<br>
+                    服务覆盖智能呼叫中心、短信平台、物联网模组及AI教育语音等领域，<br>
+                    已为金融、电商、教育、政务等行业的1000+企业提供专业服务。
+                </p>
+                <ul class="features">
+                    <li><span class="icon-emoji">✓</span> <span><strong>30分钟</strong> 快速响应，专业顾问一对一服务</span></li>
+                    <li><span class="icon-emoji">✓</span> <span><strong>免费</strong> 定制方案，按需匹配最佳产品组合</span></li>
+                    <li><span class="icon-emoji">✓</span> <span><strong>7×24小时</strong> 技术支持，全国200+城市上门服务</span></li>
+                    <li><span class="icon-emoji">✓</span> <span><strong>1000+</strong> 企业信赖，稳定服务超过5年</span></li>
+                </ul>
+                <div class="contact-meta">
+                    <p><span class="icon-emoji">📍</span> 深圳市 · 南山区科技园</p>
+                    <p><span class="icon-emoji">✉</span> business@esnlink.cn</p>
+                    <p><span class="icon-emoji">•</span> 400-888-翼星</p>
+                    <p><span class="icon-emoji">⏰</span> 工作日 9:00 — 18:00</p>
+                </div>
+            </div>
+
+            <!-- 右侧：预约表单 -->
+            <div class="booking-form-wrapper fade-in">
+                <div class="form-title"><span class="icon-emoji">•</span> 填写预约信息</div>
+                <div class="form-sub">提交后顾问将尽快与您联系，请保持电话畅通</div>
+                <form id="bookingForm" novalidate>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>您的姓名 <span class="required">*</span></label>
+                            <input type="text" name="name" placeholder="请输入姓名" required>
+                        </div>
+                        <div class="form-group">
+                            <label>联系电话 <span class="required">*</span></label>
+                            <input type="tel" name="phone" placeholder="请输入手机号" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>公司名称 <span class="required">*</span></label>
+                        <input type="text" name="company" placeholder="请输入公司全称" required>
+                    </div>
+                    <div class="form-group">
+                        <label>产品意向 <span class="required">*</span></label>
+                        <select name="product" required>
+                            <option value="">请选择意向产品</option>
+                            <option value="智能呼叫中心">智能呼叫中心</option>
+                            <option value="短信平台">短信平台</option>
+                            <option value="物联网产品">物联网产品</option>
+                            <option value="教育AI语音方案">教育AI语音方案</option>
+                            <option value="综合解决方案">综合解决方案</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>需求备注</label>
+                        <textarea name="notes" placeholder="请描述您的具体需求或关注点，例如：预计使用人数、主要应用场景、希望解决的问题等…"></textarea>
+                    </div>
+                    <div class="form-submit">
+                        <button type="submit"><span class="icon-emoji">✈</span> 提交预约</button>
+                    </div>
+                    <div class="form-tip">
+                        <span class="icon-emoji">🔒</span> 信息已加密，仅用于预约联系
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 信任标识 -->
+        <div class="trust-bar fade-in">
+            <div class="trust-item"><span class="icon-emoji">🛡</span> 数据加密传输</div>
+            <div class="trust-item"><span class="icon-emoji">⏰</span> 30分钟快速响应</div>
+            <div class="trust-item"><span class="icon-emoji">🎧</span> 专属顾问服务</div>
+            <div class="trust-item"><span class="icon-emoji">•</span> 免费定制方案</div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<!-- site-chrome-footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="logo"><span>esnlink · 翼星科技</span></a>
+                <p>智能通信与物联网解决方案提供商<br><strong style="color:#60a5fa;font-size:1.1rem;letter-spacing:0.08em;">链接创造价值</strong></p>
+            </div>
+            <div class="footer-col">
+                <h5>产品</h5>
+                <a href="/call-center.html">智能呼叫中心</a>
+                <a href="/sms.html">短信平台</a>
+                <a href="/iot.html">物联网模组</a>
+                <a href="/edu.html">教育 AI</a>
+            </div>
+            <div class="footer-col">
+                <h5>支持</h5>
+                <a href="/faq.html">帮助中心</a>
+                <a href="/pricing.html">定价方案</a>
+                <a href="/booking.html">预约演示</a>
+                <a href="/docs/">开发文档</a>
+                <a href="/blog/">技术博客</a>
+            </div>
+            <div class="footer-col">
+                <h5>关于</h5>
+                <a href="/about.html">公司简介</a>
+                <a href="/cases/">客户案例</a>
+                <a href="/#contact">联系我们</a>
+                <a href="/solutions/education.html">教育行业</a>
+                <a href="/solutions/ecommerce.html">电商行业</a>
+                <a href="/solutions/finance.html">金融行业</a>
+                <a href="/en/">English</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2025 合肥翼星智能科技有限公司 All Rights Reserved.</span>
+            <span style="margin-left:1rem"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="color:#94a3b8;text-decoration:none">皖ICP备2026012968号-1</a></span>
+        </div>
+    </div>
+</footer>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <span class="icon-emoji">✓</span>
+    <span id="toastMsg"></span>
+</div>
+
+<script>
+    // Toast 提示
+    function showToast(msg, type) {
+        var t = document.getElementById('toast');
+        var icon = t.querySelector('i');
+        t.querySelector('#toastMsg').textContent = msg;
+        icon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+        t.className = 'toast ' + type + ' show';
+        setTimeout(function() { t.classList.remove('show'); }, 4000);
+    }
+
+    // 表单提交
+    var form = document.getElementById('bookingForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var name = form.querySelector('[name="name"]').value.trim();
+            var phone = form.querySelector('[name="phone"]').value.trim();
+            var company = form.querySelector('[name="company"]').value.trim();
+            var product = form.querySelector('[name="product"]').value;
+            var notes = form.querySelector('[name="notes"]').value.trim();
+
+            if (!name || !phone || !company || !product) {
+                showToast('请完整填写姓名、电话、公司名称和产品意向', 'error');
+                return;
+            }
+            // 手机号简单验证
+            if (!/^1\d{10}$/.test(phone)) {
+                showToast('请输入正确的手机号码', 'error');
+                return;
+            }
+
+            console.log('预约提交:', { name: name, phone: phone, company: company, product: product, notes: notes });
+            showToast('✅ 预约成功！顾问将在30分钟内联系您', 'success');
+            form.reset();
+        });
+    }
+
+    // 滚动渐入动画
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(function(el) {
+        observer.observe(el);
+    });
+</script>
+
+<!-- site-chrome-hamburger -->
+<script>
+(function(){
+  var h = document.querySelector('.hamburger');
+  var n = document.querySelector('.nav-links');
+  if (h && n && !h.dataset.bound) {
+    h.dataset.bound = '1';
+    h.addEventListener('click', function(e){
+      e.stopPropagation();
+      n.classList.toggle('open');
+    });
+    n.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click', function(){ n.classList.remove('open'); });
+    });
+    document.addEventListener('click', function(e){
+      if (!n.contains(e.target) && !h.contains(e.target)) { n.classList.remove('open'); }
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>物联网平台 · 翼星科技 | 万物互联 · 智能可控</title>
+    <meta name="description" content="翼星科技物联网平台——设备管理、数据采集、远程控制、边缘计算一体化。支持百万级设备并发，赋能企业数字化转型。">
+    <meta name="keywords" content="物联网平台, IoT, 设备管理, 数据采集, 远程控制, 边缘计算, 翼星科技">
+    <link rel="canonical" href="https://www.esnlink.cn/iot.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="物联网平台 · 翼星科技 | 万物互联 · 智能可控">
+    <meta property="og:description" content="翼星科技物联网平台——设备管理、数据采集、远程控制、边缘计算一体化。支持百万级设备并发。">
+    <meta property="og:url" content="https://www.esnlink.cn/iot.html">
+    <meta property="og:site_name" content="esnlink · 翼星科技">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:image" content="https://www.esnlink.cn/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:image" content="https://www.esnlink.cn/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="物联网平台 · 翼星科技 | 万物互联 · 智能可控">
+    <meta name="twitter:description" content="翼星科技物联网平台——设备管理、数据采集、远程控制、边缘计算一体化。">
+<style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: sans-serif; background: #ffffff; color: #1e293b; line-height: 1.5; scroll-behavior: smooth; overflow-x: hidden; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
+
+        :root { --iot-primary: #0e7490; --iot-light: #ecfeff; --iot-gradient: linear-gradient(135deg, #0e7490, #06b6d4); }
+
+        .hero-iot {
+            padding: 5rem 0 6rem;
+            background: linear-gradient(160deg, #ffffff 0%, #f0fdfd 40%, #ecfeff 100%);
+            position: relative; overflow: hidden; text-align: center;
+        }
+        .hero-iot h1 { font-size: 3.2rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; color: #0f172a; margin-bottom: 1rem; }
+        .hero-iot h1 span { background: var(--iot-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .hero-iot p { font-size: 1.2rem; color: #475569; max-width: 640px; margin: 0 auto 2rem; }
+
+        .section-iot { padding: 5rem 0; }
+        .section-title { text-align: center; font-size: 2.2rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 0.8rem; color: #0f172a; }
+        .section-sub { text-align: center; color: #64748b; max-width: 650px; margin: 0 auto 3rem; font-size: 1.05rem; }
+
+        .features-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;
+        }
+        .feature-card {
+            background: white; border-radius: 2rem; padding: 2.2rem 2rem;
+            box-shadow: 0 12px 30px -12px rgba(0,0,0,0.05); transition: all 0.35s cubic-bezier(0.2,0.9,0.4,1.1);
+            border: 1px solid #eef2f6; text-align: center;
+        }
+        .feature-card:hover { transform: translateY(-8px); box-shadow: 0 25px 45px -14px rgba(14,116,144,0.12); border-color: #cffafe; }
+        .feature-icon {
+            width: 72px; height: 72px; display: flex; align-items: center; justify-content: center;
+            border-radius: 24px; margin: 0 auto 1.5rem; font-size: 2rem; background: #ecfeff; color: #0e7490;
+        }
+        .feature-card h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.75rem; }
+        .feature-card p { color: #475569; font-size: 0.95rem; line-height: 1.6; }
+
+        .scene-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .scene-card { background: white; border-radius: 1.8rem; padding: 2rem; border: 1px solid #f0f2f5; transition: 0.3s; }
+        .scene-card:hover { border-color: #cffafe; transform: translateY(-4px); box-shadow: 0 12px 25px -10px rgba(14,116,144,0.08); }
+        .scene-card h4 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .scene-card p { color: #64748b; font-size: 0.9rem; }
+
+        .stats-row { display: flex; justify-content: center; gap: 4rem; flex-wrap: wrap; margin: 2rem 0; }
+        .stat-item { text-align: center; }
+        .stat-item .num { font-size: 2.5rem; font-weight: 800; background: var(--iot-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .stat-item .label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+
+        .cta-box {
+            background: linear-gradient(135deg, #0e7490, #06b6d4); border-radius: 2.5rem;
+            padding: 3.5rem; text-align: center; color: white; margin: 2rem 0;
+        }
+        .cta-box h2 { font-size: 2rem; font-weight: 700; margin-bottom: 1rem; }
+        .cta-box p { opacity: 0.9; max-width: 500px; margin: 0 auto 2rem; font-size: 1.05rem; }
+        .cta-btn {
+            display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.9rem 2.2rem;
+            border-radius: 40px; font-weight: 600; font-size: 1rem;
+            background: white; color: #0e7490; text-decoration: none; transition: all 0.3s;
+            box-shadow: 0 8px 20px -6px rgba(0,0,0,0.15);
+        }
+        .cta-btn:hover { transform: translateY(-3px); box-shadow: 0 14px 28px -10px rgba(0,0,0,0.2); }
+
+        @media (max-width: 768px) {
+            .container { padding: 0 1.5rem; }
+            .hero-iot h1 { font-size: 2rem; }
+            .section-iot { padding: 3rem 0; }
+            .section-title { font-size: 1.8rem; }
+            .stats-row { gap: 2rem; }
+            .cta-box { padding: 2.5rem 1.5rem; }
+        }
+    </style>
+    <link rel="stylesheet" href="/css/header-footer.css?v=20260719b">
+</head>
+<body>
+
+<!-- site-chrome-nav -->
+<nav class="navbar">
+    <div class="container nav-container">
+        <a href="/" class="logo">
+            <span>esnlink · 翼星科技</span>
+            <span class="logo-slogan">链接创造价值</span>
+        </a>
+        <div class="nav-links">
+            <a href="/">首页</a>
+            <a href="/call-center.html">智能外呼</a>
+            <a href="/sms.html">短信平台</a>
+            <a class="active" href="/iot.html">物联网</a>
+            <a href="/pricing.html">定价</a>
+            <a href="/docs/">文档</a>
+            <a href="/blog/">博客</a>
+            <a href="/cases/">案例</a>
+            <a href="/en/">EN</a>
+            <a href="/booking.html" class="nav-btn btn-trial">免费试用</a>
+            <a href="/#contact" class="nav-btn">咨询</a>
+        </div>
+        <button class="hamburger" aria-label="菜单">☰</button>
+    </div>
+</nav>
+
+<section class="hero-iot">
+    <div class="container">
+        <div class="badge" style="display:inline-block;background:rgba(14,116,144,0.1);padding:0.3rem 1rem;border-radius:40px;font-size:0.85rem;font-weight:600;color:#0e7490;margin-bottom:1.5rem;border:1px solid rgba(14,116,144,0.12);">
+            <span class="icon-emoji">💻</span> 万物互联 · 智能可控
+        </div>
+        <h1>让每一台设备 <span>说话</span></h1>
+        <p>翼星物联网平台 — 设备管理、数据采集、远程控制、边缘计算一体化，轻松实现企业级 IoT 部署。</p>
+        <div class="hero-buttons" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+            <a href="/booking.html" class="btn-primary" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.8rem 2rem;border-radius:40px;font-weight:600;font-size:1rem;background:var(--iot-gradient);color:white;text-decoration:none;box-shadow:0 8px 20px -6px rgba(14,116,144,0.35);transition:all 0.3s;">免费咨询 <span class="icon-emoji">→</span></a>
+            <a href="#features" class="btn-secondary" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.8rem 2rem;border-radius:40px;font-weight:600;font-size:1rem;background:transparent;color:#1e293b;border:1.5px solid #cbd5e1;text-decoration:none;transition:all 0.3s;">了解更多 <span class="icon-emoji">▼</span></a>
+        </div>
+        <div class="stats-row" style="margin-top:3.5rem;">
+            <div class="stat-item"><div class="num">100万+</div><div class="label">设备接入</div></div>
+            <div class="stat-item"><div class="num">99.9%</div><div class="label">可用率</div></div>
+            <div class="stat-item"><div class="num">50+</div><div class="label">行业方案</div></div>
+        </div>
+    </div>
+</section>
+
+<section class="section-iot" id="features" style="background:#f8fafc;">
+    <div class="container">
+        <h2 class="section-title">核心能力</h2>
+        <p class="section-sub">从设备接入到数据分析，覆盖物联网全链路</p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><span class="icon-emoji">📶</span></div>
+                <h3>多协议接入</h3>
+                <p>支持 MQTT、CoAP、HTTP、LwM2M 等主流协议，兼容 4G/5G/NB-IoT/LoRa 网络，设备即连即用。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><span class="icon-emoji">🗄</span></div>
+                <h3>数据采集与存储</h3>
+                <p>毫秒级数据采集，冷热数据分层存储，支持时序数据库，海量数据高效管理。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><span class="icon-emoji">•</span></div>
+                <h3>远程控制</h3>
+                <p>实时指令下发、定时策略、场景联动，支持 OTA 固件升级，设备远程运维。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><span class="icon-emoji">💻</span></div>
+                <h3>边缘计算</h3>
+                <p>边缘节点本地处理与分析，降低延迟与带宽成本，断网续传，保障业务连续性。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><span class="icon-emoji">🛡</span></div>
+                <h3>安全合规</h3>
+                <p>TLS/DTLS 加密传输、设备身份认证、访问控制、操作审计，满足等保要求。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><span class="icon-emoji">📈</span></div>
+                <h3>可视化大屏</h3>
+                <p>设备地图、实时仪表盘、数据报表、告警管理，全局掌控设备运行状态。</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-iot">
+    <div class="container">
+        <h2 class="section-title">应用场景</h2>
+        <p class="section-sub">覆盖工业、能源、交通、农业等核心领域</p>
+        <div class="scene-grid">
+            <div class="scene-card">
+                <div style="font-size:2rem;margin-bottom:0.8rem;">🏭</div>
+                <h4>工业物联网</h4>
+                <p>设备预测性维护、产线数据采集、能耗监测，提升工厂运营效率。</p>
+            </div>
+            <div class="scene-card">
+                <div style="font-size:2rem;margin-bottom:0.8rem;">🔋</div>
+                <h4>能源管理</h4>
+                <p>水电气热远程抄表、光伏监测、储能管理，助力碳中和目标。</p>
+            </div>
+            <div class="scene-card">
+                <div style="font-size:2rem;margin-bottom:0.8rem;">🚚</div>
+                <h4>智慧物流</h4>
+                <p>冷链追踪、资产定位、仓储管理，物流全链路数字化。</p>
+            </div>
+            <div class="scene-card">
+                <div style="font-size:2rem;margin-bottom:0.8rem;">🌾</div>
+                <h4>智慧农业</h4>
+                <p>环境监测、智能灌溉、农机定位，助力精准农业。</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-iot" style="background:#f8fafc;">
+    <div class="container">
+        <h2 class="section-title">技术优势</h2>
+        <p class="section-sub">企业级 IoT 平台，性能与可靠性并重</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.8rem;">
+            <div style="padding:1.8rem;border-radius:1.5rem;background:white;border:1px solid #f0f2f5;text-align:center;transition:0.3s;">
+                <span class="icon-emoji">⚡</span>
+                <h4 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;">百万并发</h4>
+                <p style="color:#64748b;font-size:0.9rem;">分布式架构，弹性扩展，支持百万级设备同时在线</p>
+            </div>
+            <div style="padding:1.8rem;border-radius:1.5rem;background:white;border:1px solid #f0f2f5;text-align:center;transition:0.3s;">
+                <span class="icon-emoji">⏰</span>
+                <h4 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;">毫秒响应</h4>
+                <p style="color:#64748b;font-size:0.9rem;">指令下行 < 50ms，数据上行 < 20ms，实时可控</p>
+            </div>
+            <div style="padding:1.8rem;border-radius:1.5rem;background:white;border:1px solid #f0f2f5;text-align:center;transition:0.3s;">
+                <span class="icon-emoji">•</span>
+                <h4 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;">标准 API</h4>
+                <p style="color:#64748b;font-size:0.9rem;">开放 RESTful API + SDK，快速集成现有系统</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-iot">
+    <div class="container">
+        <div class="cta-box">
+            <h2>开启物联网之旅</h2>
+            <p>免费试用，专业顾问一对一服务，快速部署您的 IoT 项目</p>
+            <a href="/booking.html" class="cta-btn">立即申请试用 <span class="icon-emoji">→</span></a>
+        </div>
+    </div>
+</section>
+
+<!-- site-chrome-footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="logo"><span>esnlink · 翼星科技</span></a>
+                <p>智能通信与物联网解决方案提供商<br><strong style="color:#60a5fa;font-size:1.1rem;letter-spacing:0.08em;">链接创造价值</strong></p>
+            </div>
+            <div class="footer-col">
+                <h5>产品</h5>
+                <a href="/call-center.html">智能呼叫中心</a>
+                <a href="/sms.html">短信平台</a>
+                <a href="/iot.html">物联网模组</a>
+                <a href="/edu.html">教育 AI</a>
+            </div>
+            <div class="footer-col">
+                <h5>支持</h5>
+                <a href="/faq.html">帮助中心</a>
+                <a href="/pricing.html">定价方案</a>
+                <a href="/booking.html">预约演示</a>
+                <a href="/docs/">开发文档</a>
+                <a href="/blog/">技术博客</a>
+            </div>
+            <div class="footer-col">
+                <h5>关于</h5>
+                <a href="/about.html">公司简介</a>
+                <a href="/cases/">客户案例</a>
+                <a href="/#contact">联系我们</a>
+                <a href="/solutions/education.html">教育行业</a>
+                <a href="/solutions/ecommerce.html">电商行业</a>
+                <a href="/solutions/finance.html">金融行业</a>
+                <a href="/en/">English</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2025 合肥翼星智能科技有限公司 All Rights Reserved.</span>
+            <span style="margin-left:1rem"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="color:#94a3b8;text-decoration:none">皖ICP备2026012968号-1</a></span>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', function(e) {
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        });
+    });
+</script>
+<!-- site-chrome-hamburger -->
+<script>
+(function(){
+  var h = document.querySelector('.hamburger');
+  var n = document.querySelector('.nav-links');
+  if (h && n && !h.dataset.bound) {
+    h.dataset.bound = '1';
+    h.addEventListener('click', function(e){
+      e.stopPropagation();
+      n.classList.toggle('open');
+    });
+    n.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click', function(){ n.classList.remove('open'); });
+    });
+    document.addEventListener('click', function(e){
+      if (!n.contains(e.target) && !h.contains(e.target)) { n.classList.remove('open'); }
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+User-agent: *
+Crawl-delay: 1
+
+Disallow: /admin/
+Disallow: /ai-admin/
+Disallow: /edu-admin/api/
+Disallow: /downloads/
+Disallow: /apply/
+Disallow: /baidu_verify_
+Disallow: /seo/
+Disallow: /panel
+Disallow: /registry/
+
+Sitemap: https://www.esnlink.cn/sitemap.xml

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS API Platform | ESNLink — Verification & Notification SMS</title>
+    <meta name="description" content="ESNLink SMS API for verification codes, notifications, and marketing. 99.9% delivery rate, 5-second delivery, REST API with Python/PHP examples.">
+    <link rel="canonical" href="https://www.esnlink.cn/en/sms.html">
+    <link rel="alternate" hreflang="zh-CN" href="https://www.esnlink.cn/sms.html">
+    <link rel="alternate" hreflang="en" href="https://www.esnlink.cn/en/sms.html">
+    <meta property="og:image" content="https://www.esnlink.cn/og-image.png">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:system-ui,sans-serif;color:#1e293b;line-height:1.6}
+        .container{max-width:900px;margin:0 auto;padding:0 1.5rem}
+        .nav{padding:1rem 0;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0}
+        .nav a{color:#334155;text-decoration:none;margin-left:1rem;font-size:.9rem}
+        .nav .logo{font-weight:800;color:#0891b2;text-decoration:none}
+        .btn{background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;padding:.6rem 1.5rem;border-radius:40px;text-decoration:none;font-weight:600}
+        .hero{padding:3rem 0}
+        .hero h1{font-size:2.4rem;font-weight:800;margin-bottom:.5rem}
+        .hero p{color:#64748b;margin-bottom:1.5rem}
+        .features{padding:2rem 0;display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+        .feat{background:#f0fdfd;padding:1.2rem;border-radius:10px;border:1px solid #cffafe}
+        .feat h3{font-size:1rem;margin-bottom:.3rem}
+        .feat p{font-size:.9rem;color:#64748b}
+        .footer{background:#0f172a;color:#94a3b8;padding:2rem 0;text-align:center;font-size:.85rem;margin-top:2rem}
+        .footer a{color:#60a5fa}
+        @media(max-width:600px){.features{grid-template-columns:1fr}}
+    </style>
+    <link rel="stylesheet" href="/css/header-footer.css?v=20260719b">
+</head>
+<body>
+<!-- site-chrome-nav -->
+<nav class="navbar">
+    <div class="container nav-container">
+        <a href="/en/" class="logo">
+            <span>esnlink</span>
+            <span class="logo-slogan">Link Creates Value</span>
+        </a>
+        <div class="nav-links">
+            <a href="/en/">Home</a>
+            <a href="/en/call-center.html">AI Calling</a>
+            <a class="active" href="/en/sms.html">SMS</a>
+            <a href="/iot.html">IoT</a>
+            <a href="/pricing.html">Pricing</a>
+            <a href="/docs/">Docs</a>
+            <a href="/cases/">Cases</a>
+            <a href="/">中文</a>
+            <a href="/booking.html" class="nav-btn btn-trial">Free Trial</a>
+            <a href="/#contact" class="nav-btn">Contact</a>
+        </div>
+        <button class="hamburger" aria-label="Menu">☰</button>
+    </div>
+</nav>
+<section class="hero container">
+    <h1>SMS API Platform</h1>
+    <p>3-carrier direct route · 99.9% delivery · Verification, notification & marketing SMS. From ¥0.03/message.</p>
+    <a href="/docs/sms-api.html" class="btn">View API Documentation</a>
+    <a href="/sms.html" style="margin-left:.5rem;color:#0891b2;text-decoration:none;font-weight:600">中文版 →</a>
+</section>
+<div class="container features">
+    <div class="feat"><h3>⚡ 5-Second Delivery</h3><p>Domestic SMS delivered within 5 seconds</p></div>
+    <div class="feat"><h3>🔐 Verification Codes</h3><p>OTP, login, payment confirmation</p></div>
+    <div class="feat"><h3>📬 Notifications</h3><p>Order updates, shipping alerts, system alerts</p></div>
+    <div class="feat"><h3>🎯 Marketing</h3><p>Campaign SMS with smart routing</p></div>
+</div>
+<!-- site-chrome-footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="/en/" class="logo"><span>esnlink</span></a>
+                <p>Enterprise communication &amp; IoT cloud<br><strong style="color:#60a5fa;font-size:1.1rem;letter-spacing:0.08em;">Link Creates Value</strong></p>
+            </div>
+            <div class="footer-col">
+                <h5>Products</h5>
+                <a href="/en/call-center.html">AI Call Center</a>
+                <a href="/en/sms.html">SMS Platform</a>
+                <a href="/iot.html">IoT</a>
+                <a href="/pricing.html">Pricing</a>
+            </div>
+            <div class="footer-col">
+                <h5>Resources</h5>
+                <a href="/docs/">Docs</a>
+                <a href="/cases/">Cases</a>
+                <a href="/booking.html">Book a demo</a>
+                <a href="/faq.html">FAQ</a>
+            </div>
+            <div class="footer-col">
+                <h5>Company</h5>
+                <a href="/about.html">About</a>
+                <a href="/#contact">Contact</a>
+                <a href="/">中文</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2025 Hefei Yixing Intelligent Technology Co., Ltd.</span>
+            <span style="margin-left:1rem"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="color:#94a3b8;text-decoration:none">皖ICP备2026012968号-1</a></span>
+        </div>
+    </div>
+</footer>
+<!-- site-chrome-hamburger -->
+<script>
+(function(){
+  var h = document.querySelector('.hamburger');
+  var n = document.querySelector('.nav-links');
+  if (h && n && !h.dataset.bound) {
+    h.dataset.bound = '1';
+    h.addEventListener('click', function(e){
+      e.stopPropagation();
+      n.classList.toggle('open');
+    });
+    n.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click', function(){ n.classList.remove('open'); });
+    });
+    document.addEventListener('click', function(e){
+      if (!n.contains(e.target) && !h.contains(e.target)) { n.classList.remove('open'); }
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
