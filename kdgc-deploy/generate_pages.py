@@ -16,7 +16,9 @@ EMAIL = "guanwn@kdgc.cc"
 PHONE = "15385884309"
 PHONE_DISPLAY = "153-8588-4309"
 ADDRESS = "安徽省合肥市高新区望江西路5089号嵌入式研发楼103-C3（科大先研院-智源楼）"
+ADDRESS_EN = "Room 103-C3, Embedded R&D Building, No. 5089 Wangjiang West Road, High-tech District, Hefei, Anhui, China"
 HOURS = "客服工作时间：09:00–21:00（7×24 响应）"
+HOURS_EN = "Support hours: 09:00–21:00 (7×24 response)"
 
 FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <div><h4>中科国瓷</h4><p style="font-size:14px;margin-top:8px">变频氧传感器与氮氧传感技术 · 中科大技术转化</p>
@@ -30,7 +32,12 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="tel:{PHONE}">{PHONE_DISPLAY}</a>
 <p style="font-size:13px;margin-top:8px">{ADDRESS}</p></div>
 </div>
-<div class="footer-bottom">© 2026 安徽中科国瓷新型元器件有限公司<span class="sep">·</span><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{BEIAN_ICP}</a><span class="sep">·</span><a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="">{BEIAN_GA}</a><span class="sep">·</span><a href="/en/">English</a> <span class="sep">|</span> <a href="/">中文</a></div></footer>
+<div class="footer-bottom"><div class="footer-meta">
+<span>© 2026 安徽中科国瓷新型元器件有限公司</span><span class="sep">·</span>
+<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{BEIAN_ICP}</a><span class="sep">·</span>
+<a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="" width="14" height="14">{BEIAN_GA}</a><span class="sep">·</span>
+<a href="/en/">English</a><span class="sep">|</span><a href="/">中文</a>
+</div></div></footer>
 <script src="/assets/js/main.js"></script>"""
 
 NAV = """<nav class="nav"><div class="nav-inner">
@@ -56,7 +63,7 @@ NAV_EN = """<nav class="nav"><div class="nav-inner">
 <a href="/en/cases.html">Cases</a>
 <a href="/en/about.html">About</a>
 <a href="/" style="opacity:.8">中文</a>
-<a href="/contact/" class="nav-cta">Contact</a>
+<a href="/en/contact.html" class="nav-cta">Contact</a>
 </div>
 <button class="menu-toggle" aria-label="Menu">☰</button>
 </div></nav>"""
@@ -65,21 +72,26 @@ FOOTER_EN = f"""<footer><div class="footer-grid container" style="padding:0">
 <div><h4>ZK Guoci</h4><p style="font-size:14px;margin-top:8px">Variable-frequency oxygen sensors · USTC tech transfer</p>
 <p style="font-size:13px;margin-top:8px;opacity:.8">Integrity first · 5-year product warranty</p></div>
 <div><h4>Products</h4>
-<a href="/en/products.html">KD0100-02S-T1 Probe</a>
-<a href="/en/products.html">KD0100-02S-TO Pin</a>
-<a href="/en/products.html">Mask O₂ Sensor</a></div>
+<a href="/en/products/kd0100-02s-t1.html">KD0100-02S-T1 Probe</a>
+<a href="/en/products/kd0100-02s-to.html">KD0100-02S-TO Pin</a>
+<a href="/en/products/mask-o2-sensor.html">Mask O₂ Sensor</a></div>
 <div><h4>Company</h4>
 <a href="/en/products.html">Products</a>
 <a href="/en/news.html">News</a>
 <a href="/en/knowledge.html">Knowledge</a>
 <a href="/en/cases.html">Cases</a>
 <a href="/en/about.html">About</a>
-<a href="/contact/">Contact</a></div>
+<a href="/en/contact.html">Contact</a></div>
 <div><h4>Contact</h4><a href="mailto:{EMAIL}">{EMAIL}</a><br>
 <a href="tel:{PHONE}">{PHONE_DISPLAY}</a>
-<p style="font-size:13px;margin-top:8px">{ADDRESS}</p></div>
+<p style="font-size:13px;margin-top:8px">{ADDRESS_EN}</p></div>
 </div>
-<div class="footer-bottom">© 2026 Anhui ZK Guoci New Components Co., Ltd.<span class="sep">·</span><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{BEIAN_ICP}</a><span class="sep">·</span><a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="">{BEIAN_GA}</a><span class="sep">·</span><a href="/en/">English</a> <span class="sep">|</span> <a href="/">中文</a></div></footer>
+<div class="footer-bottom"><div class="footer-meta">
+<span>© 2026 Anhui ZK Guoci New Components Co., Ltd.</span><span class="sep">·</span>
+<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{BEIAN_ICP}</a><span class="sep">·</span>
+<a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="" width="14" height="14">{BEIAN_GA}</a><span class="sep">·</span>
+<a href="/en/">English</a><span class="sep">|</span><a href="/">中文</a>
+</div></div></footer>
 <script src="/assets/js/main.js"></script>"""
 
 
@@ -597,6 +609,42 @@ def main():
         "/contact/",
     )
 
+    pages["en/contact.html"] = page(
+        "Contact — ZK Guoci",
+        f"Contact ZK Guoci: {PHONE_DISPLAY} {EMAIL} {ADDRESS_EN}",
+        f"""<section class="page-hero"><div class="container"><h1>Contact Us</h1>
+<p>Sensing the future · Fast response</p></div></section>
+<section><div class="container" style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+<div class="content-block">
+<h2>Contact details</h2>
+<p><strong>Email</strong><br><a href="mailto:{EMAIL}">{EMAIL}</a></p>
+<p style="margin-top:12px"><strong>Phone</strong><br><a href="tel:{PHONE}">{PHONE_DISPLAY}</a></p>
+<p style="margin-top:12px"><strong>Address</strong><br>{ADDRESS_EN}</p>
+<p style="margin-top:12px"><strong>{HOURS_EN}</strong><br>We provide 7×24 response for technical and commercial inquiries.</p>
+<img src="/assets/images/wechat-qr.png" alt="WeChat QR" style="max-width:160px;margin-top:16px">
+</div>
+<form id="lead-form" class="form-box">
+<div class="form-hp"><input name="website" tabindex="-1" autocomplete="off"></div>
+<div class="form-group"><label>Company *</label><input name="company" required></div>
+<div class="form-group"><label>Contact name *</label><input name="contact_name" required></div>
+<div class="form-group"><label>Phone *</label><input name="phone" type="tel" required></div>
+<div class="form-group"><label>Email</label><input name="email" type="email"></div>
+<div class="form-group"><label>Product interest</label><select name="product_interest">
+<option value="">Please select</option>
+<option>KD0100-02S-T1 Probe</option>
+<option>KD0100-02S-TO Pin</option>
+<option>Mask O₂ Sensor</option>
+<option>Other</option></select></div>
+<div class="form-group"><label>Requirements</label><textarea name="requirement"></textarea></div>
+<button type="submit" class="btn btn-primary" style="width:100%">Submit inquiry</button>
+<div class="form-msg"></div>
+</form>
+</div></section>
+<style>@media(max-width:800px){{section .container[style*="grid-template"]{{display:block!important}}}}</style>""",
+        "/en/contact.html",
+        lang="en",
+    )
+
     # Knowledge plan page
     pages["knowledge/index.html"] = page(
         "知识库建设规划 — 中科国瓷",
@@ -743,7 +791,7 @@ def main():
 <p>0.5–101 kPa · Automotive / Aviation mask / Industrial gas · 5-year warranty</p>
 <div class="hero-actions">
 <a href="/en/products.html" class="btn btn-primary">Product Center</a>
-<a href="/contact/" class="btn btn-ghost">Contact Us</a>
+<a href="/en/contact.html" class="btn btn-ghost">Contact Us</a>
 </div></div></section>
 <div class="trust-bar"><div class="container trust-items">
 <span><strong>ISO 9001</strong> NOx sensor R&amp;D &amp; production</span>
@@ -763,7 +811,7 @@ def main():
 <section class="cta-section"><div class="container">
 <h2>Request an Oxygen Sensor Solution</h2>
 <p style="margin-bottom:24px;opacity:.9">Tell us your range, interface, and application — our team will reply soon.</p>
-<a href="/contact/" class="btn btn-white">Contact</a>
+<a href="/en/contact.html" class="btn btn-white">Contact</a>
 </div></section>""",
         "/en/",
         lang="en",
@@ -800,7 +848,7 @@ def main():
 <div class="content-block" style="margin:0">
 <p>{p['summary_en']}</p>
 <h3>Advantages</h3><ul>{adv}</ul>
-<p style="margin-top:20px"><a href="/contact/?product={p['slug']}" class="btn btn-primary">Inquire</a>
+<p style="margin-top:20px"><a href="/en/contact.html?product={p['slug']}" class="btn btn-primary">Inquire</a>
 <a href="/en/products.html" class="btn btn-ghost" style="margin-left:8px;color:var(--navy);border-color:var(--border)">Back to products</a></p>
 </div></div>
 <div class="container" style="margin-top:32px">
@@ -946,7 +994,7 @@ def main():
 <tr><td>Diesel SCR / OBD gas sensing (planned)</td><td>NOx / O₂ path</td><td>Customer approval, dyno data</td></tr>
 </table>
 <p style="margin-top:20px"><a href="/cases/" class="btn btn-primary">View Chinese plan</a>
-<a href="/contact/" class="btn btn-ghost" style="margin-left:8px;color:var(--navy);border-color:var(--border)">Share a case</a></p>
+<a href="/en/contact.html" class="btn btn-ghost" style="margin-left:8px;color:var(--navy);border-color:var(--border)">Share a case</a></p>
 </div></section>""",
         "/en/cases.html",
         lang="en",
@@ -998,6 +1046,7 @@ def main():
         "/en/knowledge.html",
         "/en/cases.html",
         "/en/about.html",
+        "/en/contact.html",
     ]
     urls += [f"/products/{p['slug']}.html" for p in PRODUCTS]
     urls += [f"/en/products/{p['slug']}.html" for p in PRODUCTS]
