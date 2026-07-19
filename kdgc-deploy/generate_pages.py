@@ -25,7 +25,7 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="/products/kd0100-02s-t1.html">KD0100-02S-T1 探头</a>
 <a href="/products/kd0100-02s-to.html">KD0100-02S-TO 插针</a>
 <a href="/products/mask-o2-sensor.html">面罩用氧传感器</a></div>
-<div><h4>公司</h4><a href="/about/">关于中科国瓷</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">产品案例</a><a href="/contact/">联系我们</a></div>
+<div><h4>公司</h4><a href="/products/">产品中心</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">产品案例</a><a href="/about/">关于中科国瓷</a><a href="/contact/">联系我们</a></div>
 <div><h4>联系</h4><a href="mailto:{EMAIL}">{EMAIL}</a><br>
 <a href="tel:{PHONE}">{PHONE_DISPLAY}</a>
 <p style="font-size:13px;margin-top:8px">{ADDRESS}</p></div>
@@ -36,11 +36,11 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 NAV = """<nav class="nav"><div class="nav-inner">
 <a href="/" class="nav-logo"><img src="/assets/images/logo.png" alt="中科国瓷" style="height:36px;width:auto">中科<span>国瓷</span><span class="nav-tagline">科技感知未来</span></a>
 <div class="nav-links">
-<a href="/about/">关于中科国瓷</a>
 <a href="/products/">产品中心</a>
 <a href="/news/">新闻资讯</a>
 <a href="/knowledge/">知识库</a>
 <a href="/cases/">产品案例</a>
+<a href="/about/">关于中科国瓷</a>
 <a href="/en/" style="opacity:.8">EN</a>
 <a href="/contact/" class="nav-cta">联系我们</a>
 </div>
@@ -50,9 +50,11 @@ NAV = """<nav class="nav"><div class="nav-inner">
 NAV_EN = """<nav class="nav"><div class="nav-inner">
 <a href="/en/" class="nav-logo">ZK <span>Guoci</span><span class="nav-tagline">Oxygen Sensors</span></a>
 <div class="nav-links">
-<a href="/en/about.html">About</a>
 <a href="/en/products.html">Products</a>
 <a href="/en/news.html">News</a>
+<a href="/en/knowledge.html">Knowledge</a>
+<a href="/en/cases.html">Cases</a>
+<a href="/en/about.html">About</a>
 <a href="/" style="opacity:.8">中文</a>
 <a href="/contact/" class="nav-cta">Contact</a>
 </div>
@@ -60,10 +62,22 @@ NAV_EN = """<nav class="nav"><div class="nav-inner">
 </div></nav>"""
 
 FOOTER_EN = f"""<footer><div class="footer-grid container" style="padding:0">
-<div><h4>ZK Guoci</h4><p style="font-size:14px;margin-top:8px">Variable-frequency oxygen sensors</p></div>
-<div><h4>Products</h4><a href="/en/products.html">Oxygen Sensors</a></div>
-<div><h4>Company</h4><a href="/en/about.html">About</a><a href="/contact/">Contact</a></div>
-<div><h4>Contact</h4><a href="mailto:{EMAIL}">{EMAIL}</a></div>
+<div><h4>ZK Guoci</h4><p style="font-size:14px;margin-top:8px">Variable-frequency oxygen sensors · USTC tech transfer</p>
+<p style="font-size:13px;margin-top:8px;opacity:.8">Integrity first · 5-year product warranty</p></div>
+<div><h4>Products</h4>
+<a href="/en/products.html">KD0100-02S-T1 Probe</a>
+<a href="/en/products.html">KD0100-02S-TO Pin</a>
+<a href="/en/products.html">Mask O₂ Sensor</a></div>
+<div><h4>Company</h4>
+<a href="/en/products.html">Products</a>
+<a href="/en/news.html">News</a>
+<a href="/en/knowledge.html">Knowledge</a>
+<a href="/en/cases.html">Cases</a>
+<a href="/en/about.html">About</a>
+<a href="/contact/">Contact</a></div>
+<div><h4>Contact</h4><a href="mailto:{EMAIL}">{EMAIL}</a><br>
+<a href="tel:{PHONE}">{PHONE_DISPLAY}</a>
+<p style="font-size:13px;margin-top:8px">{ADDRESS}</p></div>
 </div>
 <div class="footer-bottom">© 2026 Anhui ZK Guoci New Components Co., Ltd.<span class="sep">·</span><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{BEIAN_ICP}</a><span class="sep">·</span><a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="">{BEIAN_GA}</a><span class="sep">·</span><a href="/en/">English</a> <span class="sep">|</span> <a href="/">中文</a></div></footer>
 <script src="/assets/js/main.js"></script>"""
@@ -87,14 +101,23 @@ PRODUCTS = [
     {
         "slug": "kd0100-02s-t1",
         "name": "KD0100-02S-T1 氧气传感器-探头",
+        "name_en": "KD0100-02S-T1 Oxygen Sensor — Probe",
         "tagline": "氧压范围 0.5–101 kPa · 线束探头型",
+        "tagline_en": "O₂ partial pressure 0.5–101 kPa · Cable probe type",
         "summary": "氧压范围 0.5kPa–101kPa，与外部接口板配合工作，可测试空气、纯氧及氮氧混合气等气体的氧分压。",
+        "summary_en": "Measures oxygen partial pressure from 0.5–101 kPa. Works with an external interface board / KD0100-03 controller for air, pure oxygen, and N₂/O₂ mixtures.",
         "image": "/assets/images/products/kd0100-02s-t1.png",
         "advantages": [
             "氧压范围：0.5kPa–101kPa",
             "与外部接口板 / 配套控制器 KD0100-03 配合工作",
             "可测试空气、纯氧及氮氧混合气等气体的氧分压",
             "线束探头结构，便于系统集成",
+        ],
+        "advantages_en": [
+            "O₂ partial pressure range: 0.5–101 kPa",
+            "Works with external interface board / KD0100-03 controller",
+            "Measures air, pure O₂, and N₂/O₂ mixed gases",
+            "Cable-harness probe design for easy system integration",
         ],
         "specs": [
             ("传感器型号", "KD0100-02S"),
@@ -104,12 +127,27 @@ PRODUCTS = [
             ("气流速率", "（0 ~ 10）m/s"),
             ("探头重量", "≦35g（不包括线束）"),
         ],
+        "specs_en": [
+            ("Sensor model", "KD0100-02S"),
+            ("Controller", "KD0100-03"),
+            ("Heater voltage", "~4.5V / 9V (optional)"),
+            ("Gas temperature", "(-50 ~ 200) °C"),
+            ("Gas flow rate", "(0 ~ 10) m/s"),
+            ("Probe weight", "≦35 g (excl. harness)"),
+        ],
         "wiring": [
             ("Vh-", "白线"),
             ("Vh+", "蓝线"),
             ("Sense", "红线"),
             ("Common", "灰线"),
             ("Pump", "绿线"),
+        ],
+        "wiring_en": [
+            ("Vh-", "White"),
+            ("Vh+", "Blue"),
+            ("Sense", "Red"),
+            ("Common", "Gray"),
+            ("Pump", "Green"),
         ],
         "accuracy": [
             ("氧分压 1～10 kPa", "≤±0.5 kPa"),
@@ -118,22 +156,42 @@ PRODUCTS = [
             ("氧分压 50～70 kPa", "≤±2 kPa"),
             ("氧分压 70～100 kPa", "≤±2.5 kPa"),
         ],
+        "accuracy_en": [
+            ("1–10 kPa", "≤±0.5 kPa"),
+            ("10–30 kPa", "≤±1 kPa"),
+            ("30–50 kPa", "≤±1.5 kPa"),
+            ("50–70 kPa", "≤±2 kPa"),
+            ("70–100 kPa", "≤±2.5 kPa"),
+        ],
         "notes": [
             "工作时传感器探头温度较高，注意防范误触探头导致烫伤",
             "须按控制器说明书进行操作使用，否则可能会造成传感器永久损坏失效",
+        ],
+        "notes_en": [
+            "Probe tip is hot during operation — avoid burns from accidental contact",
+            "Operate only per the controller manual; misuse may permanently damage the sensor",
         ],
     },
     {
         "slug": "kd0100-02s-to",
         "name": "KD0100-02S-TO 氧气传感器-插针",
+        "name_en": "KD0100-02S-TO Oxygen Sensor — Pin Header",
         "tagline": "氧压范围 0.5–101 kPa · 插针型 · ≦5g",
+        "tagline_en": "O₂ partial pressure 0.5–101 kPa · Pin type · ≦5 g",
         "summary": "氧压范围 0.5kPa–101kPa，插针电气连接，探头重量 ≦5g，与配套控制器 KD0100-03 配合工作。",
+        "summary_en": "Pin-header electrical connection, probe weight ≦5 g, O₂ range 0.5–101 kPa, paired with KD0100-03 controller.",
         "image": "/assets/images/products/kd0100-02s-to.png",
         "advantages": [
             "氧压范围：0.5kPa–101kPa",
             "轻量化插针结构，探头重量 ≦5g",
             "可测试空气、纯氧及氮氧混合气等气体的氧分压",
             "尺寸公差 ≦0.5mm（单位 mm）",
+        ],
+        "advantages_en": [
+            "O₂ partial pressure range: 0.5–101 kPa",
+            "Lightweight pin design, probe ≦5 g",
+            "Measures air, pure O₂, and N₂/O₂ mixed gases",
+            "Dimensional tolerance ≦0.5 mm",
         ],
         "specs": [
             ("传感器型号", "KD0100-02S"),
@@ -143,6 +201,14 @@ PRODUCTS = [
             ("气流速率", "（0 ~ 10）m/s"),
             ("探头重量", "≦5g（不包括线束）"),
         ],
+        "specs_en": [
+            ("Sensor model", "KD0100-02S"),
+            ("Controller", "KD0100-03"),
+            ("Heater voltage", "~4.5V / 9V (optional)"),
+            ("Gas temperature", "(-50 ~ 200) °C"),
+            ("Gas flow rate", "(0 ~ 10) m/s"),
+            ("Probe weight", "≦5 g (excl. harness)"),
+        ],
         "wiring": [
             ("1", "Pump"),
             ("2", "Common"),
@@ -151,6 +217,14 @@ PRODUCTS = [
             ("9", "Vh+"),
             ("其余", "NC，无连接"),
         ],
+        "wiring_en": [
+            ("1", "Pump"),
+            ("2", "Common"),
+            ("3", "Sense"),
+            ("7", "Vh-"),
+            ("9", "Vh+"),
+            ("Others", "NC"),
+        ],
         "accuracy": [
             ("氧分压 1～10 kPa", "≤±0.5 kPa"),
             ("氧分压 10～30 kPa", "≤±1 kPa"),
@@ -158,23 +232,44 @@ PRODUCTS = [
             ("氧分压 50～70 kPa", "≤±2 kPa"),
             ("氧分压 70～100 kPa", "≤±2.5 kPa"),
         ],
+        "accuracy_en": [
+            ("1–10 kPa", "≤±0.5 kPa"),
+            ("10–30 kPa", "≤±1 kPa"),
+            ("30–50 kPa", "≤±1.5 kPa"),
+            ("50–70 kPa", "≤±2 kPa"),
+            ("70–100 kPa", "≤±2.5 kPa"),
+        ],
         "notes": [
             "工作时传感器探头温度较高，注意防范误触探头导致烫伤",
             "须按控制器说明书进行操作使用，否则可能会造成传感器永久损坏失效",
             "注：所有单位均为 mm，尺寸公差 ≦0.5mm",
         ],
+        "notes_en": [
+            "Probe tip is hot during operation — avoid burns",
+            "Operate only per the controller manual",
+            "All dimensions in mm; tolerance ≦0.5 mm",
+        ],
     },
     {
         "slug": "mask-o2-sensor",
         "name": "面罩用氧传感器",
+        "name_en": "Mask Oxygen Sensor",
         "tagline": "战机飞行员面罩用低温型变频式氧传感器",
+        "tagline_en": "Low-temperature VF oxygen sensor for pilot oxygen masks",
         "summary": "公司开发的战机飞行员面罩用低温型变频式氧传感器已试制成功，产品各项性能指标优异。",
+        "summary_en": "A low-temperature variable-frequency oxygen sensor for fighter-pilot oxygen masks has been successfully prototyped with excellent performance metrics.",
         "image": "/assets/images/products/mask-o2-sensor.png",
         "advantages": [
             "面向航空面罩应用的低温型变频式氧传感器",
             "氧分压测量范围 0.5 ~ 101 kPa",
             "响应时间 t90 ＜15 s，启动时间 65 s",
             "封装外壳温度 ＜60℃",
+        ],
+        "advantages_en": [
+            "Low-temperature VF oxygen sensor for aviation masks",
+            "O₂ partial pressure range 0.5–101 kPa",
+            "Response time t90 <15 s; warm-up 65 s",
+            "Package shell temperature <60 °C",
         ],
         "specs": [
             ("氧分压测量范围", "0.5 ~ 101 kPa"),
@@ -185,14 +280,31 @@ PRODUCTS = [
             ("响应时间 (t90)", "＜15 s"),
             ("封装外壳温度", "＜60 ℃"),
         ],
+        "specs_en": [
+            ("O₂ range", "0.5 ~ 101 kPa"),
+            ("Supply", "3–4 V / ≤1 A"),
+            ("Operating temp.", "-40 ~ +125 °C"),
+            ("Gas temperature", "-50 ~ +200 °C"),
+            ("Warm-up time", "65 s"),
+            ("Response t90", "<15 s"),
+            ("Shell temperature", "<60 °C"),
+        ],
         "wiring": [],
+        "wiring_en": [],
         "accuracy": [
             ("1~10 kPa", "≤0.5 kPa"),
             ("10~30 kPa", "≤1 kPa"),
             ("30~70 kPa", "≤1.5 kPa"),
             ("70~101 kPa", "≤2 kPa"),
         ],
+        "accuracy_en": [
+            ("1–10 kPa", "≤0.5 kPa"),
+            ("10–30 kPa", "≤1 kPa"),
+            ("30–70 kPa", "≤1.5 kPa"),
+            ("70–101 kPa", "≤2 kPa"),
+        ],
         "notes": [],
+        "notes_en": [],
     },
 ]
 
@@ -201,7 +313,9 @@ NEWS = [
         "slug": "team-building-2022",
         "date": "2022-01-16",
         "title": "2022年1月国瓷团建户外活动！新年新气象！虎年虎虎生威！",
+        "title_en": "ZK Guoci 2022 Outdoor Team Building — New Year, New Energy",
         "summary": "新年伊始，国瓷公司进行周末全员户外团建，增强部门协作与凝聚力。",
+        "summary_en": "At the start of 2022, ZK Guoci held a full-company outdoor team-building day to strengthen cross-team collaboration.",
         "body": """<p>2022年1月16日新年伊始，国瓷公司进行了一次周末全员户外团建活动。此次活动围绕着“敞开胸怀，接纳、认同、相信、团队，目标一致、实现自我。”为主题进行开展，目的是“增强部门与部门间、同事与同事间的沟通、交流与合作，增强公司的凝聚力，提高大家的积极性和效率。”通过活动的开展，让新员工迅速融入到了团队中，找到集体归属感，收到了良好的效果。</p>
 <p>户外拓展第一项就是带大家一起体验骑马活动，温顺的马儿载着初体验的伙伴绕着马场观光，有的慢行散步体会马背上风光，有的伙伴追求策马扬鞭的感觉，通过管理员的现场教学，体验了一把歌词里的策马奔腾，潇潇洒洒。骑马活动也正式开始了热场，让大家已经进入到了活跃的状态。</p>
 <p>体验完了骑马活动，接下来的一场拓展也正式拉开比赛的序幕——射箭比赛！这次比赛的赛制规则为：所有人分为两组：一组、二组，先行热身，让大家熟悉下靶场、箭弓，每个人都参与试射，找准位置和感觉，大家跃跃欲试，各组内队员每射中一次靶子都会带来一阵欢呼，射中箭靶的队员也被称为“种子选手”！当然比赛有惩罚，最后经过两组协商，输的队男生俯卧撑、女生深蹲作为惩罚！正式比赛开始！三局制，最后得分最高的队伍胜利。比赛中大家为每一次的中靶跳跃欢呼，为每一次的脱靶鼓舞打劲，加深了团队配合，懂得如何发挥团队最大的力量，互相鼓励、不气不馁。</p>
@@ -213,7 +327,9 @@ NEWS = [
         "slug": "nox-sensor-market",
         "date": "2021-06-01",
         "title": "国内车用氮氧传感器市场超百亿元",
+        "title_en": "China Automotive NOx Sensor Market Exceeds RMB 10 Billion",
         "summary": "气体传感器是机动车尾气后处理系统关键零部件，国Ⅵ排放标准下国内氮氧传感器市场空间超百亿元。",
+        "summary_en": "Gas sensors are critical to vehicle aftertreatment. Under China VI, the domestic NOx sensor market is projected above RMB 10 billion.",
         "body": """<p>气体传感器作为汽车电子控制系统的信息源，是机动车尾气后处理系统中的关键零部件，决定了汽车排放物的控制水平。车用气体传感器的应用，为汽车尾气处理带来了新的变革，成为机动车节能减排的重要推手。</p>
 <p>据了解，目前，我国每年需要近千万个氮氧传感器。柴油机所产生的微粒（PM）和氮氧化物（NOx）是排放中两种最主要的污染物。</p>
 <p>当前针对 PM 及 NOx 排放控制的柴油机排放后处理技术有两种方法：</p>
@@ -228,7 +344,9 @@ NEWS = [
         "slug": "understand-o2-sensor",
         "date": "2021-05-01",
         "title": "一文读懂氧传感器",
+        "title_en": "Oxygen Sensors Explained",
         "summary": "从发动机故障灯到氧化锆/氧化钛氧传感器原理、结构、分类与未来发展方向的科普解读。",
+        "summary_en": "From check-engine lights to zirconia/titania oxygen sensor principles, structure, types, and future directions.",
         "body": """<p>开车的朋友有时会发现汽车发动机仪表盘上突然出现故障灯。如果车辆年限较久，很多情况下这个故障灯会和发动机氧传感器相关。接下来，我们就和大家一起聊一聊这个与汽车发动机紧密相关的氧传感器。</p>
 <h3>氧传感器与电喷发动机</h3>
 <p>对汽车发动机而言，氧传感器并不是一开始就存在的。为满足环保部门日益严格的汽车排放要求，电喷发动机越来越得到广泛应用，氧传感器则是电喷发动机中的一个非常重要的部件。</p>
@@ -601,52 +719,236 @@ def main():
         "",
     )
 
-    # EN brief
+    # —— English site (full content) ——
+    en_prod_cards = "".join(
+        f"""<a href="/en/products/{p['slug']}.html" class="card">
+<img src="{p['image']}" alt="{p['name_en']}" class="card-img" loading="lazy">
+<div class="card-body"><h3>{p['name_en']}</h3><p>{p['tagline_en']}</p>
+<span class="tag">Oxygen sensor</span></div></a>"""
+        for p in PRODUCTS
+    )
+    en_news_cards = "".join(
+        f"""<a href="/news/{n['slug']}.html" class="card"><div class="card-body">
+<span class="tag">{n['date']}</span><h3>{n['title_en']}</h3><p>{n['summary_en']}</p>
+<p style="font-size:13px;color:var(--muted);margin:0">Full article available in Chinese →</p></div></a>"""
+        for n in NEWS
+    )
+
     pages["en/index.html"] = page(
         "ZK Guoci — Variable-Frequency Oxygen Sensors",
-        "Anhui ZK Guoci oxygen sensor solutions",
+        "Anhui ZK Guoci New Components Co., Ltd. — variable-frequency oxygen sensors and NOx sensing technology. USTC tech transfer.",
         f"""<section class="hero"><div class="hero-bg"></div><div class="hero-content">
-<h1>Variable-Frequency <em>Oxygen Sensors</em></h1>
-<p>0.5–101 kPa · Probe / Pin / Mask types · ISO 9001</p>
-<div class="hero-actions"><a href="/contact/" class="btn btn-primary">Contact</a>
-<a href="/en/products.html" class="btn btn-ghost">Products</a></div>
+<div class="hero-badge">USTC Tech Transfer · Sensing the Future</div>
+<h1>Anhui ZK Guoci<br><em>Variable-Frequency Oxygen Sensors</em></h1>
+<p>0.5–101 kPa · Automotive / Aviation mask / Industrial gas · 5-year warranty</p>
+<div class="hero-actions">
+<a href="/en/products.html" class="btn btn-primary">Product Center</a>
+<a href="/contact/" class="btn btn-ghost">Contact Us</a>
+</div></div></section>
+<div class="trust-bar"><div class="container trust-items">
+<span><strong>ISO 9001</strong> NOx sensor R&amp;D &amp; production</span>
+<span><strong>Patent</strong> Variable-frequency O₂ sensor</span>
+<span><strong>Deep Tech</strong> Hefei High-tech Zone 2022</span>
+<span><strong>5-year</strong> product warranty</span>
+</div></div>
+<section><div class="container">
+<div class="section-header"><div class="section-label">Products</div><h2>Product Center</h2>
+<p>Same catalog as www.kdgc.cc — probe, pin, and mask oxygen sensors</p></div>
+<div class="grid-3">{en_prod_cards}</div>
+</div></section>
+<section style="background:var(--white)"><div class="container">
+<div class="section-header"><div class="section-label">News</div><h2>News &amp; Insights</h2></div>
+<div class="grid-3">{en_news_cards}</div>
+</div></section>
+<section class="cta-section"><div class="container">
+<h2>Request an Oxygen Sensor Solution</h2>
+<p style="margin-bottom:24px;opacity:.9">Tell us your range, interface, and application — our team will reply soon.</p>
+<a href="/contact/" class="btn btn-white">Contact</a>
 </div></section>""",
         "/en/",
         lang="en",
     )
+
     pages["en/products.html"] = page(
         "Products — ZK Guoci",
-        "Oxygen sensor products",
-        "<section class='page-hero'><div class='container'><h1>Products</h1></div></section><section><div class='container grid-3'>"
-        + "".join(
-            f"<a href='/products/{p['slug']}.html' class='card'><div class='card-body'><h3>{p['name']}</h3><p>{p['tagline']}</p></div></a>"
-            for p in PRODUCTS
-        )
-        + "</div></section>",
+        "KD0100 probe/pin oxygen sensors and aviation mask oxygen sensors",
+        f"""<section class="page-hero"><div class="container"><h1>Product Center</h1>
+<p>Full specs mirrored from www.kdgc.cc product catalog</p></div></section>
+<section><div class="container grid-3">{en_prod_cards}</div></section>""",
         "/en/products.html",
         lang="en",
     )
+
+    for p in PRODUCTS:
+        specs_rows = "".join(f"<tr><th>{k}</th><td>{v}</td></tr>" for k, v in p["specs_en"])
+        acc_rows = "".join(f"<tr><td>{k}</td><td>{v}</td></tr>" for k, v in p["accuracy_en"])
+        wiring = ""
+        if p["wiring_en"]:
+            wiring = "<h3>Electrical connections</h3><table><tr><th>Pin</th><th>Signal</th></tr>" + "".join(
+                f"<tr><td>{a}</td><td>{b}</td></tr>" for a, b in p["wiring_en"]
+            ) + "</table>"
+        notes = ""
+        if p["notes_en"]:
+            notes = "<h3>Notes</h3><ul>" + "".join(f"<li>{n}</li>" for n in p["notes_en"]) + "</ul>"
+        adv = "".join(f"<li>{a}</li>" for a in p["advantages_en"])
+        pages[f"en/products/{p['slug']}.html"] = page(
+            f"{p['name_en']} — ZK Guoci",
+            p["summary_en"],
+            f"""<section class="page-hero"><div class="container"><h1>{p['name_en']}</h1><p>{p['tagline_en']}</p></div></section>
+<section><div class="container" style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start">
+<div><img src="{p['image']}" alt="{p['name_en']}" style="width:100%;border-radius:12px;background:#fff;border:1px solid var(--border)"></div>
+<div class="content-block" style="margin:0">
+<p>{p['summary_en']}</p>
+<h3>Advantages</h3><ul>{adv}</ul>
+<p style="margin-top:20px"><a href="/contact/?product={p['slug']}" class="btn btn-primary">Inquire</a>
+<a href="/en/products.html" class="btn btn-ghost" style="margin-left:8px;color:var(--navy);border-color:var(--border)">Back to products</a></p>
+</div></div>
+<div class="container" style="margin-top:32px">
+<div class="content-block"><h2>Specifications</h2><table>{specs_rows}</table>
+{wiring}
+<h3 style="margin-top:24px">Accuracy (standard atmosphere)</h3>
+<table><tr><th>O₂ partial pressure</th><th>Accuracy</th></tr>{acc_rows}</table>
+{notes}
+</div></div></section>
+<style>@media(max-width:800px){{section .container[style*="grid-template"]{{display:block!important}}}}</style>""",
+            f"/en/products/{p['slug']}.html",
+            lang="en",
+        )
+
+    team_en = [
+        ("Chen Chusheng", "Chief Scientist", [
+            "Professor & PhD supervisor, University of Science and Technology of China (USTC)",
+            "Long-term research in inorganic non-metallic materials and solid-state chemistry",
+            "Former Dean of Chemistry & Materials, USTC; former Vice President of USTC; council roles in solid-state ionics societies",
+            "Recipient of the National Science Fund for Distinguished Young Scholars",
+            "Special Government Allowance of the State Council",
+        ]),
+        ("Li Chao", "General Manager", [
+            "B.S. & M.S., Department of Modern Physics, USTC",
+            "Former R&D Manager at MXIC and Creative Technology; former Deputy GM at Tsinghua Public Safety Research Institute (Zezhong Security Tech)",
+        ]),
+        ("Li Tong", "Chief Engineer", [
+            "B.S. & PhD, Computer Science, USTC; Senior Engineer",
+            "Former Deputy Chief Designer on a major aerospace program at CETC 38th Institute; long experience in defense product R&D and program management",
+        ]),
+    ]
+    team_en_html = ""
+    for name, role, items in team_en:
+        team_en_html += f"""<div class="content-block"><h3>{name} <span class="tag">{role}</span></h3>
+<ul>{''.join(f'<li>{i}</li>' for i in items)}</ul></div>"""
+    honor_en = "".join(
+        f"""<a href="{h['img']}" target="_blank" class="card">
+<img src="{h['img']}" alt="{h['title']}" class="card-img" style="object-fit:contain;background:#f8fafc;padding:12px;height:240px">
+<div class="card-body"><h3 style="font-size:15px">{h['title']}</h3><p>{h['desc']}</p></div></a>"""
+        for h in HONORS
+    )
+    partner_en = "".join(
+        f"""<div class="content-block" style="text-align:center;padding:24px">
+<img src="{p['img']}" alt="{p['name']}" style="max-height:80px;margin:0 auto 12px;object-fit:contain">
+<p>{p['name']}</p></div>"""
+        for p in PARTNERS
+    )
     pages["en/about.html"] = page(
-        "About — ZK Guoci",
-        "About ZK Guoci",
-        f"""<section class="page-hero"><div class="container"><h1>About</h1></div></section>
-<section><div class="container content-block">
-<p>Anhui ZK Guoci New Components Co., Ltd. develops variable-frequency oxygen sensors and NOx-related sensing technologies. Address: {ADDRESS}</p>
-<p>Email: {EMAIL} · Tel: {PHONE_DISPLAY}</p>
+        "About ZK Guoci — Oxygen Sensors",
+        "Anhui ZK Guoci leadership, certifications, partners, and contact.",
+        f"""<section class="page-hero"><div class="container"><h1>About ZK Guoci</h1>
+<p>Sensing the future · USTC technology transfer</p></div></section>
+<section><div class="container">
+<div class="content-block">
+<p>Anhui ZK Guoci New Components Co., Ltd. focuses on R&amp;D and production of variable-frequency oxygen sensors and NOx-related sensing technologies. Unified Social Credit Code: 91340100MA8LLE5K9H.</p>
+<p>Address: Room 103-C3, Embedded R&amp;D Building, No. 5089 Wangjiang West Road, High-tech District, Hefei, Anhui (China (Anhui) Pilot Free Trade Zone).</p>
+<p>We pursue excellence with integrity and offer a <strong>5-year product warranty</strong>.</p>
+</div>
+<h2 style="margin:32px 0 16px">Leadership</h2>
+{team_en_html}
+<h2 style="margin:40px 0 16px">Honors &amp; Certifications</h2>
+<div class="grid-3">{honor_en}</div>
+<h2 style="margin:40px 0 16px">Partners</h2>
+<div class="grid-3">{partner_en}</div>
+<p style="margin-top:24px;font-size:13px;color:var(--muted)">Source: public information on www.kdgc.cc</p>
 </div></section>""",
         "/en/about.html",
         lang="en",
     )
+
     pages["en/news.html"] = page(
         "News — ZK Guoci",
-        "News",
-        "<section class='page-hero'><div class='container'><h1>News</h1></div></section><section><div class='container'>"
-        + "".join(
-            f"<div class='content-block'><span class='tag'>{n['date']}</span><h3><a href='/news/{n['slug']}.html'>{n['title']}</a></h3><p>{n['summary']}</p></div>"
+        "ZK Guoci news: team building, NOx sensor market, oxygen sensor primer",
+        f"""<section class="page-hero"><div class="container"><h1>News &amp; Insights</h1>
+<p>All articles from the www.kdgc.cc news center (full text in Chinese)</p></div></section>
+<section><div class="container">{"".join(
+            f"""<a href="/news/{n['slug']}.html" class="content-block" style="display:block">
+<span class="tag">{n['date']}</span><h3 style="margin:8px 0">{n['title_en']}</h3>
+<p>{n['summary_en']}</p>
+<p style="font-size:13px;color:var(--muted)">Original Chinese title: {n['title']}</p></a>"""
             for n in NEWS
-        )
-        + "</div></section>",
+        )}</div></section>""",
         "/en/news.html",
+        lang="en",
+    )
+
+    pages["en/knowledge.html"] = page(
+        "Knowledge Base Plan — ZK Guoci",
+        "Knowledge base roadmap for oxygen sensor selection, principles, and applications",
+        """<section class="page-hero"><div class="container"><h1>Knowledge Base Roadmap</h1>
+<p>Planning page — articles will be published following this structure</p></div></section>
+<section><div class="container content-block">
+<h2>Goals</h2>
+<p>Build searchable technical content around variable-frequency / NOx oxygen sensing to support engineer selection and lead conversion, with cross-links to products and news.</p>
+<h2>Pillars</h2>
+<ol>
+<li><strong>Principles</strong> — zirconia/titania, Nernst, air-fuel ratio, VF vs traditional sensors</li>
+<li><strong>Selection</strong> — probe vs pin, mask low-temp type, KD0100-03 pairing, wiring</li>
+<li><strong>Applications</strong> — automotive SCR/OBD, aviation masks, industrial combustion atmospheres</li>
+<li><strong>Install &amp; care</strong> — heater voltage, temperature/flow limits, failure modes, warranty notes</li>
+</ol>
+<h2>First 12 topics (P0–P2)</h2>
+<table>
+<tr><th>#</th><th>Topic</th><th>Priority</th></tr>
+<tr><td>1</td><td>VF oxygen sensors vs traditional types</td><td>P0</td></tr>
+<tr><td>2</td><td>How to choose KD0100-02S-T1 vs TO</td><td>P0</td></tr>
+<tr><td>3</td><td>What 0.5–101 kPa range means</td><td>P0</td></tr>
+<tr><td>4</td><td>KD0100-03 controller wiring &amp; heater voltage</td><td>P0</td></tr>
+<tr><td>5</td><td>NOx sensors in SCR / OBD</td><td>P1</td></tr>
+<tr><td>6</td><td>Key metrics for aviation mask O₂ sensors</td><td>P1</td></tr>
+<tr><td>7</td><td>Reading accuracy curves (1–100 kPa)</td><td>P1</td></tr>
+<tr><td>8</td><td>Avoiding tip burns and permanent damage</td><td>P1</td></tr>
+<tr><td>9–12</td><td>Materials, China VI market, diagnostics, datasheet reading</td><td>P2</td></tr>
+</table>
+<p style="margin-top:20px"><a href="/knowledge/" class="btn btn-primary">View Chinese plan</a></p>
+</div></section>""",
+        "/en/knowledge.html",
+        lang="en",
+    )
+
+    pages["en/cases.html"] = page(
+        "Case Studies Plan — ZK Guoci",
+        "Case study structure and first verticals for ZK Guoci oxygen sensors",
+        """<section class="page-hero"><div class="container"><h1>Case Studies Roadmap</h1>
+<p>www.kdgc.cc has no case library yet — this site will build one with full structure</p></div></section>
+<section><div class="container content-block">
+<h2>Required structure per case</h2>
+<ol>
+<li>Cover image (≥1200px)</li>
+<li>Customer &amp; industry (may be anonymized)</li>
+<li>Challenge — range, response, reliability, size constraints</li>
+<li>Solution — sensor + controller + interface</li>
+<li>Delivery milestones — sample → calibration → pilot → volume</li>
+<li>Results — ≥2 quantified metrics</li>
+<li>CTA to product detail + inquiry form</li>
+</ol>
+<h2>First case pipeline</h2>
+<table>
+<tr><th>Case</th><th>Product</th><th>Assets needed</th></tr>
+<tr><td>Aviation mask O₂ monitoring prototype</td><td>Mask O₂ sensor</td><td>Prototype photos, metrics, timeline</td></tr>
+<tr><td>Industrial O₂ partial-pressure online monitoring</td><td>KD0100-02S-T1</td><td>Install photos, duty cycle, acceptance data</td></tr>
+<tr><td>Compact pin-header OEM integration</td><td>KD0100-02S-TO</td><td>Dimensions, weight, pinout</td></tr>
+<tr><td>Diesel SCR / OBD gas sensing (planned)</td><td>NOx / O₂ path</td><td>Customer approval, dyno data</td></tr>
+</table>
+<p style="margin-top:20px"><a href="/cases/" class="btn btn-primary">View Chinese plan</a>
+<a href="/contact/" class="btn btn-ghost" style="margin-left:8px;color:var(--navy);border-color:var(--border)">Share a case</a></p>
+</div></section>""",
+        "/en/cases.html",
         lang="en",
     )
 
@@ -674,7 +976,6 @@ def main():
         "cases/ev-power-module.html",
         "en/technology.html",
         "en/applications.html",
-        "en/cases.html",
     ]:
         p = DIST / obsolete
         if p.exists():
@@ -693,10 +994,13 @@ def main():
         "/applications/",
         "/en/",
         "/en/products.html",
-        "/en/about.html",
         "/en/news.html",
+        "/en/knowledge.html",
+        "/en/cases.html",
+        "/en/about.html",
     ]
     urls += [f"/products/{p['slug']}.html" for p in PRODUCTS]
+    urls += [f"/en/products/{p['slug']}.html" for p in PRODUCTS]
     urls += [f"/news/{n['slug']}.html" for n in NEWS]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for u in urls:
