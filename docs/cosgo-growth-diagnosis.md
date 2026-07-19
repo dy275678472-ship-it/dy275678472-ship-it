@@ -351,3 +351,31 @@ CosGo 具备**强数据资产**（301 场漫展活动 URL、70 个城市页）�
 部署脚本：`scripts/cosgo-p1-growth.py`
 
 **P1 后剩余（P2）**：Cloudflare CDN、社交矩阵、Core Web Vitals 审计、国际城市内容本地化。
+
+---
+
+## P2 转化深化（已完成 · 2026-07-19）
+
+| 项目 | 状态 | 验证 |
+|------|------|------|
+| `/help` FAQPage schema | ✅ | 页面含 FAQPage JSON-LD |
+| 活动详情页增强（Klook 酒店、攻略推荐、订阅 CTA） | ✅ | 含 BreadcrumbList + 出发前推荐阅读 |
+| 真汐交叉推广横幅（`/blog`） | ✅ | `crosspromo-zhenxi` |
+| og-image 压缩（75KB → 59KB） | ✅ | |
+| 攻略扩至 25 篇 | ✅ | sitemap `/blog/` × 25 |
+| cron 自动发布 DRAFT | ✅ | `cron-content.sh` 更新 |
+| IndexNow 批量推送 | ✅ | cosgo.cn 已提交 |
+| nginx 静态缓存 + HTML stale-while-revalidate | ✅ | P2 已配置 |
+
+**无法自动完成（需决策/运营）**：
+
+| 项目 | 原因 |
+|------|------|
+| Cloudflare CDN | 需 DNS 权限迁移 |
+| 社交矩阵（小红书/B站） | 需人工内容运营 |
+| 外链建设（漫展主办方 BD） | 需商务对接 |
+| 国际城市 JA/KO 正文 | 可 P3 分批落地 |
+| Docker :3006 公网暴露 | after2am 容器，需 Docker 网络调整 |
+
+部署脚本：`scripts/cosgo-p2-complete.py`  
+**P3 路线图**：见 `docs/cosgo-p3-roadmap.md`
