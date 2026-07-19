@@ -8,7 +8,21 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent
 SITE = ROOT / "site"
-CSS_HREF = "/css/header-footer.css"
+CSS_VER = "20260719b"
+CSS_HREF = f"/css/header-footer.css?v={CSS_VER}"
+
+# Selectors that must only come from header-footer.css (homepage chrome).
+NAV_CSS_SELECTOR_RE = re.compile(
+    r"(?P<full>"
+    r"(?P<sel>[^{}@][^{]*?)"
+    r"\{[^{}]*\})"
+)
+
+CONFLICT_SEL = re.compile(
+    r"(^|,)\s*\.(navbar|nav-links|nav-container|nav-btn|hamburger|logo|logo-slogan|"
+    r"logo-icon|logo-text|navbar-inner|logo-mini)\b",
+    re.I,
+)
 
 HAMBURGER_JS = """
 <script>
@@ -179,23 +193,108 @@ LANDING_TOP = """<!-- site-chrome-nav -->
 """
 
 
+def strip_conflicting_nav_css(html: str) -> str:
+    """Remove page-level CSS rules that override homepage navbar/logo styles."""
+
+    def scrub_style(match: re.Match) -> str:
+        open_tag, body, close_tag = match.group(1), match.group(2), match.group(3)
+        kept = []
+        pos = 0
+        # Walk top-level rules; keep @media blocks but scrub inner conflicting rules.
+        i = 0
+        n = len(body)
+        out = []
+        while i < n:
+            if body.startswith("@media", i) or body.startswith("@supports", i):
+                start = i
+                brace = body.find("{", i)
+                if brace < 0:
+                    out.append(body[i:])
+                    break
+                depth = 0
+                j = brace
+                while j < n:
+                    if body[j] == "{":
+                        depth += 1
+                    elif body[j] == "}":
+                        depth -= 1
+                        if depth == 0:
+                            j += 1
+                            break
+                    j += 1
+                block = body[start:j]
+                # scrub inside media
+                inner_start = block.find("{") + 1
+                inner = block[inner_start:-1]
+                inner_clean = _scrub_rules(inner)
+                header = block[:inner_start]
+                out.append(header + inner_clean + "}")
+                i = j
+                continue
+            # normal rule
+            brace = body.find("{", i)
+            if brace < 0:
+                out.append(body[i:])
+                break
+            # comments / whitespace before
+            prefix = body[i:brace]
+            # skip if this is start of something else
+            end = body.find("}", brace)
+            if end < 0:
+                out.append(body[i:])
+                break
+            rule = body[i : end + 1]
+            sel = body[i:brace]
+            if CONFLICT_SEL.search(sel) and "@" not in sel:
+                i = end + 1
+                continue
+            out.append(rule)
+            i = end + 1
+        return f"{open_tag}{''.join(out)}{close_tag}"
+
+    return re.sub(
+        r"(<style[^>]*>)([\s\S]*?)(</style>)",
+        scrub_style,
+        html,
+        flags=re.I,
+    )
+
+
+def _scrub_rules(css_body: str) -> str:
+    out = []
+    i = 0
+    n = len(css_body)
+    while i < n:
+        brace = css_body.find("{", i)
+        if brace < 0:
+            out.append(css_body[i:])
+            break
+        end = css_body.find("}", brace)
+        if end < 0:
+            out.append(css_body[i:])
+            break
+        sel = css_body[i:brace]
+        rule = css_body[i : end + 1]
+        if CONFLICT_SEL.search(sel) and "@" not in sel:
+            i = end + 1
+            continue
+        out.append(rule)
+        i = end + 1
+    return "".join(out)
+
+
 def ensure_css(html: str) -> str:
-    if "header-footer.css" in html:
-        # normalize to absolute path
-        html = re.sub(
-            r'href="[^"]*header-footer\.css"',
-            f'href="{CSS_HREF}"',
-            html,
-        )
-        return html
+    # Drop any existing chrome stylesheet links, then append one at end of <head>
+    # so it always wins over page <style> blocks.
+    html = re.sub(
+        r'\s*<link[^>]+header-footer\.css[^>]*>\s*',
+        "\n",
+        html,
+        flags=re.I,
+    )
+    link = f'    <link rel="stylesheet" href="{CSS_HREF}">\n'
     if re.search(r"</head>", html, re.I):
-        return re.sub(
-            r"</head>",
-            f'    <link rel="stylesheet" href="{CSS_HREF}">\n</head>',
-            html,
-            count=1,
-            flags=re.I,
-        )
+        return re.sub(r"</head>", link + "</head>", html, count=1, flags=re.I)
     return html
 
 
@@ -340,6 +439,7 @@ def process(path: Path) -> bool:
     is_en = rel.startswith("en/")
     is_landing = rel.startswith("landing/")
 
+    html = strip_conflicting_nav_css(html)
     html = ensure_css(html)
 
     if is_landing:
@@ -378,19 +478,11 @@ def process(path: Path) -> bool:
 
 
 def main():
-    # sync css into site/css
+    # sync css into site/css (source of truth: css/header-footer.css)
     src = ROOT / "css" / "header-footer.css"
     dst = SITE / "css" / "header-footer.css"
     dst.parent.mkdir(parents=True, exist_ok=True)
-    css = src.read_text(encoding="utf-8")
-    if ".nav-links a.active" not in css:
-        css += """
-.nav-links a.active { color: #2563eb; font-weight: 700; }
-.logo { text-decoration: none; }
-.footer-brand .logo { display: inline-flex; }
-"""
-    dst.write_text(css, encoding="utf-8")
-    src.write_text(css, encoding="utf-8")
+    dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
 
     changed = []
     for path in sorted(SITE.rglob("*.html")):
