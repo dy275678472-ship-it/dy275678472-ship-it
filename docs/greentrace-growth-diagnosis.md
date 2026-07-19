@@ -493,3 +493,15 @@
 部署脚本：`scripts/greentrace-p2-images.py`
 
 **说明**：其余未人工核验的 `city-hero-*` 若文件过小（&lt;45KB）已在脚本中可扩展替换；国际城市与更多地标图可继续按同一清单补齐。
+
+---
+
+## P2b `/city/` 列表页封面（已完成 · 2026-07-19）
+
+| 问题 | 修复 | 验证 |
+|------|------|------|
+| `/city/` 优先读 `city-*.jpg`，大量为错图/静物/他国地标（如苏州=帝国大厦、丽江=Logo 册） | 全量重生 76 城封面；33+ 城用地标照片（Unsplash/Wikimedia），其余为「城市名 + 绿迹」品牌底图（不再展示错图） | 列表页 `imgs=76` `gradient=0` `tiny=0` |
+| 国际城无图（纯渐变） | 扩展 `pinyin_map`（东京/首尔/新加坡等）并生成封面 | 东京/京都/首尔等有 `/images/city-*.jpg` |
+| 过小 stub（6057B） | 删除 + 列表逻辑跳过 &lt;20KB 文件 | 走可用 hero/card |
+
+脚本：`scripts/greentrace-p2b-city-list.py`
