@@ -1,0 +1,27 @@
+[
+  {
+    "day": 0,
+    "subject": "Welcome to Attyflow — your 3 free clause audits",
+    "body": "Thanks for trying Attyflow. Paste any NDA, MSA, or indemnity clause into the sandbox: https://attyflow.com/taskpane.html\n\nYou'll get a risk score, issue explanation, and redline-ready language. Attorney review required before use.\n\n— Attyflow Team"
+  },
+  {
+    "day": 2,
+    "subject": "Tip: toggle buyer vs seller before you audit",
+    "body": "Attyflow analyzes clauses from your client's position. Before running an audit, set Buyer, Seller, or Mutual in the taskpane.\n\nTry it: https://attyflow.com/taskpane.html\n\nSee a sample output: https://attyflow.com/sample-redline-report"
+  },
+  {
+    "day": 5,
+    "subject": "Case pattern: NDA confidentiality traps",
+    "body": "The most common HIGH RISK NDA flags we see:\n• Overbroad 'any and all information' definitions\n• No residual knowledge carveout\n• One-way injunctive relief\n\nFree NDA checker: https://attyflow.com/tools/nda-clause-review/"
+  },
+  {
+    "day": 7,
+    "subject": "Solo plan — unlimited audits for $69/mo",
+    "body": "If Attyflow saved you time on your trial clauses, Solo unlocks unlimited audits + Word add-in workflow.\n\nPricing: https://attyflow.com/pricing\nROI calculator: https://attyflow.com/roi-calculator/"
+  },
+  {
+    "day": 14,
+    "subject": "Join the Attyflow pilot program",
+    "body": "We're recruiting small firms for structured pilots with onboarding support and case study opportunities.\n\nApply: https://attyflow.com/contact?plan=pilot"
+  }
+]
