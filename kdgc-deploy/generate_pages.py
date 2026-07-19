@@ -100,7 +100,7 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="/products/kd0100-02s-t1.html">KD0100-02S-T1 探头</a>
 <a href="/products/kd0100-02s-to.html">KD0100-02S-TO 插针</a>
 <a href="/products/mask-o2-sensor.html">面罩用氧传感器</a></div>
-<div><h4>公司</h4><a href="/products/">产品中心</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">行业案例</a><a href="/about/">关于中科国瓷</a><a href="/contact/">联系我们</a></div>
+<div><h4>公司</h4><a href="/">首页</a><a href="/products/">产品中心</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">行业案例</a><a href="/about/">关于中科国瓷</a><a href="/contact/">联系我们</a></div>
 <div><h4>联系</h4><a href="mailto:{EMAIL}">{EMAIL}</a><br>
 <a href="tel:{PHONE}">{PHONE_DISPLAY}</a>
 <p style="font-size:13px;margin-top:8px">{ADDRESS}</p></div>
@@ -116,6 +116,7 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 NAV = """<nav class="nav"><div class="nav-inner">
 <a href="/" class="nav-logo"><img src="/assets/images/logo.png" alt="中科国瓷" style="height:36px;width:auto">中科<span>国瓷</span><span class="nav-tagline">科技感知未来</span></a>
 <div class="nav-links">
+<a href="/">首页</a>
 <a href="/products/">产品中心</a>
 <a href="/news/">新闻资讯</a>
 <a href="/knowledge/">知识库</a>
@@ -130,6 +131,7 @@ NAV = """<nav class="nav"><div class="nav-inner">
 NAV_EN = """<nav class="nav"><div class="nav-inner">
 <a href="/en/" class="nav-logo">ZK <span>Guoci</span><span class="nav-tagline">Oxygen Sensors</span></a>
 <div class="nav-links">
+<a href="/en/">Home</a>
 <a href="/en/products.html">Products</a>
 <a href="/en/news.html">News</a>
 <a href="/en/knowledge.html">Knowledge</a>
@@ -149,6 +151,7 @@ FOOTER_EN = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="/en/products/kd0100-02s-to.html">KD0100-02S-TO Pin</a>
 <a href="/en/products/mask-o2-sensor.html">Mask O₂ Sensor</a></div>
 <div><h4>Company</h4>
+<a href="/en/">Home</a>
 <a href="/en/products.html">Products</a>
 <a href="/en/news.html">News</a>
 <a href="/en/knowledge.html">Knowledge</a>
@@ -669,22 +672,11 @@ def main():
             f"{p['name']} — 中科国瓷", p["summary"], product_detail_html(p), f"/products/{p['slug']}.html"
         )
 
-    # About
-    team_img_map = {
-        "首席科学家": "about/team-scientist.jpg",
-        "总经理": "about/team-gm.jpg",
-        "总工程师": "about/team-cto.jpg",
-    }
+    # About — 核心团队不放图片，仅展示姓名、职务与履历
     team_html = ""
     for t in TEAM:
         items = "".join(f"<li>{i}</li>" for i in t["items"])
-        img_rel = team_img_map.get(t["role"], "")
-        img_html = (
-            f'<img src="{asset_url(img_rel)}" alt="{t["name"]}" class="team-photo" loading="lazy">'
-            if img_rel and has_asset(img_rel)
-            else ""
-        )
-        team_html += f"""<div class="content-block team-card">{img_html}<div><h3>{t['name']} <span class="tag">{t['role']}</span></h3><ul>{items}</ul></div></div>"""
+        team_html += f"""<div class="content-block team-card"><div><h3>{t['name']} <span class="tag">{t['role']}</span></h3><ul>{items}</ul></div></div>"""
     honor_html = "".join(
         f"""<a href="{asset_url(h['img'])}" target="_blank" class="card">
 <img src="{asset_url(h['img'])}" alt="{h['title']}" class="card-img" style="object-fit:contain;background:#f8fafc;padding:12px;height:240px" loading="lazy">
@@ -1156,20 +1148,9 @@ def main():
             "Former Deputy Chief Designer on a major aerospace program at CETC 38th Institute; long experience in defense product R&D and program management",
         ]),
     ]
-    team_en_img = {
-        "Chief Scientist": "about/team-scientist.jpg",
-        "General Manager": "about/team-gm.jpg",
-        "Chief Engineer": "about/team-cto.jpg",
-    }
     team_en_html = ""
     for name, role, items in team_en:
-        img_rel = team_en_img.get(role, "")
-        img_html = (
-            f'<img src="{asset_url(img_rel)}" alt="{name}" class="team-photo" loading="lazy">'
-            if img_rel and has_asset(img_rel)
-            else ""
-        )
-        team_en_html += f"""<div class="content-block team-card">{img_html}<div><h3>{name} <span class="tag">{role}</span></h3>
+        team_en_html += f"""<div class="content-block team-card"><div><h3>{name} <span class="tag">{role}</span></h3>
 <ul>{''.join(f'<li>{i}</li>' for i in items)}</ul></div></div>"""
     honor_en = "".join(
         f"""<a href="{asset_url(h['img'])}" target="_blank" class="card">

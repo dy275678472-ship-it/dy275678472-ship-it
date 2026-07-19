@@ -35,9 +35,10 @@ main{flex:1;padding-top:68px}
 .trust-items strong{color:var(--navy)}
 .trust-item{display:inline-flex;align-items:center;gap:10px}
 .trust-icon{width:28px;height:28px;object-fit:contain;flex-shrink:0}
-.team-card{display:grid;grid-template-columns:120px 1fr;gap:20px;align-items:start}
-.team-photo{width:120px;height:140px;object-fit:cover;border-radius:12px;border:1px solid var(--border);background:#f8fafc}
-@media(max-width:640px){.team-card{grid-template-columns:1fr}.team-photo{width:100%;height:180px}}
+.team-card{display:block}
+.team-card h3{margin:0 0 10px}
+.team-card ul{margin:0;padding-left:1.2em}
+.team-photo{display:none}
 section{padding:64px 24px}
 .section-header{text-align:center;margin-bottom:36px}
 .kb-section,.cases-section,.contact-main{padding-top:40px}
@@ -113,12 +114,13 @@ section{padding:64px 24px}
 .contact-campus{margin:20px 0 0;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
 .contact-campus img{width:100%;height:180px;object-fit:cover}
 .contact-campus figcaption{font-size:12px;color:var(--muted);padding:8px 12px;background:#f8fafc}
-.about-lab-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px}
-.about-lab-img{width:100%;height:220px;object-fit:cover;border-radius:14px;border:1px solid var(--border)}
+.about-lab-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:8px}
+.about-lab-img{width:100%;height:260px;object-fit:cover;border-radius:14px;border:1px solid var(--border);display:block}
 @media(max-width:800px){
 .contact-promises{grid-template-columns:1fr}
 .contact-layout{display:block}
 .about-lab-grid{grid-template-columns:1fr}
+.about-lab-img{height:200px}
 .product-extras{grid-template-columns:1fr}
 }
 .card-body h3{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px}
