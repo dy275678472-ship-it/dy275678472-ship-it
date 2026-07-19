@@ -316,4 +316,21 @@ CosGo 具备**强数据资产**（301 场漫展活动 URL、70 个城市页）�
 
 ---
 
-*下一步可执行 P0 修复脚本，参考 zhenxi P0 SEO 方案。*
+---
+
+## P0 SEO 修复（已完成 · 2026-07-19）
+
+| 修复项 | 状态 | 验证 |
+|--------|------|------|
+| `/activities/[id]` 活动详情页（301 URL 不再 404） | ✅ | `https://cosgo.cn/activities/global-con-2026-6n79yu` → HTTP 200 + Event schema |
+| 移除 `layout.tsx` 全局 `canonical: "/"` | ✅ | 各页独立 canonical |
+| 逐页 canonical（首页、pricing、photographers、about、contact、help、activities） | ✅ | `/activities` → `https://cosgo.cn/activities` |
+| 首页统计修正（攻略数 / 城市数 / 活动数） | ✅ | 动态 `articleCount` + `cityCount` |
+| 活动列表/详情内链 + Event schema | ✅ | |
+| Blog Article schema | ✅ | |
+| `start.sh` public 符号链接 | ✅ | |
+| IndexNow 推送 | ✅ | 80 URLs → 200 |
+
+部署脚本：`scripts/cosgo-p0-seo.py`
+
+**P0 后剩余优先级（P1）**：攻略扩至 20+ 篇、摄影师供给侧 BD、邮件订阅、Cloudflare CDN。
