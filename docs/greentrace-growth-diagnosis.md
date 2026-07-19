@@ -476,4 +476,20 @@
 
 **无法自动完成**：Cloudflare CDN（需 DNS）、小红书人工运营、评价/订单种子数据深度清洗（需产品决策）。
 
-**P1 后剩余（P2）**：Cloudflare、内容扩至 40 篇、城市×攻略内链矩阵、国际城市正文、Core Web Vitals 审计。
+**P1 后剩余（原 P2）**：Cloudflare、内容扩至 40 篇、城市×攻略内链矩阵、国际城市正文、Core Web Vitals 审计。
+
+---
+
+## P2 图片与路线视觉（已完成 · 2026-07-19）
+
+| 问题 | 修复 | 验证 |
+|------|------|------|
+| 城市封面错位（成都=大阪通天阁、杭州=脏墙、上海=星空荒野、北京=瀑布、厦门=生活方式静物） | 替换为地点可核验的 Unsplash / Wikimedia 图 | `/images/city-hero-{chengdu,hangzhou,shanghai,beijing,xiamen,kunming}.jpg` HTTP 200 |
+| 首页 `city-*.webp` 封面错误 | 同步重生 jpg/webp | 首页仍引用 `/images/city-*.webp`，文件已更新 |
+| 路线缩略图 / 图览用 picsum 随机图 | 改为本地 `city-hero` / `city-gallery-*` | 城市页路线卡 `src="/images/city-hero-chengdu.jpg"`；路线详情无 picsum |
+| 路线图过简 | 行程站点 SVG 示意图（途经点编号 + 曲线路径） | `/route/{id}` 含「路线示意图」与 `pathGrad` |
+| 昆明封面 | Wikimedia 石林（Shilin） | `city-hero-kunming.jpg` ~210KB |
+
+部署脚本：`scripts/greentrace-p2-images.py`
+
+**说明**：其余未人工核验的 `city-hero-*` 若文件过小（&lt;45KB）已在脚本中可扩展替换；国际城市与更多地标图可继续按同一清单补齐。
