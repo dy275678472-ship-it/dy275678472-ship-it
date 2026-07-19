@@ -64,10 +64,27 @@ class Case(Base):
     title: Mapped[str] = mapped_column(String(300), nullable=False)
     slug: Mapped[str] = mapped_column(String(200), unique=True, nullable=False)
     industry: Mapped[str | None] = mapped_column(String(80))
+    customer_alias: Mapped[str | None] = mapped_column(String(120))
     challenge: Mapped[str | None] = mapped_column(Text)
     solution: Mapped[str | None] = mapped_column(Text)
     result: Mapped[str | None] = mapped_column(Text)
     cover_image: Mapped[str | None] = mapped_column(String(300))
     is_published: Mapped[bool] = mapped_column(Boolean, default=True)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Knowledge(Base):
+    __tablename__ = "knowledge"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(300), nullable=False)
+    slug: Mapped[str] = mapped_column(String(200), unique=True, nullable=False)
+    category: Mapped[str | None] = mapped_column(String(40))
+    summary: Mapped[str | None] = mapped_column(Text)
+    content: Mapped[str | None] = mapped_column(Text)
+    cover_image: Mapped[str | None] = mapped_column(String(300))
+    is_published: Mapped[bool] = mapped_column(Boolean, default=True)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -1,24 +1,125 @@
 <!DOCTYPE html>
-<html lang="zh-CN"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>管理后台 — 中科国瓷</title><meta name="description" content="">
-<link rel="canonical" href="https://kdgc.cc/admin/"><link rel="stylesheet" href="/assets/css/style.css">
-</head><body><nav class="nav"><div class="nav-inner">
-<a href="/" class="nav-logo">中科<span>国瓷</span></a>
-<div class="nav-links">
-<a href="/products/">产品</a><a href="/technology/">技术</a><a href="/applications/">应用</a>
-<a href="/cases/">案例</a><a href="/about/">关于</a><a href="/news/">新闻</a><a href="/knowledge/">知识库</a>
-<a href="/contact/" class="nav-cta">获取方案</a>
-</div>
-<button class="menu-toggle" aria-label="菜单">☰</button>
-</div></nav><main><section class="page-hero"><div class="container"><h1>线索管理</h1></div></section>
-<section><div class="container"><div class="form-group"><label>Admin Token</label><input id="token" type="password"><button class="btn btn-primary" onclick="loadLeads()">加载线索</button></div>
-<div id="leads" class="content-block" style="margin-top:20px"></div></div></section>
-<script>async function loadLeads(){const t=document.getElementById('token').value;const r=await fetch('/api/leads',{headers:{'X-Admin-Token':t}});const d=await r.json();document.getElementById('leads').innerHTML='<pre>'+JSON.stringify(d,null,2)+'</pre>'}</script></main><footer><div class="footer-grid container" style="padding:0">
-<div><h4>中科国瓷</h4><p style="font-size:14px;margin-top:8px">高导热陶瓷基板与电子陶瓷材料方案商</p></div>
-<div><h4>产品</h4><a href="/products/aln-substrate.html">氮化铝基板</a><a href="/products/dbc-amb.html">DBC/AMB基板</a></div>
-<div><h4>公司</h4><a href="/about/">关于我们</a><a href="/news/">新闻</a><a href="/contact/">联系</a></div>
-<div><h4>联系</h4><a href="mailto:info@kdgc.cc">info@kdgc.cc</a></div>
-</div>
-<div class="footer-bottom">© 2026 安徽中科国瓷新型元器件有限公司 · 皖ICP备XXXXXXXX号 [待公司提供]</div></footer>
-<script src="/assets/js/main.js"></script></body></html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>网站后台 — 中科国瓷</title>
+<link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+<aside class="side">
+  <div class="brand">中科国瓷<br><small>Website Admin</small></div>
+  <nav>
+    <button data-tab="dash" class="active">概览</button>
+    <button data-tab="leads">线索管理</button>
+    <button data-tab="knowledge">知识库</button>
+    <button data-tab="cases">行业案例</button>
+    <button data-tab="news">新闻</button>
+    <button data-tab="products">产品</button>
+    <button data-tab="site">站点信息</button>
+  </nav>
+  <a class="back" href="/" target="_blank">打开前台 →</a>
+</aside>
+<main class="main">
+  <header class="top">
+    <h1 id="page-title">概览</h1>
+    <div class="auth">
+      <input id="token" type="password" placeholder="Admin Token" autocomplete="current-password">
+      <button id="btn-login" class="btn">登录</button>
+      <span id="auth-state" class="muted">未登录</span>
+    </div>
+  </header>
+
+  <section id="tab-dash" class="panel active">
+    <div class="stats" id="stats"></div>
+    <div class="card">
+      <h2>使用说明</h2>
+      <ol>
+        <li>使用服务器环境变量 <code>ADMIN_TOKEN</code> 登录（请求头 X-Admin-Token）。</li>
+        <li>线索可更新状态：new / contacted / closed。</li>
+        <li>知识库 / 行业案例 / 新闻可在此后台增删改；静态页由 <code>generate_pages.py</code> 发布，编辑库内容后请重新生成并部署前台。</li>
+        <li>客户名称在行业案例中请使用代名词（如「某航空生命保障设备厂商」）。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="tab-leads" class="panel">
+    <div class="toolbar">
+      <button class="btn" onclick="loadLeads()">刷新</button>
+      <select id="lead-filter">
+        <option value="">全部状态</option>
+        <option value="new">new</option>
+        <option value="contacted">contacted</option>
+        <option value="closed">closed</option>
+      </select>
+    </div>
+    <div class="table-wrap"><table id="leads-table"><thead>
+      <tr><th>时间</th><th>公司</th><th>联系人</th><th>电话</th><th>产品</th><th>需求</th><th>状态</th><th>操作</th></tr>
+    </thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="tab-knowledge" class="panel">
+    <div class="toolbar">
+      <button class="btn" onclick="loadKnowledge()">刷新</button>
+      <button class="btn primary" onclick="editKnowledge()">新建文章</button>
+    </div>
+    <div class="table-wrap"><table id="kb-table"><thead>
+      <tr><th>分类</th><th>标题</th><th>Slug</th><th>发布</th><th>操作</th></tr>
+    </thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="tab-cases" class="panel">
+    <div class="toolbar">
+      <button class="btn" onclick="loadCases()">刷新</button>
+      <button class="btn primary" onclick="editCase()">新建案例</button>
+    </div>
+    <div class="table-wrap"><table id="cases-table"><thead>
+      <tr><th>行业</th><th>标题</th><th>客户代名词</th><th>发布</th><th>操作</th></tr>
+    </thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="tab-news" class="panel">
+    <div class="toolbar">
+      <button class="btn" onclick="loadNews()">刷新</button>
+      <button class="btn primary" onclick="editNews()">新建新闻</button>
+    </div>
+    <div class="table-wrap"><table id="news-table"><thead>
+      <tr><th>标题</th><th>Slug</th><th>发布</th><th>操作</th></tr>
+    </thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="tab-products" class="panel">
+    <div class="toolbar"><button class="btn" onclick="loadProducts()">刷新</button></div>
+    <div class="table-wrap"><table id="products-table"><thead>
+      <tr><th>名称</th><th>Slug</th><th>亮点</th><th>发布</th><th>操作</th></tr>
+    </thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="tab-site" class="panel">
+    <div class="card">
+      <h2>站点信息（只读提示）</h2>
+      <ul>
+        <li>前台根目录：<code>/opt/kdgc-growth/frontend/dist/</code></li>
+        <li>联系地址：合肥高新区望江西路 5089 号嵌入式研发楼 103-C3</li>
+        <li>百度地图坐标（BD-09）：117.12885, 31.83560</li>
+        <li>邮箱：guanwn@kdgc.cc · 电话：153-8588-4309</li>
+        <li>重新发布静态页：服务器上执行 <code>python3 generate_pages.py</code> 后同步 dist</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<dialog id="editor">
+  <form method="dialog" id="editor-form" class="editor">
+    <h2 id="editor-title">编辑</h2>
+    <div id="editor-fields"></div>
+    <div class="editor-actions">
+      <button value="cancel" class="btn">取消</button>
+      <button id="editor-save" value="default" class="btn primary">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="/assets/js/admin.js"></script>
+</body>
+</html>

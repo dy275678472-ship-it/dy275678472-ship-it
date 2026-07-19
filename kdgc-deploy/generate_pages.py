@@ -7,6 +7,9 @@ Note: santa6.kdjc.cc does not resolve; content mirrored from www.kdgc.cc.
 
 from pathlib import Path
 
+import content_site
+from content_site import CASES as INDUSTRY_CASES, KNOWLEDGE, MAP_ADDRESS, MAP_LAT, MAP_LNG, MAP_TITLE, product_name
+
 ROOT = Path(__file__).parent
 DIST = ROOT / "frontend" / "dist"
 NEWS_CONTENT = ROOT / "content" / "news"
@@ -97,7 +100,7 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="/products/kd0100-02s-t1.html">KD0100-02S-T1 探头</a>
 <a href="/products/kd0100-02s-to.html">KD0100-02S-TO 插针</a>
 <a href="/products/mask-o2-sensor.html">面罩用氧传感器</a></div>
-<div><h4>公司</h4><a href="/products/">产品中心</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">产品案例</a><a href="/about/">关于中科国瓷</a><a href="/contact/">联系我们</a></div>
+<div><h4>公司</h4><a href="/products/">产品中心</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">行业案例</a><a href="/about/">关于中科国瓷</a><a href="/contact/">联系我们</a></div>
 <div><h4>联系</h4><a href="mailto:{EMAIL}">{EMAIL}</a><br>
 <a href="tel:{PHONE}">{PHONE_DISPLAY}</a>
 <p style="font-size:13px;margin-top:8px">{ADDRESS}</p></div>
@@ -116,7 +119,7 @@ NAV = """<nav class="nav"><div class="nav-inner">
 <a href="/products/">产品中心</a>
 <a href="/news/">新闻资讯</a>
 <a href="/knowledge/">知识库</a>
-<a href="/cases/">产品案例</a>
+<a href="/cases/">行业案例</a>
 <a href="/about/">关于中科国瓷</a>
 <a href="/en/" style="opacity:.8">EN</a>
 <a href="/contact/" class="nav-cta">联系我们</a>
@@ -130,7 +133,7 @@ NAV_EN = """<nav class="nav"><div class="nav-inner">
 <a href="/en/products.html">Products</a>
 <a href="/en/news.html">News</a>
 <a href="/en/knowledge.html">Knowledge</a>
-<a href="/en/cases.html">Cases</a>
+<a href="/en/cases.html">Industry Cases</a>
 <a href="/en/about.html">About</a>
 <a href="/" style="opacity:.8">中文</a>
 <a href="/en/contact.html" class="nav-cta">Contact</a>
@@ -149,7 +152,7 @@ FOOTER_EN = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="/en/products.html">Products</a>
 <a href="/en/news.html">News</a>
 <a href="/en/knowledge.html">Knowledge</a>
-<a href="/en/cases.html">Cases</a>
+<a href="/en/cases.html">Industry Cases</a>
 <a href="/en/about.html">About</a>
 <a href="/en/contact.html">Contact</a></div>
 <div><h4>Contact</h4><a href="mailto:{EMAIL}">{EMAIL}</a><br>
@@ -526,6 +529,34 @@ def product_detail_html(p):
 <style>@media(max-width:800px){{section .container[style*="grid-template"]{{display:block!important}}}}</style>"""
 
 
+
+def knowledge_related_html(slugs):
+    links = []
+    for s in slugs:
+        links.append(f'<a href="/products/{s}.html" class="tag">{product_name(s)}</a>')
+    return " ".join(links)
+
+
+def baidu_map_html(lang="zh"):
+    # Baidu URI API marker page — no AK required for basic marker view
+    from urllib.parse import quote
+
+    title = MAP_TITLE if lang == "zh" else "ZK Guoci"
+    addr = MAP_ADDRESS if lang == "zh" else ADDRESS_EN
+    src = (
+        f"https://api.map.baidu.com/marker?location={MAP_LAT},{MAP_LNG}"
+        f"&title={quote(title)}&content={quote(addr)}&output=html&coord_type=bd09ll&src=webapp.kdgc.site"
+    )
+    label = "打开百度地图导航" if lang == "zh" else "Open in Baidu Maps"
+    coords = f"{MAP_LNG}, {MAP_LAT}"
+    return f'''<div class="map-block">
+<iframe class="baidu-map" title="Baidu Map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+src="{src}"></iframe>
+<div class="map-meta"><span>坐标（BD-09）：{coords}</span>
+<a href="{src}" target="_blank" rel="noopener">{label}</a></div>
+</div>'''
+
+
 def main():
     pages = {}
 
@@ -746,34 +777,47 @@ def main():
             f'alt="中科国瓷园区" loading="lazy"><figcaption>合肥高新区 · 望江西路园区</figcaption></figure>'
         )
     wechat_src = asset_url("wechat-qr.png")
+    map_zh = baidu_map_html("zh")
+    map_en = baidu_map_html("en")
     pages["contact/index.html"] = page(
         "联系我们 — 中科国瓷",
         f"联系中科国瓷：{PHONE_DISPLAY} {EMAIL} {ADDRESS}",
         f"""{page_hero("联系我们", "科技感知未来 · 快速响应", "contact/banner.jpg")}
 <section class="contact-promises-section"><div class="container">{contact_promises_html("zh")}</div></section>
-<section><div class="container contact-layout">
-<div class="content-block">
+<section class="contact-main"><div class="container contact-layout">
+<div class="contact-info">
+<div class="content-block contact-card">
 <h2>联系方式</h2>
-<p><strong>邮箱</strong><br><a href="mailto:{EMAIL}">{EMAIL}</a></p>
-<p style="margin-top:12px"><strong>电话</strong><br><a href="tel:{PHONE}">{PHONE_DISPLAY}</a></p>
-<p style="margin-top:12px"><strong>地址</strong><br>{ADDRESS}</p>
-<p style="margin-top:12px"><strong>{HOURS}</strong><br>我们提供 7×24 小时的全天候响应速度，随时随地为您服务。</p>
-<img src="{wechat_src}" alt="微信二维码" class="contact-wechat" width="160" height="160">
-{campus_html}
+<dl class="contact-dl">
+<dt>邮箱</dt><dd><a href="mailto:{EMAIL}">{EMAIL}</a></dd>
+<dt>电话</dt><dd><a href="tel:{PHONE}">{PHONE_DISPLAY}</a></dd>
+<dt>地址</dt><dd>{ADDRESS}</dd>
+<dt>服务时间</dt><dd>{HOURS}<br><span class="muted">7×24 响应技术与商务咨询</span></dd>
+</dl>
+<div class="contact-wechat-row">
+<img src="{wechat_src}" alt="微信二维码" class="contact-wechat" width="140" height="140">
+<p>微信扫码沟通</p>
 </div>
-<form id="lead-form" class="form-box">
+</div>
+{campus_html}
+{map_zh}
+</div>
+<form id="lead-form" class="form-box contact-form">
+<h2 style="margin:0 0 16px;font-size:20px;color:var(--navy)">提交咨询</h2>
 <div class="form-hp"><input name="website" tabindex="-1" autocomplete="off"></div>
 <div class="form-group"><label>公司名称 *</label><input name="company" required></div>
 <div class="form-group"><label>联系人 *</label><input name="contact_name" required></div>
+<div class="form-row">
 <div class="form-group"><label>手机 *</label><input name="phone" type="tel" required></div>
 <div class="form-group"><label>邮箱</label><input name="email" type="email"></div>
+</div>
 <div class="form-group"><label>产品兴趣</label><select name="product_interest">
 <option value="">请选择</option>
 <option>KD0100-02S-T1 探头</option>
 <option>KD0100-02S-TO 插针</option>
 <option>面罩用氧传感器</option>
 <option>其他</option></select></div>
-<div class="form-group"><label>需求描述</label><textarea name="requirement"></textarea></div>
+<div class="form-group"><label>需求描述</label><textarea name="requirement" rows="4"></textarea></div>
 <button type="submit" class="btn btn-primary" style="width:100%">提交咨询</button>
 <div class="form-msg"></div>
 </form>
@@ -786,29 +830,40 @@ def main():
         f"Contact ZK Guoci: {PHONE_DISPLAY} {EMAIL} {ADDRESS_EN}",
         f"""{page_hero("Contact Us", "Sensing the future · Fast response", "contact/banner.jpg")}
 <section class="contact-promises-section"><div class="container">{contact_promises_html("en")}</div></section>
-<section><div class="container contact-layout">
-<div class="content-block">
+<section class="contact-main"><div class="container contact-layout">
+<div class="contact-info">
+<div class="content-block contact-card">
 <h2>Contact details</h2>
-<p><strong>Email</strong><br><a href="mailto:{EMAIL}">{EMAIL}</a></p>
-<p style="margin-top:12px"><strong>Phone</strong><br><a href="tel:{PHONE}">{PHONE_DISPLAY}</a></p>
-<p style="margin-top:12px"><strong>Address</strong><br>{ADDRESS_EN}</p>
-<p style="margin-top:12px"><strong>{HOURS_EN}</strong><br>We provide 7×24 response for technical and commercial inquiries.</p>
-<img src="{wechat_src}" alt="WeChat QR" class="contact-wechat" width="160" height="160">
-{campus_html}
+<dl class="contact-dl">
+<dt>Email</dt><dd><a href="mailto:{EMAIL}">{EMAIL}</a></dd>
+<dt>Phone</dt><dd><a href="tel:{PHONE}">{PHONE_DISPLAY}</a></dd>
+<dt>Address</dt><dd>{ADDRESS_EN}</dd>
+<dt>Hours</dt><dd>{HOURS_EN}<br><span class="muted">7×24 technical &amp; commercial response</span></dd>
+</dl>
+<div class="contact-wechat-row">
+<img src="{wechat_src}" alt="WeChat QR" class="contact-wechat" width="140" height="140">
+<p>Scan WeChat QR</p>
 </div>
-<form id="lead-form" class="form-box">
+</div>
+{campus_html}
+{map_en}
+</div>
+<form id="lead-form" class="form-box contact-form">
+<h2 style="margin:0 0 16px;font-size:20px;color:var(--navy)">Inquiry form</h2>
 <div class="form-hp"><input name="website" tabindex="-1" autocomplete="off"></div>
 <div class="form-group"><label>Company *</label><input name="company" required></div>
 <div class="form-group"><label>Contact name *</label><input name="contact_name" required></div>
+<div class="form-row">
 <div class="form-group"><label>Phone *</label><input name="phone" type="tel" required></div>
 <div class="form-group"><label>Email</label><input name="email" type="email"></div>
+</div>
 <div class="form-group"><label>Product interest</label><select name="product_interest">
 <option value="">Please select</option>
 <option>KD0100-02S-T1 Probe</option>
 <option>KD0100-02S-TO Pin</option>
 <option>Mask O₂ Sensor</option>
 <option>Other</option></select></div>
-<div class="form-group"><label>Requirements</label><textarea name="requirement"></textarea></div>
+<div class="form-group"><label>Requirements</label><textarea name="requirement" rows="4"></textarea></div>
 <button type="submit" class="btn btn-primary" style="width:100%">Submit inquiry</button>
 <div class="form-msg"></div>
 </form>
@@ -817,110 +872,115 @@ def main():
         lang="en",
     )
 
-    # Knowledge plan page
+    # Knowledge library (formal articles)
+    cats = []
+    for k in KNOWLEDGE:
+        if k["category"] not in cats:
+            cats.append(k["category"])
+    cat_nav = "".join(f'<a href="#cat-{c}" class="kb-cat">{c}</a>' for c in cats)
+    kb_list = ""
+    for c in cats:
+        items = [k for k in KNOWLEDGE if k["category"] == c]
+        cards = "".join(
+            f"""<a href="/knowledge/{k['slug']}.html" class="kb-item">
+<span class="tag">{k['category']}</span><span class="kb-date">{k['date']}</span>
+<h3>{k['title']}</h3><p>{k['summary']}</p>
+<span class="news-read-more">阅读全文 &rarr;</span></a>"""
+            for k in items
+        )
+        kb_list += f'<div class="kb-group" id="cat-{c}"><h2 class="kb-group-title">{c}</h2><div class="kb-list">{cards}</div></div>'
     pages["knowledge/index.html"] = page(
-        "知识库建设规划 — 中科国瓷",
-        "中科国瓷知识库建设规划：氧传感器选型、原理、应用与维护",
-        """<section class="page-hero"><div class="container"><h1>知识库建设规划</h1><p>当前栏目为规划稿；正式文章将按下列结构持续补充</p></div></section>
-<section><div class="container content-block">
-<div class="plan-banner"><strong>状态：建设规划（中英文已对齐）</strong> · 正式文章上线前，本页用于对齐选题、规范与节奏。优化建议详见站内文档与下方「优化要点」。</div>
-<h2>一、建设目标</h2>
-<p>围绕公司真实产品线（变频氧传感器 / 氮氧传感器），建立可检索、可转化线索的技术内容资产，服务工程师选型与采购决策，并与新闻、产品详情互相内链。</p>
-<h2>二、栏目结构（建议 4 层）</h2>
-<ol>
-<li><strong>原理基础</strong>：氧化锆/氧化钛氧传感器、Nernst 原理、空燃比与三元催化、变频氧传感与传统氧传感差异</li>
-<li><strong>产品选型</strong>：探头型 vs 插针型、面罩低温型适用场景、控制器 KD0100-03 配套说明、电气连接与线束规范</li>
-<li><strong>应用场景</strong>：车用尾气 / SCR / OBD、航空面罩供氧监测、工业燃烧气氛控制、医疗与特种气体检测</li>
-<li><strong>安装与维护</strong>：加热电压选择、允许气体温度/气流速率边界、常见失效模式、质保与注意事项</li>
-</ol>
-<h2>三、首批 12 篇选题（可直接立项）</h2>
-<table>
-<tr><th>#</th><th>标题</th><th>类型</th><th>优先级</th></tr>
-<tr><td>1</td><td>变频氧传感器与传统氧传感器有何不同？</td><td>原理</td><td>P0</td></tr>
-<tr><td>2</td><td>KD0100-02S-T1 与 TO 如何选型？</td><td>选型</td><td>P0</td></tr>
-<tr><td>3</td><td>氧分压 0.5–101 kPa 量程意味着什么？</td><td>选型</td><td>P0</td></tr>
-<tr><td>4</td><td>控制器 KD0100-03 接线与加热电压说明</td><td>工程</td><td>P0</td></tr>
-<tr><td>5</td><td>车用氮氧传感器在 SCR / OBD 中的作用</td><td>应用</td><td>P1</td></tr>
-<tr><td>6</td><td>航空面罩用低温氧传感器的关键指标</td><td>应用</td><td>P1</td></tr>
-<tr><td>7</td><td>测量精度曲线解读（1–100 kPa）</td><td>工程</td><td>P1</td></tr>
-<tr><td>8</td><td>探头高温烫伤与永久损坏的规避</td><td>维护</td><td>P1</td></tr>
-<tr><td>9</td><td>固体电解质陶瓷在气体传感中的角色</td><td>原理</td><td>P2</td></tr>
-<tr><td>10</td><td>国Ⅵ排放与氮氧传感器市场机遇</td><td>行业</td><td>P2</td></tr>
-<tr><td>11</td><td>常见故障灯与氧传感器关系排查</td><td>维护</td><td>P2</td></tr>
-<tr><td>12</td><td>如何阅读产品规格书与尺寸公差</td><td>工程</td><td>P2</td></tr>
-</table>
-<h2>四、内容规范</h2>
-<ul>
-<li>每篇 1200–2500 字，配 1 张产品/原理图，文末 CTA「咨询选型」</li>
-<li>参数必须与产品详情页一致，禁止编造未公开指标</li>
-<li>已有新闻《一文读懂氧传感器》《氮氧传感器市场》可拆分为知识库长文并互相引用</li>
-</ul>
-<h2>五、上线节奏</h2>
-<p>先完成 P0 四篇并挂到导航；再按应用行业补 P1；P2 作为 SEO 长尾持续产出。知识库列表页增加分类筛选与站内搜索。</p>
-<h2>六、优化要点（摘要）</h2>
-<ul>
-<li><strong>访客可见性</strong>：规划页应尽快被「正式文章列表」替换；导航可暂时标注「建设中」，避免被当成空栏目。</li>
-<li><strong>中英文对齐</strong>：英文页目前为摘要版，建议与中文 12 选题逐条对齐，并为每篇准备英文摘要（200–300 词）+ 链到中文全文。</li>
-<li><strong>内容复用</strong>：把《一文读懂氧传感器》按章节拆成 3–4 篇知识库（原理 / 分类 / 检测 / 行业），比从零写更快。</li>
-<li><strong>转化路径</strong>：每篇固定「相关产品」模块（探头/插针/面罩）+ 咨询表单锚点，避免纯科普无出口。</li>
-<li><strong>素材缺口</strong>：优先补原理示意图、接线定义图、量程/精度曲线图（可用产品规格书矢量图），再写长文。</li>
-</ul>
-<p style="margin-top:20px"><a href="/en/knowledge.html" class="btn btn-ghost" style="color:var(--navy);border-color:var(--border)">English roadmap</a>
-<a href="/contact/" class="btn btn-primary" style="margin-left:8px">提交选题需求</a></p>
+        "知识库 — 中科国瓷",
+        "变频氧传感器与氮氧传感知识库：原理、选型、应用与维护",
+        f"""{page_hero("知识库", "严谨技术内容 · 对齐公开产品规格 · 服务选型决策", "news/banner.jpg")}
+<section class="kb-section"><div class="container">
+<p class="kb-lead">以下文章参数均对齐公司公开规格（氧分压 0.5–101 kPa、KD0100-03 配套等），不编造未公开指标。文末提供相关产品与咨询入口。</p>
+<nav class="kb-cats">{cat_nav}</nav>
+{kb_list}
 </div></section>""",
         "/knowledge/",
     )
+    for k in KNOWLEDGE:
+        related = knowledge_related_html(k.get("related_products", []))
+        cover_html = (
+            f'<figure class="article-cover"><img src="{asset_url(k["cover"])}" alt="{k["title"]}"></figure>'
+            if k.get("cover")
+            else ""
+        )
+        pages[f"knowledge/{k['slug']}.html"] = page(
+            f"{k['title']} — 中科国瓷",
+            k["summary"],
+            f"""<article class="article">
+<section class="page-hero article-hero"><div class="container">
+<p class="article-meta"><span class="tag">{k['category']}</span><span class="tag">{k['date']}</span></p>
+<h1>{k['title']}</h1>
+<p class="article-deck">{k['summary']}</p>
+</div></section>
+<section class="article-section"><div class="container article-layout">
+{cover_html}
+<div class="article-body content-block">{k['body']}
+<div class="related-products"><h3>相关产品</h3><p>{related}</p></div>
+<p class="article-back"><a href="/knowledge/">&larr; 返回知识库</a>
+<a href="/contact/" class="btn btn-primary" style="margin-left:12px">咨询选型</a></p>
+</div></div></section>
+</article>""",
+            f"/knowledge/{k['slug']}.html",
+        )
 
-    # Cases plan page
+    # Industry cases
+    case_cards = "".join(
+        f"""<a href="/cases/{c['slug']}.html" class="case-card">
+<img src="{asset_url(c['cover'])}" alt="{c['title']}" class="case-cover" loading="lazy">
+<div class="case-body">
+<span class="tag">{c['industry']}</span>
+<h3>{c['title']}</h3>
+<p class="case-customer">{c['customer']}</p>
+<p>{c['summary']}</p>
+<ul class="case-metrics">{"".join(f"<li>{r}</li>" for r in c["results"][:2])}</ul>
+<span class="news-read-more">查看案例 &rarr;</span>
+</div></a>"""
+        for c in INDUSTRY_CASES
+    )
     pages["cases/index.html"] = page(
-        "产品案例建设方案 — 中科国瓷",
-        "中科国瓷产品案例栏目完整建设方案：结构、素材、模板与上线节奏",
-        """<section class="page-hero"><div class="container"><h1>产品案例建设方案</h1><p>当前案例过简；以下为可执行的完整建设方案</p></div></section>
-<section><div class="container content-block">
-<div class="plan-banner"><strong>状态：建设方案（中英文已对齐）</strong> · 待业务方提供真实项目素材后，本页将替换为正式案例列表。</div>
-<h2>一、问题诊断</h2>
-<p>现有案例仅少量文字、无现场图/产品图、缺量化结果与客户场景，无法支撑 B2B 信任转化。原官网亦未单独开设案例库，本站需新建高质量案例栏目，而不是继续用占位文案。</p>
-<h2>二、案例页标准结构（每篇必须具备）</h2>
-<ol>
-<li><strong>封面图</strong>：产品实拍或应用场景图（≥1200px）</li>
-<li><strong>客户与行业</strong>：可脱敏（如「某航空配套单位」「某柴油机后处理 Tier1」）</li>
-<li><strong>挑战</strong>：工况温度、量程、响应时间、可靠性/体积约束</li>
-<li><strong>方案</strong>：选用哪款传感器 + 控制器 + 电气/机械接口要点</li>
-<li><strong>实施</strong>：打样→标定→小批→量产节点（含时间）</li>
-<li><strong>结果</strong>：至少 2 个量化指标（精度、响应、失效率、供货周期等）</li>
-<li><strong>产品入口</strong>：链到对应产品详情 + 咨询 CTA</li>
-</ol>
-<h2>三、首批建议案例（需业务方确认素材）</h2>
-<table>
-<tr><th>案例</th><th>对应产品</th><th>需补充素材</th></tr>
-<tr><td>航空面罩供氧监测试制项目</td><td>面罩用氧传感器</td><td>试制照片、性能对比表、节点时间</td></tr>
-<tr><td>工业气体氧分压在线监测</td><td>KD0100-02S-T1</td><td>安装位置图、量程工况、精度验收</td></tr>
-<tr><td>紧凑型设备插针式集成</td><td>KD0100-02S-TO</td><td>结构尺寸、重量优势、接线定义</td></tr>
-<tr><td>柴油机 SCR / OBD 气体传感配套（规划）</td><td>氮氧/氧传感路线</td><td>客户许可、台架数据、排放相关指标</td></tr>
-</table>
-<h2>四、视觉与交互</h2>
-<ul>
-<li>列表：左图右文，行业标签 + 关键结果数字（避免无信息卡片堆砌）</li>
-<li>详情：顶部大图 + sticky「咨询同款方案」；中部挑战/方案/结果三栏；底部相关产品</li>
-<li>禁止纯文字无图上线；无客户授权时使用自有实验室/产品图并标注「示意」</li>
-</ul>
-<h2>五、生产流程</h2>
-<p>销售/项目经理提交《案例采集表》→ 技术审核参数 → 市场撰写 → 法务脱敏 → 上线。每月至少新增 1 篇；季度复盘转化（案例页 → 咨询表单）。</p>
-<h2>六、近期交付</h2>
-<p>在业务方提供 1 组真实项目素材后，48 小时内按本模板上线首个完整案例页，并替换本规划页为正式案例列表。</p>
-<h2>七、优化要点（摘要）</h2>
-<ul>
-<li><strong>先做 1 个「样板案例」</strong>：宁可只有一篇完整案例，也不要四篇空壳；优先航空面罩或工业在线监测（素材相对可控）。</li>
-<li><strong>中英文策略</strong>：英文页可先发「Challenge / Solution / Results」三段摘要 + 中文详案链接；全量英译成本高，摘要即可支撑海外询盘。</li>
-<li><strong>量化结果是硬门槛</strong>：没有 ≥2 个数字指标（如响应时间、精度带、失效率、交付周期）不上线。</li>
-<li><strong>法务前置</strong>：客户名称、照片、台架数据需书面授权；默认脱敏模板写进采集表。</li>
-<li><strong>与产品中心联动</strong>：每个案例详情底部固定挂对应 SKU；产品详情页增加「相关案例」入口（有内容后再显示）。</li>
-</ul>
-<p style="margin-top:20px"><a href="/en/cases.html" class="btn btn-ghost" style="color:var(--navy);border-color:var(--border)">English roadmap</a>
-<a href="/contact/" class="btn btn-primary" style="margin-left:8px">提交案例素材</a></p>
+        "行业案例 — 中科国瓷",
+        "中科国瓷行业案例：航空生命保障、工业气体监测、仪器 OEM、后处理评估（客户名脱敏）",
+        f"""{page_hero("行业案例", "基于真实行业需求编写 · 客户名称均以代名词脱敏", "products/banner.jpg")}
+<section class="cases-section"><div class="container">
+<p class="kb-lead">案例结构包含挑战、方案、实施节点与可核对结果。涉及客户主体一律使用代名词；量化结论限于公开规格与可披露的项目口径。</p>
+<div class="case-grid">{case_cards}</div>
 </div></section>""",
         "/cases/",
     )
+    for c in INDUSTRY_CASES:
+        milestones = "".join(f"<li>{m}</li>" for m in c["milestones"])
+        results = "".join(f"<li>{r}</li>" for r in c["results"])
+        prod_links = " ".join(
+            f'<a href="/products/{s}.html" class="tag">{product_name(s)}</a>' for s in c["product_slugs"]
+        )
+        pages[f"cases/{c['slug']}.html"] = page(
+            f"{c['title']} — 中科国瓷",
+            c["summary"],
+            f"""<article class="article">
+<section class="page-hero article-hero"><div class="container">
+<p class="article-meta"><span class="tag">{c['industry']}</span><span class="tag">{c['date']}</span></p>
+<h1>{c['title']}</h1>
+<p class="article-deck">{c['customer']} · {c['summary']}</p>
+</div></section>
+<section class="article-section"><div class="container article-layout">
+<figure class="article-cover"><img src="{asset_url(c['cover'])}" alt="{c['title']}"></figure>
+<div class="article-body content-block">
+<div class="case-panel"><h2>挑战</h2><p>{c['challenge']}</p></div>
+<div class="case-panel"><h2>方案</h2><p>{c['solution']}</p></div>
+<div class="case-panel"><h2>实施节点</h2><ol>{milestones}</ol></div>
+<div class="case-panel"><h2>结果</h2><ul>{results}</ul></div>
+<p class="article-note">{c['body_note']}</p>
+<div class="related-products"><h3>相关产品</h3><p>{prod_links}</p></div>
+<p class="article-back"><a href="/cases/">&larr; 返回行业案例</a>
+<a href="/contact/" class="btn btn-primary" style="margin-left:12px">咨询同款方案</a></p>
+</div></div></section>
+</article>""",
+            f"/cases/{c['slug']}.html",
+        )
 
     # Remove old ceramic tech/applications or redirect-style pages → sensor oriented
     pages["technology/index.html"] = page(
@@ -1166,93 +1226,50 @@ def main():
         lang="en",
     )
 
+    # EN knowledge + industry cases (abstracts + link to ZH)
+    en_kb = "".join(
+        f"""<a href="/knowledge/{k['slug']}.html" class="kb-item">
+<span class="tag">{k['category_en']}</span><span class="kb-date">{k['date']}</span>
+<h3>{k['title_en']}</h3><p>{k['summary_en']}</p>
+<p style="font-size:13px;color:var(--muted);margin:8px 0 0">Chinese title: {k['title']}</p>
+<span class="news-read-more">Read full article (Chinese) &rarr;</span></a>"""
+        for k in KNOWLEDGE
+    )
     pages["en/knowledge.html"] = page(
-        "Knowledge Base Plan — ZK Guoci",
-        "Knowledge base roadmap for oxygen sensor selection, principles, and applications",
-        """<section class="page-hero"><div class="container"><h1>Knowledge Base Roadmap</h1>
-<p>Planning page — articles will be published following this structure</p></div></section>
-<section><div class="container content-block">
-<div class="plan-banner"><strong>Status: roadmap (ZH/EN aligned)</strong> · Formal articles will replace this page. See optimization notes below.</div>
-<h2>Goals</h2>
-<p>Build searchable technical content around variable-frequency / NOx oxygen sensing to support engineer selection and lead conversion, with cross-links to products and news.</p>
-<h2>Pillars</h2>
-<ol>
-<li><strong>Principles</strong> — zirconia/titania, Nernst, air-fuel ratio, VF vs traditional sensors</li>
-<li><strong>Selection</strong> — probe vs pin, mask low-temp type, KD0100-03 pairing, wiring</li>
-<li><strong>Applications</strong> — automotive SCR/OBD, aviation masks, industrial combustion atmospheres</li>
-<li><strong>Install &amp; care</strong> — heater voltage, temperature/flow limits, failure modes, warranty notes</li>
-</ol>
-<h2>First 12 topics (P0–P2)</h2>
-<table>
-<tr><th>#</th><th>Topic</th><th>Priority</th></tr>
-<tr><td>1</td><td>VF oxygen sensors vs traditional types</td><td>P0</td></tr>
-<tr><td>2</td><td>How to choose KD0100-02S-T1 vs TO</td><td>P0</td></tr>
-<tr><td>3</td><td>What 0.5–101 kPa range means</td><td>P0</td></tr>
-<tr><td>4</td><td>KD0100-03 controller wiring &amp; heater voltage</td><td>P0</td></tr>
-<tr><td>5</td><td>NOx sensors in SCR / OBD</td><td>P1</td></tr>
-<tr><td>6</td><td>Key metrics for aviation mask O₂ sensors</td><td>P1</td></tr>
-<tr><td>7</td><td>Reading accuracy curves (1–100 kPa)</td><td>P1</td></tr>
-<tr><td>8</td><td>Avoiding tip burns and permanent damage</td><td>P1</td></tr>
-<tr><td>9</td><td>Solid-electrolyte ceramics in gas sensing</td><td>P2</td></tr>
-<tr><td>10</td><td>China VI and the NOx sensor market</td><td>P2</td></tr>
-<tr><td>11</td><td>Check-engine lights vs O₂ sensor faults</td><td>P2</td></tr>
-<tr><td>12</td><td>How to read datasheets and tolerances</td><td>P2</td></tr>
-</table>
-<h2>Optimization notes</h2>
-<ul>
-<li>Replace this roadmap ASAP with a real article list; mark nav as “Coming soon” until then.</li>
-<li>Keep EN as 200–300 word abstracts + link to Chinese full text (full EN translation is optional).</li>
-<li>Split the existing “Oxygen Sensors Explained” news into 3–4 knowledge articles first.</li>
-<li>Every article needs a related-product block + inquiry CTA.</li>
-<li>Ship diagrams (wiring, range/accuracy curves) before long-form copy.</li>
-</ul>
-<p style="margin-top:20px"><a href="/knowledge/" class="btn btn-primary">View Chinese plan</a>
-<a href="/en/contact.html" class="btn btn-ghost" style="margin-left:8px;color:var(--navy);border-color:var(--border)">Suggest a topic</a></p>
+        "Knowledge Base — ZK Guoci",
+        "Technical knowledge base for variable-frequency oxygen sensors: principles, selection, applications, maintenance",
+        f"""{page_hero("Knowledge Base", "Rigorous articles aligned to published specs · Chinese full text", "news/banner.jpg")}
+<section class="kb-section"><div class="container">
+<p class="kb-lead">English pages provide abstracts. Full technical articles are maintained in Chinese to keep parameters consistent with product datasheets.</p>
+<div class="kb-list">{en_kb}</div>
 </div></section>""",
         "/en/knowledge.html",
         lang="en",
     )
-
+    en_cases = "".join(
+        f"""<a href="/cases/{c['slug']}.html" class="case-card">
+<img src="{asset_url(c['cover'])}" alt="{c['title_en']}" class="case-cover" loading="lazy">
+<div class="case-body">
+<span class="tag">{c['industry_en']}</span>
+<h3>{c['title_en']}</h3>
+<p class="case-customer">{c['customer_en']}</p>
+<p>{c['summary_en']}</p>
+<span class="news-read-more">View case (Chinese) &rarr;</span>
+</div></a>"""
+        for c in INDUSTRY_CASES
+    )
     pages["en/cases.html"] = page(
-        "Case Studies Plan — ZK Guoci",
-        "Case study structure and first verticals for ZK Guoci oxygen sensors",
-        """<section class="page-hero"><div class="container"><h1>Case Studies Roadmap</h1>
-<p>Planning page — building a structured B2B case library</p></div></section>
-<section><div class="container content-block">
-<div class="plan-banner"><strong>Status: roadmap (ZH/EN aligned)</strong> · This page becomes a case list once real project assets arrive.</div>
-<h2>Required structure per case</h2>
-<ol>
-<li>Cover image (≥1200px)</li>
-<li>Customer &amp; industry (may be anonymized)</li>
-<li>Challenge — range, response, reliability, size constraints</li>
-<li>Solution — sensor + controller + interface</li>
-<li>Delivery milestones — sample → calibration → pilot → volume</li>
-<li>Results — ≥2 quantified metrics</li>
-<li>CTA to product detail + inquiry form</li>
-</ol>
-<h2>First case pipeline</h2>
-<table>
-<tr><th>Case</th><th>Product</th><th>Assets needed</th></tr>
-<tr><td>Aviation mask O₂ monitoring prototype</td><td>Mask O₂ sensor</td><td>Prototype photos, metrics, timeline</td></tr>
-<tr><td>Industrial O₂ partial-pressure online monitoring</td><td>KD0100-02S-T1</td><td>Install photos, duty cycle, acceptance data</td></tr>
-<tr><td>Compact pin-header OEM integration</td><td>KD0100-02S-TO</td><td>Dimensions, weight, pinout</td></tr>
-<tr><td>Diesel SCR / OBD gas sensing (planned)</td><td>NOx / O₂ path</td><td>Customer approval, dyno data</td></tr>
-</table>
-<h2>Optimization notes</h2>
-<ul>
-<li>Ship one complete flagship case before adding more stubs.</li>
-<li>EN can be a Challenge / Solution / Results abstract linking to the Chinese full write-up.</li>
-<li>No publish without ≥2 quantified results and asset rights clearance.</li>
-<li>Cross-link every case to its SKU; add “Related cases” on product pages once live.</li>
-</ul>
-<p style="margin-top:20px"><a href="/cases/" class="btn btn-primary">View Chinese plan</a>
-<a href="/en/contact.html" class="btn btn-ghost" style="margin-left:8px;color:var(--navy);border-color:var(--border)">Share a case</a></p>
+        "Industry Cases — ZK Guoci",
+        "Industry cases with anonymized customers: aviation life support, industrial gas monitoring, OEM, aftertreatment evaluation",
+        f"""{page_hero("Industry Cases", "Based on real industry needs · Customer names anonymized", "products/banner.jpg")}
+<section class="cases-section"><div class="container">
+<p class="kb-lead">Challenge / Solution / Results are summarized in English titles; full write-ups are in Chinese with anonymized customers.</p>
+<div class="case-grid">{en_cases}</div>
 </div></section>""",
         "/en/cases.html",
         lang="en",
     )
 
-    # Write all
     for rel, html in pages.items():
         out = DIST / rel
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -1303,6 +1320,8 @@ def main():
     urls += [f"/products/{p['slug']}.html" for p in PRODUCTS]
     urls += [f"/en/products/{p['slug']}.html" for p in PRODUCTS]
     urls += [f"/news/{n['slug']}.html" for n in NEWS]
+    urls += [f"/knowledge/{k['slug']}.html" for k in KNOWLEDGE]
+    urls += [f"/cases/{c['slug']}.html" for c in INDUSTRY_CASES]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for u in urls:
         sm += f"  <url><loc>https://kdgc.cc{u}</loc><changefreq>weekly</changefreq></url>\n"
