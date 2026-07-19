@@ -40,13 +40,17 @@
 
 ## 访问方式
 
-```bash
-# DNS 未生效前，用 Host 头访问
-curl -H "Host: kdgc.cc" http://150.158.42.39/
+域名未绑定前，直接用 IP（HTTP / HTTPS 均可）：
 
+- http://150.158.42.39/
+- https://150.158.42.39/ （自签证书，浏览器会提示不安全，点继续即可）
+
+```bash
 # SSH
 ssh -i ~/.ssh/shanghai_a_deploy ubuntu@150.158.42.39
 ```
+
+说明：nginx 已将本站设为 80/443 的 `default_server`，避免 IP 访问落到 cosgo 死上游导致 502。
 
 ## 重新部署
 
