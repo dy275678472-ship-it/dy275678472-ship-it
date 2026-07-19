@@ -114,10 +114,10 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <script src="/assets/js/main.js"></script>"""
 
 NAV = """<nav class="nav"><div class="nav-inner">
-<a href="/" class="nav-logo" aria-label="中科国瓷 KDGC">
+<a href="/" class="nav-logo" aria-label="中科国瓷">
 <picture>
-<source srcset="/assets/images/logo.webp" type="image/webp">
-<img src="/assets/images/logo.png" alt="安徽中科国瓷新型元器件有限公司 KDGC" class="nav-logo-img" width="238" height="96">
+<source srcset="/assets/images/logo.webp?v=20260720a" type="image/webp">
+<img src="/assets/images/logo.png?v=20260720a" alt="安徽中科国瓷新型元器件有限公司" class="nav-logo-img" width="391" height="96">
 </picture>
 </a>
 <div class="nav-links">
@@ -134,10 +134,10 @@ NAV = """<nav class="nav"><div class="nav-inner">
 </div></nav>"""
 
 NAV_EN = """<nav class="nav"><div class="nav-inner">
-<a href="/en/" class="nav-logo" aria-label="KDGC Zhongke Guoci">
+<a href="/en/" class="nav-logo" aria-label="Zhongke Guoci">
 <picture>
-<source srcset="/assets/images/logo.webp" type="image/webp">
-<img src="/assets/images/logo.png" alt="KDGC — Anhui Zhongke Guoci New Components Co., Ltd." class="nav-logo-img" width="238" height="96">
+<source srcset="/assets/images/logo.webp?v=20260720a" type="image/webp">
+<img src="/assets/images/logo.png?v=20260720a" alt="Anhui Zhongke Guoci New Components Co., Ltd." class="nav-logo-img" width="391" height="96">
 </picture>
 </a>
 <div class="nav-links">
@@ -194,7 +194,7 @@ def page(title, desc, body, canonical="", lang="zh"):
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title}</title><meta name="description" content="{desc}">
 {canon}<link rel="stylesheet" href="/assets/css/style.css">
-<link rel="icon" href="/assets/images/favicon.ico">
+<link rel="icon" href="/assets/images/favicon.ico?v=20260720a">
 </head><body>{nav}<main>{body}</main>{footer}</body></html>"""
 
 
