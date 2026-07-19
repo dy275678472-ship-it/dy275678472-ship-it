@@ -228,12 +228,10 @@ def setup_backup_cron():
         set -euo pipefail
         DIR=/opt/backups/$(date +%Y%m%d)
         mkdir -p "$DIR"
-        set -a
-        source /opt/zhenxi/.env
-        set +a
-        pg_dump "$DATABASE_URL" | gzip > "$DIR/zhenxi-pg.sql.gz"
+        sudo -u ubuntu bash -c 'set -a; source /opt/zhenxi/.env; set +a; pg_dump "${DATABASE_URL%%\?*}" | gzip' > "$DIR/zhenxi-pg.sql.gz"
         mysqldump --all-databases 2>/dev/null | gzip > "$DIR/mysql-all.sql.gz" || true
         find /opt/backups -maxdepth 1 -type d -mtime +7 -exec rm -rf {} + 2>/dev/null || true
+        chown -R ubuntu:ubuntu /opt/backups
         echo "$(date) backup done -> $DIR"
         """),
     )
