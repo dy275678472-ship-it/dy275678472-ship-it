@@ -457,3 +457,23 @@
 部署脚本：`scripts/greentrace-p0-seo.py`
 
 **P0 后剩余（P1）**：Cloudflare CDN、博客 Article schema、邮箱订阅、Klook 上移城市页、小红书获客统一域名、评价数据可信度清洗。
+
+---
+
+## P1 增长执行（已完成 · 2026-07-19）
+
+| 项目 | 状态 | 验证 |
+|------|------|------|
+| 博客 Article schema | ✅ | `/blog/citywalk-guide-beginner` 含 Article |
+| 博客订阅表单 + `/api/subscribe` | ✅ | POST → `{"ok":true}`；`subscribers` 表 |
+| 欢迎邮件（SMTP） | ✅ | 新订阅触发 QQ SMTP |
+| 城市页 Klook 住宿/门票模块 | ✅ | 含「搜索{城}酒店」 |
+| 信任文案弱化（真实评价→用户评价） | ✅ | 城市页 hero/区块 |
+| PROMO / 合伙人文档统一 greentrace 域名 | ✅ | `greenyoo.cn` 外链清零 |
+| og-image 压缩 | ✅ | ~70KB → ~55KB |
+
+部署脚本：`scripts/greentrace-p1-growth.py`
+
+**无法自动完成**：Cloudflare CDN（需 DNS）、小红书人工运营、评价/订单种子数据深度清洗（需产品决策）。
+
+**P1 后剩余（P2）**：Cloudflare、内容扩至 40 篇、城市×攻略内链矩阵、国际城市正文、Core Web Vitals 审计。
