@@ -505,3 +505,22 @@
 | 过小 stub（6057B） | 删除 + 列表逻辑跳过 &lt;20KB 文件 | 走可用 hero/card |
 
 脚本：`scripts/greentrace-p2b-city-list.py`
+
+---
+
+## P3 核心城内容深化（已完成 · 2026-07-19）
+
+线上已部署（首尔 `/opt/greentrace`），脚本：`scripts/greentrace-p3-growth.py`、`scripts/greentrace-p3-shanghai-seed.py`。
+
+| 项 | 结果 |
+|----|------|
+| 8 城可执行一日 | 成渝杭沪京厦苏桂城市页新增 `#dayplan`（时段 + 交通 + 避雷） |
+| FAQ + FAQPage | 同上 8 城 `#faq` + JSON-LD `FAQPage` |
+| 内链矩阵 | `#explore` → guide / blog / citywalk / cycling / transit / routes + 相近城市 |
+| 攻略页 | 沪京厦苏桂补 FAQ；相关链接加博客 + Citywalk |
+| 上海解锁 | DB 无 approved 路线导致「建设中」→ 种子 4 条沪线后全页可渲染 |
+| 封面升级 | 洛阳/悉尼/布拉格/伊斯坦布尔/清迈/河内/扬州/香格里拉/北海/西宁/延边/札幌/福冈/暹粒/马尼拉/开罗/加德满都/布达佩斯 共 18 城 Wikimedia 地标封面 |
+
+**验收**：8 城均含 `dayplan` / `faq` / `explore` / `FAQPage`；攻略页含 `/blog/` 与 Citywalk 内链。
+
+**P3 后剩余**：Cloudflare（需 DNS）、博客扩至 40+、行程文案去重、种子评价清理、小红书运营。
