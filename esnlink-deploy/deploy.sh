@@ -19,7 +19,7 @@ python3 "$ROOT/unify_chrome.py"
 
 # Prepare remote dirs
 ssh -i "$KEY" -o StrictHostKeyChecking=no "$HOST" \
-    "mkdir -p /tmp/esnlink-deploy/{docs,solutions,cases,en,landing,assets,css}"
+    "mkdir -p /tmp/esnlink-deploy/{docs,solutions,cases,en,landing,blog,assets,css}"
 
 # Core pages (include pricing/about/faq for nav consistency)
 scp -i "$KEY" -o StrictHostKeyChecking=no \
@@ -37,7 +37,7 @@ scp -i "$KEY" -o StrictHostKeyChecking=no \
     "$HOST:/tmp/esnlink-deploy/"
 
 # Subdirectories
-for dir in docs solutions cases en landing assets css; do
+for dir in docs solutions cases en landing blog assets css; do
     if [ -d "$LOCAL/$dir" ] && [ "$(ls -A "$LOCAL/$dir" 2>/dev/null)" ]; then
         scp -i "$KEY" -o StrictHostKeyChecking=no -r "$LOCAL/$dir" "$HOST:/tmp/esnlink-deploy/"
     fi
@@ -60,7 +60,7 @@ ssh -i "$KEY" -o StrictHostKeyChecking=no "$HOST" "
         /tmp/esnlink-deploy/robots.txt /tmp/esnlink-deploy/sitemap.xml \
         /tmp/esnlink-deploy/og-image.png $REMOTE/ 2>/dev/null || true
     [ -f /tmp/esnlink-deploy/og-image.webp ] && sudo mv /tmp/esnlink-deploy/og-image.webp $REMOTE/
-    for d in docs solutions cases en landing assets css; do
+    for d in docs solutions cases en landing blog assets css; do
         sudo mkdir -p $REMOTE/\$d
         sudo cp -r /tmp/esnlink-deploy/\$d/* $REMOTE/\$d/ 2>/dev/null || true
     done
