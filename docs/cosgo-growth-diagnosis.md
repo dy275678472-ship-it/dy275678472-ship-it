@@ -334,3 +334,20 @@ CosGo 具备**强数据资产**（301 场漫展活动 URL、70 个城市页）�
 部署脚本：`scripts/cosgo-p0-seo.py`
 
 **P0 后剩余优先级（P1）**：攻略扩至 20+ 篇、摄影师供给侧 BD、邮件订阅、Cloudflare CDN。
+
+---
+
+## P1 增长执行（已完成 · 2026-07-19）
+
+| 项目 | 状态 | 验证 |
+|------|------|------|
+| 攻略扩至 20+ 篇 | ✅ | sitemap `/blog/` URL × 20 |
+| 发布存量 DRAFT + AI 生成补齐 | ✅ | 20 篇 PUBLISHED |
+| `/api/subscribe` 邮件订阅 API | ✅ | POST → `{"ok":true}` |
+| `BlogSubscribe` 组件（攻略列表 + 文章页） | ✅ | `/blog` 含 `blog-subscribe` |
+| `Subscriber` 表 + 欢迎邮件 | ✅ | Prisma `Subscriber` model |
+| 摄影师页 noindex | ⏭️ 跳过 | DB 已有 273 位 APPROVED 摄影师 |
+
+部署脚本：`scripts/cosgo-p1-growth.py`
+
+**P1 后剩余（P2）**：Cloudflare CDN、社交矩阵、Core Web Vitals 审计、国际城市内容本地化。
