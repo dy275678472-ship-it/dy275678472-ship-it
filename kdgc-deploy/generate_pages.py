@@ -657,6 +657,16 @@ def main():
 <div class="grid-3">{prod_cards}</div>
 </div></section>
 {scenes_html}
+<section class="values-teaser"><div class="container">
+<div class="section-header"><div class="section-label">Values</div><h2>我们的价值观</h2>
+<p>诚信 · 创新 · 响应 — 支撑长期合作</p></div>
+<div class="values-cards values-cards--home">
+<a class="values-card" href="/about/#values"><span class="values-num">01</span><h3>诚信至上</h3><p>产品承诺质保 5 年</p></a>
+<a class="values-card" href="/about/#values"><span class="values-num">02</span><h3>坚持创新</h3><p>产学研合作持续迭代</p></a>
+<a class="values-card" href="/about/#values"><span class="values-num">03</span><h3>快速响应</h3><p>7×24 小时全天候服务</p></a>
+</div>
+<p class="values-more"><a href="/about/#values">查看完整价值观 →</a></p>
+</div></section>
 <section style="background:var(--white)"><div class="container">
 <div class="section-header"><div class="section-label">News</div><h2>新闻资讯</h2></div>
 <div class="grid-3">{news_cards}</div>
@@ -711,16 +721,45 @@ def main():
             '<h2 style="margin:40px 0 16px">研发环境</h2>'
             f'<div class="about-lab-grid">{"".join(lab_imgs)}</div>'
         )
+    values_cards = """
+<div class="values-cards">
+<div class="values-card"><span class="values-num">01</span><h3>诚信至上</h3><p>产品承诺质保 5 年</p></div>
+<div class="values-card"><span class="values-num">02</span><h3>坚持创新</h3><p>产学研合作持续迭代</p></div>
+<div class="values-card"><span class="values-num">03</span><h3>快速响应</h3><p>7×24 小时全天候服务</p></div>
+</div>"""
+    values_poster = ""
+    if has_asset("about/values-poster.jpg") or has_asset("about/values-poster.webp"):
+        values_poster = f"""
+<figure class="values-poster">
+<a href="{asset_url("about/values-poster.jpg")}" target="_blank" rel="noopener" aria-label="Open values poster">
+<img src="{asset_url("about/values-poster.jpg")}" alt="中科国瓷价值观：诚信至上、坚持创新、快速响应" loading="lazy">
+</a>
+<figcaption>精益求精 · 瓷就未来</figcaption>
+</figure>"""
+    values_block = f"""
+<section id="values" class="values-section"><div class="container">
+<div class="section-header">
+<div class="section-label">Values</div>
+<h2>我们的价值观</h2>
+<p>以价值创造未来 · 以信任成就合作</p>
+</div>
+{values_cards}
+{values_poster}
+</div></section>"""
+
     pages["about/index.html"] = page(
         "关于中科国瓷 — 中科国瓷",
-        "安徽中科国瓷新型元器件有限公司：首席科学家、总经理、总工程师团队介绍，荣誉资质与合作伙伴。",
+        "安徽中科国瓷新型元器件有限公司：价值观、核心团队、荣誉资质与合作伙伴。",
         f"""{page_hero("关于中科国瓷", "科技感知未来 · 中科大技术转化平台", "about/banner-about.jpg")}
 <section><div class="container">
 <div class="content-block">
 <p>安徽中科国瓷新型元器件有限公司聚焦变频氧传感器、氮氧传感器的研发与生产，统一社会信用代码 91340100MA8LLE5K9H。公司地址位于中国（安徽）自由贸易试验区合肥市高新区望江西路 5089 号嵌入式研发楼 103-C3。</p>
 <p>公司秉承以人为本、追求超越的经营理念；恪守诚信为本，产品承诺质保 5 年。通过坚持不懈地开拓创新、与时俱进，不断开创新局面、实现新跨越。</p>
 </div>
-<h2 style="margin:32px 0 16px">核心团队</h2>
+</div></section>
+{values_block}
+<section><div class="container">
+<h2 style="margin:0 0 16px">核心团队</h2>
 {team_html}
 {lab_block}
 <h2 style="margin:40px 0 16px">荣誉资质</h2>
@@ -1184,7 +1223,20 @@ def main():
 <p>Address: Room 103-C3, Embedded R&amp;D Building, No. 5089 Wangjiang West Road, High-tech District, Hefei, Anhui (China (Anhui) Pilot Free Trade Zone).</p>
 <p>We pursue excellence with integrity and offer a <strong>5-year product warranty</strong>.</p>
 </div>
-<h2 style="margin:32px 0 16px">Leadership</h2>
+</div></section>
+<section id="values" class="values-section"><div class="container">
+<div class="section-header"><div class="section-label">Values</div>
+<h2>Our Values</h2>
+<p>Create the future with value · Build partnership with trust</p></div>
+<div class="values-cards">
+<div class="values-card"><span class="values-num">01</span><h3>Integrity First</h3><p>5-year product warranty</p></div>
+<div class="values-card"><span class="values-num">02</span><h3>Persistent Innovation</h3><p>Industry–university–research iteration</p></div>
+<div class="values-card"><span class="values-num">03</span><h3>Rapid Response</h3><p>7×24 follow-up support</p></div>
+</div>
+{values_poster}
+</div></section>
+<section><div class="container">
+<h2 style="margin:0 0 16px">Leadership</h2>
 {team_en_html}
 {lab_block}
 <h2 style="margin:40px 0 16px">Honors &amp; Certifications</h2>
