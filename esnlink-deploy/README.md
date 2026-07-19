@@ -45,6 +45,12 @@ bash esnlink-deploy/deploy.sh
 
 服务器：`150.158.42.39` → `/var/www/yixing/`
 
+## 导航统一（2026-07-19）
+
+- 全站栏目顶栏/页脚已与首页风格对齐（含 `/en/`）
+- 运行：`python3 esnlink-deploy/unify_chrome.py`
+- Gemini 生图提示词：`esnlink-deploy/docs/gemini-image-prompts.md`（每批最多 8 张）
+
 ## 下一步（P3，可选）
 
 1. 真实客户 Logo 图片替换 emoji 占位

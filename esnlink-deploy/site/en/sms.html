@@ -28,14 +28,29 @@
         .footer a{color:#60a5fa}
         @media(max-width:600px){.features{grid-template-columns:1fr}}
     </style>
+    <link rel="stylesheet" href="/css/header-footer.css">
 </head>
 <body>
-<nav class="nav container">
-    <a href="/en/" class="logo">esnlink SMS</a>
-    <div>
-        <a href="/en/">Home</a>
-        <a href="/docs/sms-api.html">API Docs</a>
-        <a href="/booking.html" class="btn">Free Trial</a>
+<!-- site-chrome-nav -->
+<nav class="navbar">
+    <div class="container nav-container">
+        <a href="/en/" class="logo">
+            <span>esnlink</span>
+            <span class="logo-slogan">Link Creates Value</span>
+        </a>
+        <div class="nav-links">
+            <a href="/en/">Home</a>
+            <a href="/en/call-center.html">AI Calling</a>
+            <a class="active" href="/en/sms.html">SMS</a>
+            <a href="/iot.html">IoT</a>
+            <a href="/pricing.html">Pricing</a>
+            <a href="/docs/">Docs</a>
+            <a href="/cases/">Cases</a>
+            <a href="/">中文</a>
+            <a href="/booking.html" class="nav-btn btn-trial">Free Trial</a>
+            <a href="/#contact" class="nav-btn">Contact</a>
+        </div>
+        <button class="hamburger" aria-label="Menu">☰</button>
     </div>
 </nav>
 <section class="hero container">
@@ -50,8 +65,61 @@
     <div class="feat"><h3>📬 Notifications</h3><p>Order updates, shipping alerts, system alerts</p></div>
     <div class="feat"><h3>🎯 Marketing</h3><p>Campaign SMS with smart routing</p></div>
 </div>
+<!-- site-chrome-footer -->
 <footer class="footer">
-    <p>&copy; 2025 Hefei Yixing Intelligent Technology Co., Ltd.</p>
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="/en/" class="logo"><span>esnlink</span></a>
+                <p>Enterprise communication &amp; IoT cloud<br><strong style="color:#60a5fa;font-size:1.1rem;letter-spacing:0.08em;">Link Creates Value</strong></p>
+            </div>
+            <div class="footer-col">
+                <h5>Products</h5>
+                <a href="/en/call-center.html">AI Call Center</a>
+                <a href="/en/sms.html">SMS Platform</a>
+                <a href="/iot.html">IoT</a>
+                <a href="/pricing.html">Pricing</a>
+            </div>
+            <div class="footer-col">
+                <h5>Resources</h5>
+                <a href="/docs/">Docs</a>
+                <a href="/cases/">Cases</a>
+                <a href="/booking.html">Book a demo</a>
+                <a href="/faq.html">FAQ</a>
+            </div>
+            <div class="footer-col">
+                <h5>Company</h5>
+                <a href="/about.html">About</a>
+                <a href="/#contact">Contact</a>
+                <a href="/">中文</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2025 Hefei Yixing Intelligent Technology Co., Ltd.</span>
+            <span style="margin-left:1rem"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="color:#94a3b8;text-decoration:none">皖ICP备2026012968号-1</a></span>
+        </div>
+    </div>
 </footer>
+<!-- site-chrome-hamburger -->
+<script>
+(function(){
+  var h = document.querySelector('.hamburger');
+  var n = document.querySelector('.nav-links');
+  if (h && n && !h.dataset.bound) {
+    h.dataset.bound = '1';
+    h.addEventListener('click', function(e){
+      e.stopPropagation();
+      n.classList.toggle('open');
+    });
+    n.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click', function(){ n.classList.remove('open'); });
+    });
+    document.addEventListener('click', function(e){
+      if (!n.contains(e.target) && !h.contains(e.target)) { n.classList.remove('open'); }
+    });
+  }
+})();
+</script>
+
 </body>
 </html>

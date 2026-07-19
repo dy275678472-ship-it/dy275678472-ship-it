@@ -10,15 +10,19 @@ OG_IMAGE = """    <meta property="og:image" content="https://www.esnlink.cn/og-i
     <meta property="og:image:height" content="630">
     <meta name="twitter:image" content="https://www.esnlink.cn/og-image.png">"""
 
+# Deprecated: use unify_chrome.py for sitewide navbar/footer.
 UNIFIED_NAV = """        <div class="nav-links">
-            <a href="index.html">首页</a>
-            <a href="call-center.html">智能外呼</a>
-            <a href="sms.html">短信平台</a>
-            <a href="iot.html">物联网</a>
-            <a href="pricing.html">定价</a>
-            <a href="docs/">文档</a>
-            <a href="blog/">博客</a>
-            <a href="booking.html" class="nav-btn btn-trial">免费试用</a>
+            <a href="/">首页</a>
+            <a href="/call-center.html">智能外呼</a>
+            <a href="/sms.html">短信平台</a>
+            <a href="/iot.html">物联网</a>
+            <a href="/pricing.html">定价</a>
+            <a href="/docs/">文档</a>
+            <a href="/blog/">博客</a>
+            <a href="/cases/">案例</a>
+            <a href="/en/">EN</a>
+            <a href="/booking.html" class="nav-btn btn-trial">免费试用</a>
+            <a href="/#contact" class="nav-btn">咨询</a>
         </div>"""
 
 RELATED_LINKS_SMS = """

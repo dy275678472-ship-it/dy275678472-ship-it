@@ -436,40 +436,32 @@
     <link rel="stylesheet" href="/css/header-footer.css">
 </head>
 <body>
+<!-- site-chrome-nav -->
 <nav class="navbar">
     <div class="container nav-container">
-        <div class="logo">
+        <a href="/" class="logo">
             <span>esnlink · 翼星科技</span>
             <span class="logo-slogan">链接创造价值</span>
-        </div>
+        </a>
         <div class="nav-links">
-            <a href="/#home">🏠 首页</a>
-            <a href="/#products">📦 产品</a>
-            <a href="/#about">⭐ 优势</a>
-            <a href="/edu">🎓 教育AI</a>
-            <a href="/pricing.html">💰 定价</a>
-            <a href="/#contact">📞 联系</a>
-            <a href="/booking.html" class="nav-btn"><span class="icon-emoji">🎧</span> 预约演示</a>
+            <a href="/">首页</a>
+            <a href="/call-center.html">智能外呼</a>
+            <a href="/sms.html">短信平台</a>
+            <a href="/iot.html">物联网</a>
+            <a href="/pricing.html">定价</a>
+            <a href="/docs/">文档</a>
+            <a href="/blog/">博客</a>
+            <a href="/cases/">案例</a>
+            <a href="/en/">EN</a>
+            <a href="/booking.html" class="nav-btn btn-trial">免费试用</a>
+            <a href="/#contact" class="nav-btn">咨询</a>
         </div>
-        <button class="hamburger">☰</button>
+        <button class="hamburger" aria-label="菜单">☰</button>
     </div>
 </nav>
 
 
-<!-- 导航栏 -->
-<div class="navbar">
-    <div class="container nav-container">
-        <a href="/" class="logo">
-            <span class="icon-emoji">•</span>
-            <span>翼星科技</span>
-        </a>
-        <div class="nav-links">
-            <a href="/">首页</a>
-            <a href="/edu">教育AI</a>
-            <a href="/booking.html" class="active">预约演示</a>
-            <a href="http://150.158.42.39:2031" class="nav-btn"><span class="icon-emoji">•</span> 管理后台</a>
-        </div>
-    </div>
+</div>
 </div>
 
 <!-- Breadcrumb -->
@@ -573,41 +565,43 @@
 </div>
 
 <!-- Footer -->
+<!-- site-chrome-footer -->
 <footer class="footer">
     <div class="container">
         <div class="footer-grid">
             <div class="footer-brand">
-                <div class="logo">
-                    <span class="icon-emoji">•</span>
-                    <span>翼星科技</span>
-                </div>
-                <p>智能通信与物联网解决方案提供商，让链接创造价值。</p>
+                <a href="/" class="logo"><span>esnlink · 翼星科技</span></a>
+                <p>智能通信与物联网解决方案提供商<br><strong style="color:#60a5fa;font-size:1.1rem;letter-spacing:0.08em;">链接创造价值</strong></p>
             </div>
             <div class="footer-col">
                 <h5>产品</h5>
-                <a href="/">智能呼叫中心</a>
-                <a href="/">短信平台</a>
-                <a href="/">物联网模组</a>
-                <a href="/">IoT 云平台</a>
+                <a href="/call-center.html">智能呼叫中心</a>
+                <a href="/sms.html">短信平台</a>
+                <a href="/iot.html">物联网模组</a>
+                <a href="/edu.html">教育 AI</a>
             </div>
             <div class="footer-col">
                 <h5>支持</h5>
-                <a href="/">帮助中心</a>
-                <a href="/">API 文档</a>
-                <a href="/">服务协议</a>
-                <a href="/">售后支持</a>
+                <a href="/faq.html">帮助中心</a>
+                <a href="/pricing.html">定价方案</a>
+                <a href="/booking.html">预约演示</a>
+                <a href="/docs/">开发文档</a>
+                <a href="/blog/">技术博客</a>
             </div>
             <div class="footer-col">
                 <h5>关于</h5>
-                <a href="/">公司简介</a>
-                <a href="/">加入我们</a>
-                <a href="/">新闻动态</a>
-                <a href="/">合作伙伴</a>
+                <a href="/about.html">公司简介</a>
+                <a href="/cases/">客户案例</a>
+                <a href="/#contact">联系我们</a>
+                <a href="/solutions/education.html">教育行业</a>
+                <a href="/solutions/ecommerce.html">电商行业</a>
+                <a href="/solutions/finance.html">金融行业</a>
+                <a href="/en/">English</a>
             </div>
         </div>
         <div class="footer-bottom">
-            <span>&copy; 2026 翼星智能科技有限公司 All Rights Reserved.</span>
-            <span>皖ICP备2026012968号</span>
+            <span>&copy; 2025 合肥翼星智能科技有限公司 All Rights Reserved.</span>
+            <span style="margin-left:1rem"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="color:#94a3b8;text-decoration:none">皖ICP备2026012968号-1</a></span>
         </div>
     </div>
 </footer>
@@ -667,6 +661,27 @@
     document.querySelectorAll('.fade-in').forEach(function(el) {
         observer.observe(el);
     });
+</script>
+
+<!-- site-chrome-hamburger -->
+<script>
+(function(){
+  var h = document.querySelector('.hamburger');
+  var n = document.querySelector('.nav-links');
+  if (h && n && !h.dataset.bound) {
+    h.dataset.bound = '1';
+    h.addEventListener('click', function(e){
+      e.stopPropagation();
+      n.classList.toggle('open');
+    });
+    n.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click', function(){ n.classList.remove('open'); });
+    });
+    document.addEventListener('click', function(e){
+      if (!n.contains(e.target) && !h.contains(e.target)) { n.classList.remove('open'); }
+    });
+  }
+})();
 </script>
 
 </body>

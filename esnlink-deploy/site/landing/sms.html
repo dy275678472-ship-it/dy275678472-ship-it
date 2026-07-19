@@ -34,9 +34,26 @@
         .logo-mini{position:absolute;top:1rem;left:1.5rem;color:#fff;font-weight:800;font-size:1.1rem;text-decoration:none}
         @media(max-width:800px){.container{grid-template-columns:1fr}.hero h1{font-size:2rem}}
     </style>
+    <link rel="stylesheet" href="/css/header-footer.css">
 </head>
 <body>
-<a href="/index.html" class="logo-mini">esnlink · 翼星科技</a>
+<!-- site-chrome-nav -->
+<nav class="navbar" style="background:rgba(15,23,42,.85);border-bottom:1px solid rgba(255,255,255,.08)">
+    <div class="container nav-container">
+        <a href="/" class="logo" style="color:#fff;-webkit-text-fill-color:#fff;background:none">
+            <span>esnlink · 翼星科技</span>
+            <span class="logo-slogan" style="color:#93c5fd;border-left-color:rgba(147,197,253,.35)">链接创造价值</span>
+        </a>
+        <div class="nav-links">
+            <a class="active" href="/" style="color:#e2e8f0">首页</a>
+            <a href="/sms.html" style="color:#e2e8f0">短信平台</a>
+            <a href="/pricing.html" style="color:#e2e8f0">定价</a>
+            <a href="/booking.html" class="nav-btn btn-trial">免费试用</a>
+        </div>
+        <button class="hamburger" aria-label="菜单" style="color:#fff">☰</button>
+    </div>
+</nav>
+
 <section class="hero">
     <div class="container">
         <div>
@@ -82,5 +99,33 @@
         </div>
     </div>
 </section>
+<!-- site-chrome-footer -->
+<footer class="footer" style="padding:1.5rem 0;text-align:center">
+    <div class="container">
+        <p style="font-size:.85rem">&copy; 2025 合肥翼星智能科技有限公司 · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="color:#94a3b8;text-decoration:none">皖ICP备2026012968号-1</a> · <a href="/" style="color:#60a5fa">官网首页</a></p>
+    </div>
+</footer>
+
+<!-- site-chrome-hamburger -->
+<script>
+(function(){
+  var h = document.querySelector('.hamburger');
+  var n = document.querySelector('.nav-links');
+  if (h && n && !h.dataset.bound) {
+    h.dataset.bound = '1';
+    h.addEventListener('click', function(e){
+      e.stopPropagation();
+      n.classList.toggle('open');
+    });
+    n.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click', function(){ n.classList.remove('open'); });
+    });
+    document.addEventListener('click', function(e){
+      if (!n.contains(e.target) && !h.contains(e.target)) { n.classList.remove('open'); }
+    });
+  }
+})();
+</script>
+
 </body>
 </html>

@@ -708,26 +708,27 @@
 <body>
 
 <!-- 导航栏 -->
+<!-- site-chrome-nav -->
 <nav class="navbar">
     <div class="container nav-container">
-        <div class="logo">
+        <a href="/" class="logo">
             <span>esnlink · 翼星科技</span>
             <span class="logo-slogan">链接创造价值</span>
-        </div>
+        </a>
         <div class="nav-links">
-            <a href="index.html">首页</a>
-            <a href="call-center.html">智能外呼</a>
-            <a href="sms.html">短信平台</a>
-            <a href="iot.html">物联网</a>
-            <a href="pricing.html">定价</a>
-            <a href="docs/">文档</a>
-            <a href="blog/">博客</a>
-            <a href="cases/">案例</a>
-            <a href="en/">EN</a>
-            <a href="booking.html" class="nav-btn btn-trial">免费试用</a>
-            <a href="#contact" class="nav-btn"><span class="icon-emoji">🎧</span> 咨询</a>
+            <a class="active" href="/">首页</a>
+            <a href="/call-center.html">智能外呼</a>
+            <a href="/sms.html">短信平台</a>
+            <a href="/iot.html">物联网</a>
+            <a href="/pricing.html">定价</a>
+            <a href="/docs/">文档</a>
+            <a href="/blog/">博客</a>
+            <a href="/cases/">案例</a>
+            <a href="/en/">EN</a>
+            <a href="/booking.html" class="nav-btn btn-trial">免费试用</a>
+            <a href="#contact" class="nav-btn">咨询</a>
         </div>
-        <button class="hamburger">☰</button>
+        <button class="hamburger" aria-label="菜单">☰</button>
     </div>
 </nav>
 
@@ -1049,38 +1050,38 @@
 </section>
 
 <!-- Footer -->
+<!-- site-chrome-footer -->
 <footer class="footer">
     <div class="container">
         <div class="footer-grid">
             <div class="footer-brand">
-                <div class="logo">
-                    <span>esnlink · 翼星科技</span>
-                </div>
+                <a href="/" class="logo"><span>esnlink · 翼星科技</span></a>
                 <p>智能通信与物联网解决方案提供商<br><strong style="color:#60a5fa;font-size:1.1rem;letter-spacing:0.08em;">链接创造价值</strong></p>
             </div>
             <div class="footer-col">
                 <h5>产品</h5>
-                <a href="call-center.html">智能呼叫中心</a>
-                <a href="sms.html">短信平台</a>
-                <a href="iot.html">物联网模组</a>
-                <a href="edu.html">教育 AI</a>
+                <a href="/call-center.html">智能呼叫中心</a>
+                <a href="/sms.html">短信平台</a>
+                <a href="/iot.html">物联网模组</a>
+                <a href="/edu.html">教育 AI</a>
             </div>
             <div class="footer-col">
                 <h5>支持</h5>
-                <a href="faq.html">帮助中心</a>
-                <a href="pricing.html">定价方案</a>
-                <a href="booking.html">预约演示</a>
-                <a href="blog/">技术博客</a>
+                <a href="/faq.html">帮助中心</a>
+                <a href="/pricing.html">定价方案</a>
+                <a href="/booking.html">预约演示</a>
+                <a href="/docs/">开发文档</a>
+                <a href="/blog/">技术博客</a>
             </div>
             <div class="footer-col">
                 <h5>关于</h5>
-                <a href="about.html">公司简介</a>
-                <a href="blog/">新闻动态</a>
-                <a href="#contact">联系我们</a>
-                <a href="solutions/education.html">教育行业</a>
-                <a href="solutions/ecommerce.html">电商行业</a>
-                <a href="solutions/finance.html">金融行业</a>
-                <a href="solutions/community-hospital.html">社区医院</a>
+                <a href="/about.html">公司简介</a>
+                <a href="/cases/">客户案例</a>
+                <a href="/#contact">联系我们</a>
+                <a href="/solutions/education.html">教育行业</a>
+                <a href="/solutions/ecommerce.html">电商行业</a>
+                <a href="/solutions/finance.html">金融行业</a>
+                <a href="/en/">English</a>
             </div>
         </div>
         <div class="footer-bottom">
@@ -1180,5 +1181,26 @@ var _hmt = _hmt || [];
   s.parentNode.insertBefore(hm, s);
 })();
 </script>
+<!-- site-chrome-hamburger -->
+<script>
+(function(){
+  var h = document.querySelector('.hamburger');
+  var n = document.querySelector('.nav-links');
+  if (h && n && !h.dataset.bound) {
+    h.dataset.bound = '1';
+    h.addEventListener('click', function(e){
+      e.stopPropagation();
+      n.classList.toggle('open');
+    });
+    n.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click', function(){ n.classList.remove('open'); });
+    });
+    document.addEventListener('click', function(e){
+      if (!n.contains(e.target) && !h.contains(e.target)) { n.classList.remove('open'); }
+    });
+  }
+})();
+</script>
+
 </body>
 </html>
