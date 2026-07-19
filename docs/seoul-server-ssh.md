@@ -300,5 +300,25 @@ ssh ubuntu@43.128.145.79 'python3 /tmp/seoul-p2-optimize.py'
 ### 已知限制（移交 P3）
 
 - Swap 仍 ~2.1G（Hermes agent + MySQL 为主要占用；需升配或迁出 Hermes）
+
+---
+
+## P3 增长执行（2026-07-19）
+
+| 项目 | 状态 |
+|------|------|
+| 博客 22 篇列表对齐 | ✅ |
+| 测评邮件收集 + Subscriber 表 | ✅ |
+| Article / FAQ 结构化数据 | ✅ |
+| BlogCta + tracker 事件 | ✅ |
+
+部署：`scripts/zhenxi-p3-growth.py`
+
+### 待用户决策（P3 剩余）
+
+- Cloudflare CDN（DNS 迁移）
+- 服务器 RAM 3.6G → 8G
+- Hermes 迁出首尔节点
+
 - Cloudflare CDN 需 DNS 权限
 - 邮件收集 / 付费测评需第三方服务接入

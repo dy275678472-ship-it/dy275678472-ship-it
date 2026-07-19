@@ -1,11 +1,27 @@
 # 增长路线图 P3 — zhenxi.hk.cn & cosgo.cn
 
-> P0（SEO 基建）✅ · P1（安全 + 转化基建）✅ · P2（性能 + 内容计划）进行中
+> P0（SEO 基建）✅ · P1（安全 + 转化基建）✅ · P2（性能 + 内容计划）✅ · P3（增长执行）部分完成
+
 > 本文档定义 P3 阶段的中期增长与商业化路径。
 
 ---
 
-## P3 总览
+## P3 执行记录（2026-07-19）
+
+| 项目 | 状态 |
+|------|------|
+| 博客列表 14→22 篇对齐 | ✅ |
+| BlogCta 组件（测评 + 指南） | ✅ |
+| Article schema（博客详情） | ✅ |
+| FAQ schema（assessment、services） | ✅ |
+| 测评邮件收集 `/api/subscribe` | ✅ |
+| Subscriber 数据表 + 报告邮件 | ✅ |
+| tracker 自定义事件（cta_click、assessment_complete） | ✅ |
+| Cloudflare CDN | ⏳ 需 DNS 权限 |
+| 服务器升配 8G | ⏳ 需腾讯云审批 |
+| Hermes 迁出 | ⏳ 需决策 |
+| 付费测评 ¥9.9 | ⏳ 需支付接入 |
+
 
 | 维度 | P3 目标 | 预期影响 |
 |------|---------|----------|
