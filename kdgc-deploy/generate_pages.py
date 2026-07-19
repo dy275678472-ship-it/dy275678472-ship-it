@@ -10,6 +10,74 @@ from pathlib import Path
 ROOT = Path(__file__).parent
 DIST = ROOT / "frontend" / "dist"
 NEWS_CONTENT = ROOT / "content" / "news"
+IMG = DIST / "assets" / "images"
+
+
+def asset_url(rel: str, fallback: str | None = None) -> str:
+    """Prefer WebP when present under frontend/dist/assets/images/."""
+    rel = rel.lstrip("/")
+    if rel.startswith("assets/images/"):
+        rel = rel[len("assets/images/") :]
+    webp = IMG / Path(rel).with_suffix(".webp")
+    orig = IMG / rel
+    if webp.exists():
+        return f"/assets/images/{webp.relative_to(IMG).as_posix()}"
+    if orig.exists():
+        return f"/assets/images/{orig.relative_to(IMG).as_posix()}"
+    if fallback:
+        return asset_url(fallback) if not fallback.startswith("/") else fallback
+    return f"/assets/images/{rel}"
+
+
+def has_asset(rel: str) -> bool:
+    rel = rel.lstrip("/")
+    if rel.startswith("assets/images/"):
+        rel = rel[len("assets/images/") :]
+    return (IMG / rel).exists() or (IMG / Path(rel).with_suffix(".webp")).exists()
+
+
+def page_hero(title: str, subtitle: str = "", banner: str | None = None) -> str:
+    """Top banner; uses photo background when WebP/JPG asset exists."""
+    cls = "page-hero"
+    style = ""
+    if banner and has_asset(banner):
+        cls += " page-hero--photo"
+        url = asset_url(banner)
+        style = (
+            f' style="background-image:linear-gradient(105deg,rgba(7,20,38,.92) 0%,'
+            f"rgba(7,20,38,.75) 48%,rgba(7,20,38,.5) 100%),url('{url}');"
+            f'background-size:cover;background-position:center"'
+        )
+    sub = f"<p>{subtitle}</p>" if subtitle else ""
+    return f'<section class="{cls}"{style}><div class="container"><h1>{title}</h1>{sub}</div></section>'
+
+
+def contact_promises_html(lang: str = "zh") -> str:
+    items = (
+        [
+            ("contact/icon-response.png", "快速响应", "技术与商务咨询优先处理"),
+            ("contact/icon-24h.png", "7×24 响应", "客服时段 09:00–21:00，紧急需求全天候跟进"),
+            ("contact/icon-location.png", "合肥高新区", ADDRESS),
+        ]
+        if lang == "zh"
+        else [
+            ("contact/icon-response.png", "Fast response", "Technical & commercial inquiries prioritized"),
+            ("contact/icon-24h.png", "7×24 follow-up", "Support 09:00–21:00; urgent requests tracked around the clock"),
+            ("contact/icon-location.png", "Hefei Hi-tech Zone", ADDRESS_EN),
+        ]
+    )
+    cards = []
+    for img, title, desc in items:
+        icon = (
+            f'<img src="{asset_url(img)}" alt="" class="contact-promise-icon" width="48" height="48">'
+            if has_asset(img)
+            else '<span class="contact-promise-dot" aria-hidden="true"></span>'
+        )
+        cards.append(
+            f'<div class="contact-promise">{icon}<h3>{title}</h3><p>{desc}</p></div>'
+        )
+    return f'<div class="contact-promises">{"".join(cards)}</div>'
+
 
 BEIAN_ICP = "皖ICP备2021010166号"
 BEIAN_GA = "皖公网安备34019202001633号"
@@ -120,7 +188,7 @@ PRODUCTS = [
         "tagline_en": "O₂ partial pressure 0.5–101 kPa · Cable probe type",
         "summary": "氧压范围 0.5kPa–101kPa，与外部接口板配合工作，可测试空气、纯氧及氮氧混合气等气体的氧分压。",
         "summary_en": "Measures oxygen partial pressure from 0.5–101 kPa. Works with an external interface board / KD0100-03 controller for air, pure oxygen, and N₂/O₂ mixtures.",
-        "image": "/assets/images/products/kd0100-02s-t1.png",
+        "image": "products/kd0100-02s-t1.png",
         "advantages": [
             "氧压范围：0.5kPa–101kPa",
             "与外部接口板 / 配套控制器 KD0100-03 配合工作",
@@ -194,7 +262,7 @@ PRODUCTS = [
         "tagline_en": "O₂ partial pressure 0.5–101 kPa · Pin type · ≦5 g",
         "summary": "氧压范围 0.5kPa–101kPa，插针电气连接，探头重量 ≦5g，与配套控制器 KD0100-03 配合工作。",
         "summary_en": "Pin-header electrical connection, probe weight ≦5 g, O₂ range 0.5–101 kPa, paired with KD0100-03 controller.",
-        "image": "/assets/images/products/kd0100-02s-to.png",
+        "image": "products/kd0100-02s-to.png",
         "advantages": [
             "氧压范围：0.5kPa–101kPa",
             "轻量化插针结构，探头重量 ≦5g",
@@ -272,7 +340,7 @@ PRODUCTS = [
         "tagline_en": "Low-temperature VF oxygen sensor for pilot oxygen masks",
         "summary": "公司开发的战机飞行员面罩用低温型变频式氧传感器已试制成功，产品各项性能指标优异。",
         "summary_en": "A low-temperature variable-frequency oxygen sensor for fighter-pilot oxygen masks has been successfully prototyped with excellent performance metrics.",
-        "image": "/assets/images/products/mask-o2-sensor.png",
+        "image": "products/mask-o2-sensor.png",
         "advantages": [
             "面向航空面罩应用的低温型变频式氧传感器",
             "氧分压测量范围 0.5 ~ 101 kPa",
@@ -326,7 +394,7 @@ NEWS = [
     {
         "slug": "team-building-2022",
         "date": "2022-01-16",
-        "cover": "/assets/images/news/team-building-2022.jpg",
+        "cover": "news/team-building-2022.jpg",
         "title": "2022年1月国瓷团建户外活动！新年新气象！虎年虎虎生威！",
         "title_en": "ZK Guoci 2022 Outdoor Team Building — New Year, New Energy",
         "summary": "新年伊始，国瓷公司进行周末全员户外团建，增强部门协作与凝聚力。",
@@ -341,7 +409,7 @@ NEWS = [
     {
         "slug": "nox-sensor-market",
         "date": "2021-06-01",
-        "cover": "/assets/images/news/nox-sensor-market.png",
+        "cover": "news/nox-sensor-market.png",
         "title": "国内车用氮氧传感器市场超百亿元",
         "title_en": "China Automotive NOx Sensor Market Exceeds RMB 10 Billion",
         "summary": "气体传感器是机动车尾气后处理系统关键零部件，国Ⅵ排放标准下国内氮氧传感器市场空间超百亿元。",
@@ -359,7 +427,7 @@ NEWS = [
     {
         "slug": "understand-o2-sensor",
         "date": "2021-05-01",
-        "cover": "/assets/images/news/understand-o2-sensor.jpg",
+        "cover": "news/understand-o2-sensor.jpg",
         "title": "一文读懂氧传感器",
         "title_en": "Oxygen Sensors Explained",
         "summary": "从发动机故障灯到氧化锆/氧化钛氧传感器原理、结构、分类、检测与行业应用的完整科普。",
@@ -399,16 +467,16 @@ TEAM = [
 ]
 
 HONORS = [
-    {"title": "2022年度合肥高新区深科技企业", "img": "/assets/images/honors/deep-tech-2022.png", "desc": "合肥高新技术产业开发区管理委员会 · 2022年12月"},
-    {"title": "第十一届中国创新创业大赛安徽赛区合肥市赛三等奖", "img": "/assets/images/honors/innovation-2022.png", "desc": "初创企业组 · 合肥市科学技术局 · 2022年8月"},
-    {"title": "ISO 9001:2015 质量管理体系认证", "img": "/assets/images/honors/iso9001.png", "desc": "证书号 50322Q4558R0S · 覆盖氮氧传感器研发和生产"},
-    {"title": "发明专利：变频氧传感器", "img": "/assets/images/honors/patent-grant.png", "desc": "申请号 202110555297.8 · 国家知识产权局授予发明专利权通知书"},
-    {"title": "专利权人变更为中科国瓷", "img": "/assets/images/honors/patent-transfer.png", "desc": "变频氧传感器专利由中科大先进技术研究院变更为本公司"},
+    {"title": "2022年度合肥高新区深科技企业", "img": "honors/deep-tech-2022.png", "desc": "合肥高新技术产业开发区管理委员会 · 2022年12月"},
+    {"title": "第十一届中国创新创业大赛安徽赛区合肥市赛三等奖", "img": "honors/innovation-2022.png", "desc": "初创企业组 · 合肥市科学技术局 · 2022年8月"},
+    {"title": "ISO 9001:2015 质量管理体系认证", "img": "honors/iso9001.png", "desc": "证书号 50322Q4558R0S · 覆盖氮氧传感器研发和生产"},
+    {"title": "发明专利：变频氧传感器", "img": "honors/patent-grant.png", "desc": "申请号 202110555297.8 · 国家知识产权局授予发明专利权通知书"},
+    {"title": "专利权人变更为中科国瓷", "img": "honors/patent-transfer.png", "desc": "变频氧传感器专利由中科大先进技术研究院变更为本公司"},
 ]
 
 PARTNERS = [
-    {"name": "汇智新材料", "img": "/assets/images/partners/huizhi.png"},
-    {"name": "AMPRON", "img": "/assets/images/partners/ampron.png"},
+    {"name": "汇智新材料", "img": "partners/huizhi.png"},
+    {"name": "AMPRON", "img": "partners/ampron.png"},
 ]
 
 
@@ -424,9 +492,24 @@ def product_detail_html(p):
     if p["notes"]:
         notes = "<h3>注意事项</h3><ul>" + "".join(f"<li>{n}</li>" for n in p["notes"]) + "</ul>"
     adv = "".join(f"<li>{a}</li>" for a in p["advantages"])
-    return f"""<section class="page-hero"><div class="container"><h1>{p['name']}</h1><p>{p['tagline']}</p></div></section>
+    img = asset_url(p["image"])
+    extras = []
+    if has_asset("products/exploded.png") or has_asset("products/exploded.webp"):
+        extras.append(
+            f'<figure class="product-extra"><img src="{asset_url("products/exploded.png")}" alt="结构示意" loading="lazy">'
+            f"<figcaption>结构示意</figcaption></figure>"
+        )
+    if has_asset("products/controller-kd0100-03.png") or has_asset("products/controller-kd0100-03.webp"):
+        extras.append(
+            f'<figure class="product-extra"><img src="{asset_url("products/controller-kd0100-03.png")}" alt="配套控制器 KD0100-03" loading="lazy">'
+            f"<figcaption>配套控制器 KD0100-03</figcaption></figure>"
+        )
+    extras_html = (
+        f'<div class="product-extras">{"".join(extras)}</div>' if extras else ""
+    )
+    return f"""{page_hero(p["name"], p["tagline"], "products/banner.jpg")}
 <section><div class="container" style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start">
-<div><img src="{p['image']}" alt="{p['name']}" style="width:100%;border-radius:12px;background:#fff;border:1px solid var(--border)"></div>
+<div><img src="{img}" alt="{p['name']}" class="product-hero-img" loading="lazy">{extras_html}</div>
 <div class="content-block" style="margin:0">
 <p>{p['summary']}</p>
 <h3>产品优势</h3><ul>{adv}</ul>
@@ -449,22 +532,57 @@ def main():
     # Homepage
     prod_cards = "".join(
         f"""<a href="/products/{p['slug']}.html" class="card">
-<img src="{p['image']}" alt="{p['name']}" class="card-img" loading="lazy">
+<img src="{asset_url(p['image'])}" alt="{p['name']}" class="card-img card-img--product" loading="lazy">
 <div class="card-body"><h3>{p['name']}</h3><p>{p['tagline']}</p>
 <span class="tag">氧传感器</span></div></a>"""
         for p in PRODUCTS
     )
     news_cards = "".join(
         f"""<a href="/news/{n['slug']}.html" class="card news-card">
-<img src="{n['cover']}" alt="{n['title']}" class="card-img" loading="lazy">
+<img src="{asset_url(n['cover'])}" alt="{n['title']}" class="card-img" loading="lazy">
 <div class="card-body">
 <span class="tag">{n['date']}</span><h3>{n['title']}</h3><p>{n['summary']}</p></div></a>"""
         for n in NEWS
     )
+    hero_bg = ""
+    if has_asset("home/hero-oxygen-sensor.jpg") or has_asset("home/hero-oxygen-sensor.webp"):
+        hero_bg = f'style="background-image:linear-gradient(100deg,rgba(7,20,38,.88) 0%,rgba(7,20,38,.55) 45%,rgba(7,20,38,.35) 100%),url(\'{asset_url("home/hero-oxygen-sensor.jpg")}\');background-size:cover;background-position:center right"'
+
+    def scene_cards(lang: str = "zh") -> str:
+        rows = (
+            [
+                ("scenes/automotive.jpg", "车用尾气 / SCR", "/products/"),
+                ("scenes/aviation-mask.jpg", "航空面罩供氧监测", "/products/mask-o2-sensor.html"),
+                ("scenes/industrial-gas.jpg", "工业气体氧分压", "/products/kd0100-02s-t1.html"),
+            ]
+            if lang == "zh"
+            else [
+                ("scenes/automotive.jpg", "Automotive SCR / OBD", "/en/products.html"),
+                ("scenes/aviation-mask.jpg", "Aviation mask O₂ monitoring", "/en/products/mask-o2-sensor.html"),
+                ("scenes/industrial-gas.jpg", "Industrial O₂ partial pressure", "/en/products/kd0100-02s-t1.html"),
+            ]
+        )
+        cards = []
+        for key, title, href in rows:
+            if has_asset(key) or has_asset(key.replace(".jpg", ".webp")):
+                cards.append(
+                    f'<a href="{href}" class="card"><img src="{asset_url(key)}" alt="{title}" class="card-img" loading="lazy">'
+                    f'<div class="card-body"><h3>{title}</h3></div></a>'
+                )
+        return "".join(cards)
+
+    scenes_zh = scene_cards("zh")
+    scenes_html = (
+        f'<section style="background:var(--white)"><div class="container">'
+        f'<div class="section-header"><div class="section-label">Applications</div><h2>应用场景</h2></div>'
+        f'<div class="grid-3">{scenes_zh}</div></div></section>'
+        if scenes_zh
+        else ""
+    )
     pages["index.html"] = page(
         "中科国瓷 — 变频氧传感器与氮氧传感技术",
         "安徽中科国瓷新型元器件有限公司，专注变频氧传感器、氮氧传感器研发与生产。中科大技术转化，科技感知未来。",
-        f"""<section class="hero"><div class="hero-bg"></div><div class="hero-content">
+        f"""<section class="hero"><div class="hero-bg" {hero_bg}></div><div class="hero-content">
 <div class="hero-badge">中科大技术转化 · 科技感知未来</div>
 <h1>安徽中科国瓷<br><em>变频氧传感器</em>方案商</h1>
 <p>氧压范围 0.5–101 kPa · 车用 / 航空面罩 / 工业气体检测 · 产品承诺质保 5 年</p>
@@ -482,6 +600,7 @@ def main():
 <div class="section-header"><div class="section-label">Products</div><h2>产品中心</h2><p>探头型、插针型与面罩用氧传感器，完整规格与详情</p></div>
 <div class="grid-3">{prod_cards}</div>
 </div></section>
+{scenes_html}
 <section style="background:var(--white)"><div class="container">
 <div class="section-header"><div class="section-label">News</div><h2>新闻资讯</h2></div>
 <div class="grid-3">{news_cards}</div>
@@ -498,7 +617,7 @@ def main():
     pages["products/index.html"] = page(
         "产品中心 — 中科国瓷",
         "KD0100 系列氧气传感器探头/插针、面罩用氧传感器",
-        f"""<section class="page-hero"><div class="container"><h1>产品中心</h1><p>KD0100 系列探头 / 插针 · 面罩用氧传感器</p></div></section>
+        f"""{page_hero("产品中心", "KD0100 系列探头 / 插针 · 面罩用氧传感器", "products/banner.jpg")}
 <section><div class="container grid-3">{prod_cards}</div></section>""",
         "/products/",
     )
@@ -513,21 +632,33 @@ def main():
         items = "".join(f"<li>{i}</li>" for i in t["items"])
         team_html += f"""<div class="content-block"><h3>{t['name']} <span class="tag">{t['role']}</span></h3><ul>{items}</ul></div>"""
     honor_html = "".join(
-        f"""<a href="{h['img']}" target="_blank" class="card">
-<img src="{h['img']}" alt="{h['title']}" class="card-img" style="object-fit:contain;background:#f8fafc;padding:12px;height:240px">
+        f"""<a href="{asset_url(h['img'])}" target="_blank" class="card">
+<img src="{asset_url(h['img'])}" alt="{h['title']}" class="card-img" style="object-fit:contain;background:#f8fafc;padding:12px;height:240px" loading="lazy">
 <div class="card-body"><h3 style="font-size:15px">{h['title']}</h3><p>{h['desc']}</p></div></a>"""
         for h in HONORS
     )
     partner_html = "".join(
         f"""<div class="content-block" style="text-align:center;padding:24px">
-<img src="{p['img']}" alt="{p['name']}" style="max-height:80px;margin:0 auto 12px;object-fit:contain">
+<img src="{asset_url(p['img'])}" alt="{p['name']}" style="max-height:80px;margin:0 auto 12px;object-fit:contain" loading="lazy">
 <p>{p['name']}</p></div>"""
         for p in PARTNERS
     )
+    lab_block = ""
+    lab_imgs = []
+    for key, alt in [("about/lab-1.jpg", "研发环境"), ("about/lab-2.jpg", "实验室")]:
+        if has_asset(key):
+            lab_imgs.append(
+                f'<img src="{asset_url(key)}" alt="{alt}" class="about-lab-img" loading="lazy">'
+            )
+    if lab_imgs:
+        lab_block = (
+            '<h2 style="margin:40px 0 16px">研发环境</h2>'
+            f'<div class="about-lab-grid">{"".join(lab_imgs)}</div>'
+        )
     pages["about/index.html"] = page(
         "关于中科国瓷 — 中科国瓷",
         "安徽中科国瓷新型元器件有限公司：首席科学家、总经理、总工程师团队介绍，荣誉资质与合作伙伴。",
-        f"""<section class="page-hero"><div class="container"><h1>关于中科国瓷</h1><p>科技感知未来 · 中科大技术转化平台</p></div></section>
+        f"""{page_hero("关于中科国瓷", "科技感知未来 · 中科大技术转化平台", "about/banner-about.jpg")}
 <section><div class="container">
 <div class="content-block">
 <p>安徽中科国瓷新型元器件有限公司聚焦变频氧传感器、氮氧传感器的研发与生产，统一社会信用代码 91340100MA8LLE5K9H。公司地址位于中国（安徽）自由贸易试验区合肥市高新区望江西路 5089 号嵌入式研发楼 103-C3。</p>
@@ -535,6 +666,7 @@ def main():
 </div>
 <h2 style="margin:32px 0 16px">核心团队</h2>
 {team_html}
+{lab_block}
 <h2 style="margin:40px 0 16px">荣誉资质</h2>
 <div class="grid-3">{honor_html}</div>
 <h2 style="margin:40px 0 16px">合作伙伴</h2>
@@ -547,7 +679,7 @@ def main():
     # News
     news_list = "".join(
         f"""<a href="/news/{n['slug']}.html" class="news-list-item">
-<img src="{n['cover']}" alt="{n['title']}" class="news-list-cover" loading="lazy">
+<img src="{asset_url(n['cover'])}" alt="{n['title']}" class="news-list-cover" loading="lazy">
 <div class="news-list-body">
 <span class="tag">{n['date']}</span>
 <h3>{n['title']}</h3>
@@ -559,7 +691,7 @@ def main():
     pages["news/index.html"] = page(
         "新闻资讯 — 中科国瓷",
         "中科国瓷新闻资讯：团建活动、氮氧传感器市场、氧传感器科普",
-        f"""<section class="page-hero"><div class="container"><h1>新闻资讯</h1><p>公司动态 · 行业观察 · 技术科普</p></div></section>
+        f"""{page_hero("新闻资讯", "公司动态 · 行业观察 · 技术科普", "news/banner.jpg")}
 <section><div class="container news-list">{news_list}</div></section>""",
         "/news/",
     )
@@ -574,7 +706,7 @@ def main():
 <p class="article-deck">{n['summary']}</p>
 </div></section>
 <section class="article-section"><div class="container article-layout">
-<figure class="article-cover"><img src="{n['cover']}" alt="{n['title']}"></figure>
+<figure class="article-cover"><img src="{asset_url(n['cover'])}" alt="{n['title']}"></figure>
 <div class="article-body content-block">{n['body']}
 <p class="article-back"><a href="/news/">← 返回新闻列表</a>
 <a href="/contact/" class="btn btn-primary" style="margin-left:12px">咨询选型</a></p>
@@ -584,18 +716,27 @@ def main():
         )
 
     # Contact
+    campus_html = ""
+    if has_asset("contact/campus.jpg") or has_asset("contact/campus.webp"):
+        campus_html = (
+            f'<figure class="contact-campus"><img src="{asset_url("contact/campus.jpg")}" '
+            f'alt="中科国瓷园区" loading="lazy"><figcaption>合肥高新区 · 望江西路园区</figcaption></figure>'
+        )
+    wechat_src = asset_url("wechat-qr.png")
     pages["contact/index.html"] = page(
         "联系我们 — 中科国瓷",
         f"联系中科国瓷：{PHONE_DISPLAY} {EMAIL} {ADDRESS}",
-        f"""<section class="page-hero"><div class="container"><h1>联系我们</h1><p>科技感知未来 · 快速响应</p></div></section>
-<section><div class="container" style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+        f"""{page_hero("联系我们", "科技感知未来 · 快速响应", "contact/banner.jpg")}
+<section class="contact-promises-section"><div class="container">{contact_promises_html("zh")}</div></section>
+<section><div class="container contact-layout">
 <div class="content-block">
 <h2>联系方式</h2>
 <p><strong>邮箱</strong><br><a href="mailto:{EMAIL}">{EMAIL}</a></p>
 <p style="margin-top:12px"><strong>电话</strong><br><a href="tel:{PHONE}">{PHONE_DISPLAY}</a></p>
 <p style="margin-top:12px"><strong>地址</strong><br>{ADDRESS}</p>
 <p style="margin-top:12px"><strong>{HOURS}</strong><br>我们提供 7×24 小时的全天候响应速度，随时随地为您服务。</p>
-<img src="/assets/images/wechat-qr.png" alt="微信二维码" style="max-width:160px;margin-top:16px">
+<img src="{wechat_src}" alt="微信二维码" class="contact-wechat" width="160" height="160">
+{campus_html}
 </div>
 <form id="lead-form" class="form-box">
 <div class="form-hp"><input name="website" tabindex="-1" autocomplete="off"></div>
@@ -613,24 +754,24 @@ def main():
 <button type="submit" class="btn btn-primary" style="width:100%">提交咨询</button>
 <div class="form-msg"></div>
 </form>
-</div></section>
-<style>@media(max-width:800px){{section .container[style*="grid-template"]{{display:block!important}}}}</style>""",
+</div></section>""",
         "/contact/",
     )
 
     pages["en/contact.html"] = page(
         "Contact — ZK Guoci",
         f"Contact ZK Guoci: {PHONE_DISPLAY} {EMAIL} {ADDRESS_EN}",
-        f"""<section class="page-hero"><div class="container"><h1>Contact Us</h1>
-<p>Sensing the future · Fast response</p></div></section>
-<section><div class="container" style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+        f"""{page_hero("Contact Us", "Sensing the future · Fast response", "contact/banner.jpg")}
+<section class="contact-promises-section"><div class="container">{contact_promises_html("en")}</div></section>
+<section><div class="container contact-layout">
 <div class="content-block">
 <h2>Contact details</h2>
 <p><strong>Email</strong><br><a href="mailto:{EMAIL}">{EMAIL}</a></p>
 <p style="margin-top:12px"><strong>Phone</strong><br><a href="tel:{PHONE}">{PHONE_DISPLAY}</a></p>
 <p style="margin-top:12px"><strong>Address</strong><br>{ADDRESS_EN}</p>
 <p style="margin-top:12px"><strong>{HOURS_EN}</strong><br>We provide 7×24 response for technical and commercial inquiries.</p>
-<img src="/assets/images/wechat-qr.png" alt="WeChat QR" style="max-width:160px;margin-top:16px">
+<img src="{wechat_src}" alt="WeChat QR" class="contact-wechat" width="160" height="160">
+{campus_html}
 </div>
 <form id="lead-form" class="form-box">
 <div class="form-hp"><input name="website" tabindex="-1" autocomplete="off"></div>
@@ -648,8 +789,7 @@ def main():
 <button type="submit" class="btn btn-primary" style="width:100%">Submit inquiry</button>
 <div class="form-msg"></div>
 </form>
-</div></section>
-<style>@media(max-width:800px){{section .container[style*="grid-template"]{{display:block!important}}}}</style>""",
+</div></section>""",
         "/en/contact.html",
         lang="en",
     )
@@ -801,24 +941,32 @@ def main():
     # —— English site (full content) ——
     en_prod_cards = "".join(
         f"""<a href="/en/products/{p['slug']}.html" class="card">
-<img src="{p['image']}" alt="{p['name_en']}" class="card-img" loading="lazy">
+<img src="{asset_url(p['image'])}" alt="{p['name_en']}" class="card-img card-img--product" loading="lazy">
 <div class="card-body"><h3>{p['name_en']}</h3><p>{p['tagline_en']}</p>
 <span class="tag">Oxygen sensor</span></div></a>"""
         for p in PRODUCTS
     )
     en_news_cards = "".join(
         f"""<a href="/news/{n['slug']}.html" class="card news-card">
-<img src="{n['cover']}" alt="{n['title_en']}" class="card-img" loading="lazy">
+<img src="{asset_url(n['cover'])}" alt="{n['title_en']}" class="card-img" loading="lazy">
 <div class="card-body">
 <span class="tag">{n['date']}</span><h3>{n['title_en']}</h3><p>{n['summary_en']}</p>
 <p style="font-size:13px;color:var(--muted);margin:0">Full article in Chinese →</p></div></a>"""
         for n in NEWS
     )
+    scenes_en = scene_cards("en")
+    en_scenes_html = (
+        f'<section style="background:var(--white)"><div class="container">'
+        f'<div class="section-header"><div class="section-label">Applications</div><h2>Applications</h2></div>'
+        f'<div class="grid-3">{scenes_en}</div></div></section>'
+        if scenes_en
+        else ""
+    )
 
     pages["en/index.html"] = page(
         "ZK Guoci — Variable-Frequency Oxygen Sensors",
         "Anhui ZK Guoci New Components Co., Ltd. — variable-frequency oxygen sensors and NOx sensing technology. USTC tech transfer.",
-        f"""<section class="hero"><div class="hero-bg"></div><div class="hero-content">
+        f"""<section class="hero"><div class="hero-bg" {hero_bg}></div><div class="hero-content">
 <div class="hero-badge">USTC Tech Transfer · Sensing the Future</div>
 <h1>Anhui ZK Guoci<br><em>Variable-Frequency Oxygen Sensors</em></h1>
 <p>0.5–101 kPa · Automotive / Aviation mask / Industrial gas · 5-year warranty</p>
@@ -837,6 +985,7 @@ def main():
 <p>Probe, pin, and mask oxygen sensors with full specifications</p></div>
 <div class="grid-3">{en_prod_cards}</div>
 </div></section>
+{en_scenes_html}
 <section style="background:var(--white)"><div class="container">
 <div class="section-header"><div class="section-label">News</div><h2>News &amp; Insights</h2></div>
 <div class="grid-3">{en_news_cards}</div>
@@ -853,8 +1002,7 @@ def main():
     pages["en/products.html"] = page(
         "Products — ZK Guoci",
         "KD0100 probe/pin oxygen sensors and aviation mask oxygen sensors",
-        f"""<section class="page-hero"><div class="container"><h1>Product Center</h1>
-<p>KD0100 probe / pin series · Aviation mask oxygen sensors</p></div></section>
+        f"""{page_hero("Product Center", "KD0100 probe / pin series · Aviation mask oxygen sensors", "products/banner.jpg")}
 <section><div class="container grid-3">{en_prod_cards}</div></section>""",
         "/en/products.html",
         lang="en",
@@ -875,9 +1023,9 @@ def main():
         pages[f"en/products/{p['slug']}.html"] = page(
             f"{p['name_en']} — ZK Guoci",
             p["summary_en"],
-            f"""<section class="page-hero"><div class="container"><h1>{p['name_en']}</h1><p>{p['tagline_en']}</p></div></section>
+            f"""{page_hero(p["name_en"], p["tagline_en"], "products/banner.jpg")}
 <section><div class="container" style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start">
-<div><img src="{p['image']}" alt="{p['name_en']}" style="width:100%;border-radius:12px;background:#fff;border:1px solid var(--border)"></div>
+<div><img src="{asset_url(p['image'])}" alt="{p['name_en']}" class="product-hero-img" loading="lazy"></div>
 <div class="content-block" style="margin:0">
 <p>{p['summary_en']}</p>
 <h3>Advantages</h3><ul>{adv}</ul>
@@ -918,22 +1066,21 @@ def main():
         team_en_html += f"""<div class="content-block"><h3>{name} <span class="tag">{role}</span></h3>
 <ul>{''.join(f'<li>{i}</li>' for i in items)}</ul></div>"""
     honor_en = "".join(
-        f"""<a href="{h['img']}" target="_blank" class="card">
-<img src="{h['img']}" alt="{h['title']}" class="card-img" style="object-fit:contain;background:#f8fafc;padding:12px;height:240px">
+        f"""<a href="{asset_url(h['img'])}" target="_blank" class="card">
+<img src="{asset_url(h['img'])}" alt="{h['title']}" class="card-img" style="object-fit:contain;background:#f8fafc;padding:12px;height:240px" loading="lazy">
 <div class="card-body"><h3 style="font-size:15px">{h['title']}</h3><p>{h['desc']}</p></div></a>"""
         for h in HONORS
     )
     partner_en = "".join(
         f"""<div class="content-block" style="text-align:center;padding:24px">
-<img src="{p['img']}" alt="{p['name']}" style="max-height:80px;margin:0 auto 12px;object-fit:contain">
+<img src="{asset_url(p['img'])}" alt="{p['name']}" style="max-height:80px;margin:0 auto 12px;object-fit:contain" loading="lazy">
 <p>{p['name']}</p></div>"""
         for p in PARTNERS
     )
     pages["en/about.html"] = page(
         "About ZK Guoci — Oxygen Sensors",
         "Anhui ZK Guoci leadership, certifications, partners, and contact.",
-        f"""<section class="page-hero"><div class="container"><h1>About ZK Guoci</h1>
-<p>Sensing the future · USTC technology transfer</p></div></section>
+        f"""{page_hero("About ZK Guoci", "Sensing the future · USTC technology transfer", "about/banner-about.jpg")}
 <section><div class="container">
 <div class="content-block">
 <p>Anhui ZK Guoci New Components Co., Ltd. focuses on R&amp;D and production of variable-frequency oxygen sensors and NOx-related sensing technologies. Unified Social Credit Code: 91340100MA8LLE5K9H.</p>
@@ -942,6 +1089,7 @@ def main():
 </div>
 <h2 style="margin:32px 0 16px">Leadership</h2>
 {team_en_html}
+{lab_block}
 <h2 style="margin:40px 0 16px">Honors &amp; Certifications</h2>
 <div class="grid-3">{honor_en}</div>
 <h2 style="margin:40px 0 16px">Partners</h2>
@@ -955,11 +1103,10 @@ def main():
     pages["en/news.html"] = page(
         "News — ZK Guoci",
         "ZK Guoci news: team building, NOx sensor market, oxygen sensor primer",
-        f"""<section class="page-hero"><div class="container"><h1>News &amp; Insights</h1>
-<p>Company updates · Industry notes · Technical primers</p></div></section>
+        f"""{page_hero("News &amp; Insights", "Company updates · Industry notes · Technical primers", "news/banner.jpg")}
 <section><div class="container news-list">{"".join(
             f"""<a href="/news/{n['slug']}.html" class="news-list-item">
-<img src="{n['cover']}" alt="{n['title_en']}" class="news-list-cover" loading="lazy">
+<img src="{asset_url(n['cover'])}" alt="{n['title_en']}" class="news-list-cover" loading="lazy">
 <div class="news-list-body">
 <span class="tag">{n['date']}</span>
 <h3>{n['title_en']}</h3>
