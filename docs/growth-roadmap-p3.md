@@ -17,6 +17,13 @@
 | 测评邮件收集 `/api/subscribe` | ✅ |
 | Subscriber 数据表 + 报告邮件 | ✅ |
 | tracker 自定义事件（cta_click、assessment_complete） | ✅ |
+| IndexNow 密钥修复 + 80 URL 提交 | ✅ |
+| Quiz schema（测评页） | ✅ |
+| 爱发电 CTA（测评结果页） | ✅ |
+| cosgo 交叉推广横幅 | ✅ |
+| blog_read_50pct 滚动埋点 | ✅ |
+| 每日数据库备份 cron | ✅ |
+| after2am 3003 内网化 | ✅ |
 | Cloudflare CDN | ⏳ 需 DNS 权限 |
 | 服务器升配 8G | ⏳ 需腾讯云审批 |
 | Hermes 迁出 | ⏳ 需决策 |

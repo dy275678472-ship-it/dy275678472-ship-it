@@ -311,8 +311,12 @@ ssh ubuntu@43.128.145.79 'python3 /tmp/seoul-p2-optimize.py'
 | 测评邮件收集 + Subscriber 表 | ✅ |
 | Article / FAQ 结构化数据 | ✅ |
 | BlogCta + tracker 事件 | ✅ |
+| IndexNow 密钥 + 批量提交 | ✅ |
+| Quiz schema + 爱发电 CTA | ✅ |
+| cosgo 交叉推广 + 滚动埋点 | ✅ |
+| 每日备份 cron + after2am 内网化 | ✅ |
 
-部署：`scripts/zhenxi-p3-growth.py`
+部署：`scripts/zhenxi-p3-growth.py` · `scripts/zhenxi-p3-phase2.py`
 
 ### 待用户决策（P3 剩余）
 
