@@ -1,0 +1,6 @@
+# Never commit private SSH keys
+.ssh-keys/**/shanghai_a_deploy
+.ssh-keys/**/seoul_deploy
+*.pem
+id_rsa
+id_ed25519
