@@ -590,12 +590,24 @@ def main():
 <a href="/products/" class="btn btn-primary">进入产品中心</a>
 <a href="/contact/" class="btn btn-ghost">联系我们</a>
 </div></div></section>
-<div class="trust-bar"><div class="container trust-items">
-<span><strong>ISO 9001</strong> 氮氧传感器研发生产</span>
-<span><strong>发明专利</strong> 变频氧传感器</span>
-<span><strong>深科技企业</strong> 合肥高新区 2022</span>
-<span><strong>质保 5 年</strong> 诚信为本</span>
-</div></div>
+{"".join([
+'<div class="trust-bar"><div class="container trust-items">',
+*[
+    (
+        f'<span class="trust-item"><img src="{asset_url(ic)}" alt="" class="trust-icon" width="28" height="28" loading="lazy">'
+        f"<span><strong>{label}</strong> {desc}</span></span>"
+        if has_asset(ic)
+        else f"<span><strong>{label}</strong> {desc}</span>"
+    )
+    for ic, label, desc in [
+        ("home/icon-iso.png", "ISO 9001", "氮氧传感器研发生产"),
+        ("home/icon-patent.png", "发明专利", "变频氧传感器"),
+        ("home/icon-deeptech.png", "深科技企业", "合肥高新区 2022"),
+        ("home/icon-warranty.png", "质保 5 年", "诚信为本"),
+    ]
+],
+"</div></div>",
+])}
 <section><div class="container">
 <div class="section-header"><div class="section-label">Products</div><h2>产品中心</h2><p>探头型、插针型与面罩用氧传感器，完整规格与详情</p></div>
 <div class="grid-3">{prod_cards}</div>
@@ -627,10 +639,21 @@ def main():
         )
 
     # About
+    team_img_map = {
+        "首席科学家": "about/team-scientist.jpg",
+        "总经理": "about/team-gm.jpg",
+        "总工程师": "about/team-cto.jpg",
+    }
     team_html = ""
     for t in TEAM:
         items = "".join(f"<li>{i}</li>" for i in t["items"])
-        team_html += f"""<div class="content-block"><h3>{t['name']} <span class="tag">{t['role']}</span></h3><ul>{items}</ul></div>"""
+        img_rel = team_img_map.get(t["role"], "")
+        img_html = (
+            f'<img src="{asset_url(img_rel)}" alt="{t["name"]}" class="team-photo" loading="lazy">'
+            if img_rel and has_asset(img_rel)
+            else ""
+        )
+        team_html += f"""<div class="content-block team-card">{img_html}<div><h3>{t['name']} <span class="tag">{t['role']}</span></h3><ul>{items}</ul></div></div>"""
     honor_html = "".join(
         f"""<a href="{asset_url(h['img'])}" target="_blank" class="card">
 <img src="{asset_url(h['img'])}" alt="{h['title']}" class="card-img" style="object-fit:contain;background:#f8fafc;padding:12px;height:240px" loading="lazy">
@@ -974,12 +997,24 @@ def main():
 <a href="/en/products.html" class="btn btn-primary">Product Center</a>
 <a href="/en/contact.html" class="btn btn-ghost">Contact Us</a>
 </div></div></section>
-<div class="trust-bar"><div class="container trust-items">
-<span><strong>ISO 9001</strong> NOx sensor R&amp;D &amp; production</span>
-<span><strong>Patent</strong> Variable-frequency O₂ sensor</span>
-<span><strong>Deep Tech</strong> Hefei High-tech Zone 2022</span>
-<span><strong>5-year</strong> product warranty</span>
-</div></div>
+{"".join([
+'<div class="trust-bar"><div class="container trust-items">',
+*[
+    (
+        f'<span class="trust-item"><img src="{asset_url(ic)}" alt="" class="trust-icon" width="28" height="28" loading="lazy">'
+        f"<span><strong>{label}</strong> {desc}</span></span>"
+        if has_asset(ic)
+        else f"<span><strong>{label}</strong> {desc}</span>"
+    )
+    for ic, label, desc in [
+        ("home/icon-iso.png", "ISO 9001", "NOx sensor R&amp;D &amp; production"),
+        ("home/icon-patent.png", "Patent", "Variable-frequency O₂ sensor"),
+        ("home/icon-deeptech.png", "Deep Tech", "Hefei High-tech Zone 2022"),
+        ("home/icon-warranty.png", "5-year", "product warranty"),
+    ]
+],
+"</div></div>",
+])}
 <section><div class="container">
 <div class="section-header"><div class="section-label">Products</div><h2>Product Center</h2>
 <p>Probe, pin, and mask oxygen sensors with full specifications</p></div>
@@ -1061,10 +1096,21 @@ def main():
             "Former Deputy Chief Designer on a major aerospace program at CETC 38th Institute; long experience in defense product R&D and program management",
         ]),
     ]
+    team_en_img = {
+        "Chief Scientist": "about/team-scientist.jpg",
+        "General Manager": "about/team-gm.jpg",
+        "Chief Engineer": "about/team-cto.jpg",
+    }
     team_en_html = ""
     for name, role, items in team_en:
-        team_en_html += f"""<div class="content-block"><h3>{name} <span class="tag">{role}</span></h3>
-<ul>{''.join(f'<li>{i}</li>' for i in items)}</ul></div>"""
+        img_rel = team_en_img.get(role, "")
+        img_html = (
+            f'<img src="{asset_url(img_rel)}" alt="{name}" class="team-photo" loading="lazy">'
+            if img_rel and has_asset(img_rel)
+            else ""
+        )
+        team_en_html += f"""<div class="content-block team-card">{img_html}<div><h3>{name} <span class="tag">{role}</span></h3>
+<ul>{''.join(f'<li>{i}</li>' for i in items)}</ul></div></div>"""
     honor_en = "".join(
         f"""<a href="{asset_url(h['img'])}" target="_blank" class="card">
 <img src="{asset_url(h['img'])}" alt="{h['title']}" class="card-img" style="object-fit:contain;background:#f8fafc;padding:12px;height:240px" loading="lazy">
