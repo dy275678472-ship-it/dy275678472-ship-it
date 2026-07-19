@@ -1,27 +1,67 @@
 <!DOCTYPE html>
 <html lang="zh-CN"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>客户案例 — 中科国瓷</title><meta name="description" content="半导体封装、新能源电控陶瓷基板成功案例">
+<title>产品案例建设方案 — 中科国瓷</title><meta name="description" content="中科国瓷产品案例栏目完整建设方案：结构、素材、模板与上线节奏">
 <link rel="canonical" href="https://kdgc.cc/cases/"><link rel="stylesheet" href="/assets/css/style.css">
+<link rel="icon" href="/assets/images/favicon.ico">
 </head><body><nav class="nav"><div class="nav-inner">
-<a href="/" class="nav-logo">中科<span>国瓷</span><span class="nav-tagline">半导体级陶瓷基板</span></a>
+<a href="/" class="nav-logo"><img src="/assets/images/logo.png" alt="中科国瓷" style="height:36px;width:auto">中科<span>国瓷</span><span class="nav-tagline">科技感知未来</span></a>
 <div class="nav-links">
-<a href="/products/">产品</a><a href="/technology/">技术</a><a href="/applications/">应用</a>
-<a href="/cases/">案例</a><a href="/about/">关于</a><a href="/news/">新闻</a><a href="/knowledge/">知识库</a>
+<a href="/about/">关于中科国瓷</a>
+<a href="/products/">产品中心</a>
+<a href="/news/">新闻资讯</a>
+<a href="/knowledge/">知识库</a>
+<a href="/cases/">产品案例</a>
 <a href="/en/" style="opacity:.8">EN</a>
-<a href="/contact/" class="nav-cta">获取方案</a>
+<a href="/contact/" class="nav-cta">联系我们</a>
 </div>
 <button class="menu-toggle" aria-label="菜单">☰</button>
-</div></nav><main><section class="page-hero"><div class="container"><h1>客户案例</h1></div></section>
-<section><div class="container grid-3" id="cases-list">
-<a href="/cases/semiconductor-packaging.html" class="card"><div class="card-body"><span class="tag">semiconductor</span><h3>半导体 IGBT 模块散热方案</h3><p>热阻降低 35%，通过 1000 小时老化测试。</p></div></a>
-<a href="/cases/ev-power-module.html" class="card"><div class="card-body"><span class="tag">ev</span><h3>新能源汽车电控 Tier1</h3><p>通过车规级测试，进入小批量供货。</p></div></a>
-</div></section>
-<script>fetch('/api/cases').then(r=>r.json()).then(items=>{if(!items.length)return;document.getElementById('cases-list').innerHTML=items.map(c=>`<a href="/cases/${c.slug}.html" class="card"><div class="card-body"><span class="tag">${c.industry}</span><h3>${c.title}</h3><p>${c.challenge}</p></div></a>`).join('')}).catch(()=>{});</script></main><footer><div class="footer-grid container" style="padding:0">
-<div><h4>中科国瓷</h4><p style="font-size:14px;margin-top:8px">高导热陶瓷基板与电子陶瓷材料方案商</p></div>
-<div><h4>产品</h4><a href="/products/aln-substrate.html">氮化铝基板</a><a href="/products/dbc-amb.html">DBC/AMB基板</a><a href="/products/alumina.html">氧化铝陶瓷</a></div>
-<div><h4>公司</h4><a href="/about/">关于我们</a><a href="/news/">新闻</a><a href="/knowledge/">知识库</a><a href="/contact/">联系</a></div>
-<div><h4>联系</h4><a href="mailto:guanwn@kdgc.cc">guanwn@kdgc.cc</a><br><a href="tel:15385884309">153-8588-4309</a></div>
+</div></nav><main><section class="page-hero"><div class="container"><h1>产品案例建设方案</h1><p>当前案例过简；以下为可执行的完整建设方案</p></div></section>
+<section><div class="container content-block">
+<h2>一、问题诊断</h2>
+<p>现有案例仅少量文字、无现场图/产品图、缺量化结果与客户场景，无法支撑 B2B 信任转化。官网 www.kdgc.cc 亦未单独开设案例库，本站需新建高质量案例栏目，而不是继续用占位文案。</p>
+<h2>二、案例页标准结构（每篇必须具备）</h2>
+<ol>
+<li><strong>封面图</strong>：产品实拍或应用场景图（≥1200px）</li>
+<li><strong>客户与行业</strong>：可脱敏（如「某航空配套单位」「某柴油机后处理 Tier1」）</li>
+<li><strong>挑战</strong>：工况温度、量程、响应时间、可靠性/体积约束</li>
+<li><strong>方案</strong>：选用哪款传感器 + 控制器 + 电气/机械接口要点</li>
+<li><strong>实施</strong>：打样→标定→小批→量产节点（含时间）</li>
+<li><strong>结果</strong>：至少 2 个量化指标（精度、响应、失效率、供货周期等）</li>
+<li><strong>产品入口</strong>：链到对应产品详情 + 咨询 CTA</li>
+</ol>
+<h2>三、首批建议案例（需业务方确认素材）</h2>
+<table>
+<tr><th>案例</th><th>对应产品</th><th>需补充素材</th></tr>
+<tr><td>航空面罩供氧监测试制项目</td><td>面罩用氧传感器</td><td>试制照片、性能对比表、节点时间</td></tr>
+<tr><td>工业气体氧分压在线监测</td><td>KD0100-02S-T1</td><td>安装位置图、量程工况、精度验收</td></tr>
+<tr><td>紧凑型设备插针式集成</td><td>KD0100-02S-TO</td><td>结构尺寸、重量优势、接线定义</td></tr>
+<tr><td>柴油机 SCR / OBD 气体传感配套（规划）</td><td>氮氧/氧传感路线</td><td>客户许可、台架数据、排放相关指标</td></tr>
+</table>
+<h2>四、视觉与交互</h2>
+<ul>
+<li>列表：左图右文卡片，行业标签 + 关键结果数字</li>
+<li>详情：顶部大图 + sticky「咨询同款方案」；中部挑战/方案/结果三栏；底部相关产品</li>
+<li>禁止纯文字无图上线；无客户授权时使用自有实验室/产品图并标注「示意」</li>
+</ul>
+<h2>五、生产流程</h2>
+<p>销售/项目经理提交《案例采集表》→ 技术审核参数 → 市场撰写 → 法务脱敏 → 上线。每月至少新增 1 篇；季度复盘转化（案例页 → 咨询表单）。</p>
+<h2>六、近期交付</h2>
+<p>在业务方提供 1 组真实项目素材后，48 小时内按本模板上线首个完整案例页，并替换本规划页为正式案例列表。</p>
+</div></section></main><footer><div class="footer-grid container" style="padding:0">
+<div><h4>中科国瓷</h4><p style="font-size:14px;margin-top:8px">变频氧传感器与氮氧传感技术 · 中科大技术转化</p>
+<p style="font-size:13px;margin-top:8px;opacity:.8">恪守诚信为本，产品承诺质保 5 年</p></div>
+<div><h4>产品</h4>
+<a href="/products/kd0100-02s-t1.html">KD0100-02S-T1 探头</a>
+<a href="/products/kd0100-02s-to.html">KD0100-02S-TO 插针</a>
+<a href="/products/mask-o2-sensor.html">面罩用氧传感器</a></div>
+<div><h4>公司</h4><a href="/about/">关于中科国瓷</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">产品案例</a><a href="/contact/">联系我们</a></div>
+<div><h4>联系</h4><a href="mailto:guanwn@kdgc.cc">guanwn@kdgc.cc</a><br>
+<a href="tel:15385884309">153-8588-4309</a>
+<p style="font-size:13px;margin-top:8px">安徽省合肥市高新区望江西路5089号嵌入式研发楼103-C3（科大先研院-智源楼）</p></div>
 </div>
-<div class="footer-bottom">© 2026 安徽中科国瓷新型元器件有限公司 · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">皖ICP备2021010166号-1</a> · <a href="/en/">English</a></div></footer>
+<div class="footer-bottom">© 2026 安徽中科国瓷新型元器件有限公司 ·
+<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">皖ICP备2021010166号</a> ·
+<a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=34019202001633" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="" style="height:14px;display:inline;vertical-align:middle;margin-right:4px">皖公网安备34019202001633号</a> ·
+<a href="/en/">English</a></div></footer>
 <script src="/assets/js/main.js"></script></body></html>
