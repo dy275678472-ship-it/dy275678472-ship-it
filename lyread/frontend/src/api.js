@@ -65,7 +65,11 @@ export const storyApi = {
 }
 
 export const casesApi = {
-  list(limit = 20) { return request(`/api/cases?limit=${limit}`) },
+  list(limit = 20, category) {
+    const q = new URLSearchParams({ limit: String(limit) })
+    if (category) q.set('category', category)
+    return request(`/api/cases?${q}`)
+  },
   get(id) { return request(`/api/cases/${id}`) },
 }
 

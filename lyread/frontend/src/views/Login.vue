@@ -11,6 +11,8 @@
         <span class="logo-text">LyRead</span>
       </div>
       <p class="subtitle">AI小说创作引擎</p>
+      <p v-if="showRegister" class="bonus-hint">新用户注册即送 30 点创作额度</p>
+      <p v-else-if="!showForgot && !showReset" class="bonus-hint muted">还没有账号？注册即可领取 30 点试用</p>
       
       <!-- 注册表单 -->
       <form v-if="showRegister" @submit.prevent="handleRegister">
@@ -42,7 +44,7 @@
           required
         />
         <button type="submit" class="btn btn-primary" :disabled="loading">
-          {{ loading ? '注册中...' : '注册' }}
+          {{ loading ? '注册中...' : '注册，送 30 点' }}
         </button>
       </form>
 
@@ -89,7 +91,7 @@
       
       <div class="footer" v-if="!showForgot && !showReset">
         <a href="#" @click.prevent="toggleMode">
-          {{ showRegister ? '已有账号？登录' : '没有账号？注册' }}
+          {{ showRegister ? '已有账号？登录' : '没有账号？注册送 30 点' }}
         </a>
         <span class="divider">|</span>
         <a href="#" @click.prevent="showForgot = true">忘记密码</a>
@@ -147,12 +149,16 @@ const form = reactive({
 })
 
 const toggleMode = () => {
-  showRegister.value = !showRegister.value
+  const nextRegister = !showRegister.value
+  showRegister.value = nextRegister
   showForgot.value = false
   showReset.value = false
   error.value = ''
   success.value = ''
   resetPathHint.value = ''
+  if (nextRegister) {
+    trackEvent('register_cta_click', { category: 'funnel', label: 'login_toggle' })
+  }
 }
 
 const handleForgot = async () => {
@@ -393,7 +399,23 @@ const handleRegister = async () => {
 .login-card .subtitle {
   color: var(--lyread-text-secondary);
   font-size: 15px;
-  margin-bottom: 40px;
+  margin-bottom: 12px;
+}
+.bonus-hint {
+  font-size: 13px;
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(147, 197, 253, 0.7);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin: 0 0 28px;
+  font-weight: 500;
+}
+.bonus-hint.muted {
+  color: #5a6a7a;
+  background: #f8fafc;
+  border-color: #e8f0fa;
+  font-weight: 400;
 }
 .forgot-hint {
   font-size: 13px;
