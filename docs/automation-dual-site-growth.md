@@ -9,14 +9,14 @@
 
 | 字段 | 建议值 |
 |------|--------|
-| **任务名称** | 双站持续优化：中科国瓷 + esnlink |
-| **触发频率** | 每周 1 次（建议周一 09:00 CST）；重大上线后加跑 1 次 |
+| **任务名称** | 双站每小时巡检+优化：中科国瓷 + esnlink |
+| **触发频率** | **每小时 1 次** — Cron `0 * * * *`（UTC 整点）；任务清单见 `docs/automation-hourly-task-queue.md` |
 | **仓库** | `github.com/dy275678472-ship-it/dy275678472-ship-it` |
 | **默认分支** | `main`（工作时从 main 拉取，分别切到各站 feature 分支） |
 | **工作分支** | `cursor/kdgc-full-deploy-3bd2`（中科国瓷）、`cursor/esnlink-growth-p0-3bd2`（esnlink） |
 | **服务器** | 腾讯云上海 `150.158.42.39`，用户 `ubuntu` |
 | **SSH 密钥** | `.ssh-keys/shanghai-a/shanghai_a_deploy` |
-| **单次目标** | 每站至少完成 1 项可验证改进 + 回归通过 + 部署 + 简短报告 |
+| **单次目标** | 两站巡检 PASS/FAIL + 当前 UTC 小时槽位 1 项主任务；有改动则 deploy |
 
 ---
 
@@ -130,6 +130,51 @@ P3（体验）：排版、alt 文本、图片去重、admin 运维提示
 
 ---
 
+## 二-B、一键复制：Automation 任务描述（**每小时版**，推荐）
+
+Schedule 设为 **`0 * * * *`**。Instructions 粘贴下方：
+
+```text
+你是「双站每小时巡检+优化」Cloud Agent。每次运行 = 必做双站巡检 + 1 项槽位主任务。
+
+【槽位】当前主任务 = docs/automation-hourly-task-queue.md 表中「UTC 小时 = 现在.hour」那一行。
+【日志】完成后追加 1 段到 docs/automation-hourly-log.md。
+
+站点 A 中科国瓷 kdgc.cc
+- 目录 kdgc-deploy/ · 分支 cursor/kdgc-full-deploy-3bd2
+- 部署 /opt/kdgc-growth/frontend/dist/
+- 构建 python3 kdgc-deploy/generate_pages.py
+- Logo 仅「中科国瓷」/「KDGC」· 禁止 AVIC 错 Logo
+
+站点 B esnlink esnlink.cn
+- 目录 esnlink-deploy/ · 分支 cursor/esnlink-growth-p0-3bd2
+- 部署 bash esnlink-deploy/deploy.sh · 根目录 /var/www/yixing/
+- 改导航后 python3 esnlink-deploy/unify_chrome.py
+
+【步骤 1 — 必做巡检，约 10 分钟】
+对两站执行 automation-hourly-task-queue.md §二 8 项检查。
+任一 FAIL → 按 §四 P0 插队修复，跳过原槽位。
+
+【步骤 2 — 槽位主任务，约 20–40 分钟】
+只执行当前 UTC 小时对应 1 项。已完成且线上仍满足验收 → 写「槽位跳过」并做 backlog 下一项。
+
+【步骤 3 — 发布】
+有文件改动：commit（fix(kdgc): 或 fix(esnlink):）→ push → 部署 → curl 验证。
+无改动：仅日志，不空 commit。
+
+【步骤 4 — 报告 ≤25 行】
+##  hourly YYYY-MM-DD HH:00 UTC · 槽位 N · {KDGC|esnlink|双站}
+- 巡检：KDGC x/8 · esnlink x/8
+- 主任务：（名称）完成/跳过/P0修复
+- 部署：是/否 · commit hash
+- 下轮槽位 N+1 预告
+
+【硬性约束】
+不编造客户/认证；KDGC 参数对齐公开规格；最小 diff；SSH 失败重试 4 次。
+```
+
+---
+
 ## 三、分站速查
 
 ### 3.1 中科国瓷（kdgc.cc）
@@ -224,6 +269,8 @@ ssh -i .ssh-keys/shanghai-a/shanghai_a_deploy ubuntu@150.158.42.39
 | 中科国瓷审计提示词 | `kdgc-deploy/docs/site-audit-prompts.md` |
 | 中科国瓷审计结果 | `kdgc-deploy/docs/site-audit-results.md` |
 | 中科国瓷增长路线 | `kdgc-deploy/docs/growth-diagnosis-roadmap.md` |
+| **每小时任务清单** | `docs/automation-hourly-task-queue.md` |
+| **每小时运行日志** | `docs/automation-hourly-log.md` |
 | esnlink 部署说明 | `esnlink-deploy/README.md`（分支 `cursor/esnlink-growth-p0-3bd2`） |
 | 服务器 SSH | `docs/shanghai-a-ssh.md` |
 
@@ -232,13 +279,22 @@ ssh -i .ssh-keys/shanghai-a/shanghai_a_deploy ubuntu@150.158.42.39
 ## 八、在 Cursor 中创建 Automation 的步骤
 
 1. 打开 Cursor → **Automations** → **New automation**
-2. **Name**：`双站持续优化：中科国瓷 + esnlink`
+2. **Name**：`双站每小时巡检+优化（KDGC+esnlink）`
 3. **Repository**：选择本仓库
-4. **Schedule**：Weekly（或 Cron `0 1 * * 1` UTC = 北京时间周一 09:00）
-5. **Instructions**：粘贴 **第二节「一键复制」** 全文
+4. **Schedule**：Cron **`0 * * * *`**（每小时 UTC 整点；北京时间 = UTC+8）
+5. **Instructions**：粘贴 **第二节-B「每小时版 Prompt」** 全文
 6. **Environment**：勾选网络 egress；确保 SSH 密钥在 environment secrets 或 `.ssh-keys/` 可用
-7. 保存并 **Run once** 试跑，核对报告格式与双站部署
+7. 保存并 **Run once** 试跑，核对 `docs/automation-hourly-log.md` 是否追加
+
+**任务清单（24 槽位循环）**：`docs/automation-hourly-task-queue.md`  
+**运行日志**：`docs/automation-hourly-log.md`
 
 ---
 
-*文档版本：2026-07-20 · 与 kdgc §15 放行状态、esnlink P2 完成状态对齐*
+## 九、每周深扫（可选叠加）
+
+每小时任务偏「巡检 + 小步迭代」。若需全站 §0–§15 深审计，可另建 **每周 1 次** Automation，Instructions 用第二节「每周版 Prompt」。
+
+---
+
+*文档版本：2026-07-20 · hourly 队列 + KDGC §15 放行 + esnlink P2*
