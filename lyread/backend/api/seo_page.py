@@ -174,6 +174,13 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
             color: #7a8ba8;
             font-size: 12px;
         }}
+        .seo-list li .excerpt {{
+            flex-basis: 100%;
+            margin: 4px 0 0;
+            font-size: 13px;
+            color: #5a6a7a;
+            line-height: 1.55;
+        }}
         .seo-footer {{
             text-align: center;
             padding: 20px;
@@ -393,8 +400,7 @@ async def sitemap_xml():
         (f"{SITE_BASE}/faq", "monthly", "0.8", today),
         (f"{SITE_BASE}/about", "monthly", "0.7", today),
         (f"{SITE_BASE}/login", "monthly", "0.5", today),
-        (f"{SITE_BASE}/story", "weekly", "0.7", today),
-        (f"{SITE_BASE}/reader", "weekly", "0.7", today),
+        # /story /reader 需登录，不列入 sitemap，避免爬虫撞 SPA 登录壳
         (f"{SITE_BASE}/ep", "weekly", "0.7", today),
     ]
 
@@ -1025,17 +1031,22 @@ async def seo_content_list(request: Request):
         if db:
             cursor = db.cursor(dictionary=True)
             cursor.execute(
-                f"SELECT id, title, category, word_count, heat FROM contents "
+                f"SELECT id, title, category, word_count, heat, preview_body FROM contents "
                 f"WHERE {public_case_sql_clause()} ORDER BY heat DESC LIMIT 50"
             )
             for row in cursor.fetchall():
                 safe_title = escape(str(row['title']))
                 safe_category = escape(str(row['category']))
+                preview = (row.get("preview_body") or "").strip()
+                excerpt_html = ""
+                if preview:
+                    excerpt_html = f'<p class="excerpt">{escape(preview[:200])}</p>'
                 items_html += f"""
                 <li>
                     <a href="{SITE_BASE}/ep/{int(row['id'])}">{safe_title}</a>
                     <span class="tag">{safe_category}</span>
                     <span class="stat">{row['word_count']}字 · 热度{row['heat']}</span>
+                    {excerpt_html}
                 </li>"""
             cursor.close()
             db.close()
@@ -1052,12 +1063,12 @@ async def seo_content_list(request: Request):
     """
 
     list_title = "LyRead AI 小说作品列表 - 智能小说创作平台"
-    list_desc = "LyRead AI智能小说创作平台作品列表，浏览各类热门的AI生成小说作品"
+    list_desc = "浏览 LyRead AI 公开案例节选：都市神豪、战神归来、系统流等题材的 AI 生成开篇，点击进入全文阅读。"
     list_path = str(request.url.path)
     return PAGE_TEMPLATE.format(
         title=list_title,
         description=list_desc,
-        keywords="AI小说,网文列表,智能写作,小说推荐",
+        keywords="AI小说,网文列表,智能写作,小说推荐,案例节选",
         url=list_path,
         site_base=SITE_BASE,
         meta_info="共收录作品",

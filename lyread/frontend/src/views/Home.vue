@@ -80,6 +80,7 @@
           <div class="hot-body">
             <div class="hot-type">{{ c.category || '都市' }}</div>
             <h3>{{ c.title }}</h3>
+            <p v-if="c.excerpt" class="hot-excerpt">{{ c.excerpt }}</p>
             <div class="hot-tags">
               <span>{{ formatWords(c.word_count) }}</span>
               <span>热度 {{ c.heat }}</span>
@@ -519,7 +520,17 @@ const startTrial = async (append = false) => {
   font-size: 12px;
   margin-bottom: 12px;
 }
-.hot-card h3 { font-size: 16px; color: var(--lyread-text-dark); margin-bottom: 12px; }
+.hot-card h3 { font-size: 16px; color: var(--lyread-text-dark); margin-bottom: 8px; line-height: 1.4; }
+.hot-excerpt {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .hot-tags span {
   display: inline-block;
   padding: 2px 8px;

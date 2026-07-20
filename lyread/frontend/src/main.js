@@ -7,6 +7,8 @@ import { initAnalytics, trackPageView } from './utils/analytics'
 initAnalytics()
 
 const protectedRoutes = ['/workspace', '/wallet', '/admin', '/reader', '/story']
+/** 创作入口未登录时默认打开注册表单，缩短试用/案例 CTA → 注册转化路径 */
+const registerPromptRoutes = ['/workspace', '/reader', '/story']
 
 const routes = [
   { path: '/', component: () => import('./views/Home.vue'), meta: { title: 'LyRead AI - 让 AI 陪你写完一部长篇小说', desc: 'LyRead AI 智能小说创作平台，支持长篇小说、短故事、人物伏笔记忆与点数计费。' }},
@@ -25,7 +27,9 @@ const router = createRouter({ history: createWebHistory(), routes })
 
 router.beforeEach((to, from, next) => {
   if (protectedRoutes.includes(to.path) && !localStorage.getItem('token')) {
-    next({ path: '/login', query: { redirect: to.fullPath } })
+    const query = { redirect: to.fullPath }
+    if (registerPromptRoutes.includes(to.path)) query.mode = 'register'
+    next({ path: '/login', query })
     return
   }
   next()

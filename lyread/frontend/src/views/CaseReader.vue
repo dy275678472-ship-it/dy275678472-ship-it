@@ -13,7 +13,7 @@
       </section>
       <section v-else class="body empty-body">
         <p>该案例暂无正文节选，以下为平台生成作品展示。</p>
-        <router-link :to="`/ep/${caseData.id}`" target="_blank" class="link">查看 SEO 页面 →</router-link>
+        <a :href="`/ep/${caseData.id}`" class="link">查看 SEO 页面 →</a>
       </section>
       <footer class="cta">
         <router-link :to="workspaceLink" class="btn-cta">用这个风格开始创作 →</router-link>
