@@ -442,6 +442,8 @@ Disallow: /api/
 Disallow: /workspace
 Disallow: /wallet
 Disallow: /admin
+Disallow: /story
+Disallow: /reader
 Sitemap: {SITE_BASE}/sitemap.xml
 
 # 生成式引擎 / AI 爬虫（GEO）

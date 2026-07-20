@@ -37,8 +37,8 @@
     </main>
 
     <main class="editor" v-else-if="editing">
-      <div v-if="welcomeBanner" class="welcome-banner">
-        🎉 欢迎！已到账 <strong>30 点</strong>，试试「AI 续写正文」感受完整创作流程。
+      <div v-if="welcomeBanner" class="welcome-toast">
+        欢迎！已到账 <strong>30 点</strong>，试试「AI 续写正文」感受完整创作流程。
         <button class="welcome-close" @click="welcomeBanner = false">知道了</button>
       </div>
       <div v-if="creditsLow" class="credits-banner">
@@ -140,7 +140,7 @@
     </main>
 
     <div v-if="!editing && !loading" class="welcome">
-      <img :src="images.workspace" alt="创作台欢迎横幅" class="welcome-banner" />
+      <img :src="images.workspace" alt="创作台欢迎横幅" class="welcome-hero-img" />
       <h2>创作台</h2>
       <p>从左侧选择作品，或新建一部小说开始 AI 辅助创作。</p>
       <button class="btn-new large" @click="newStory">+ 新建作品</button>
@@ -436,7 +436,7 @@ onMounted(async () => {
 .s-meta { font-size: 12px; color: #94a3b8; }
 .empty { color: #94a3b8; font-size: 14px; padding: 20px 0; }
 .welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #5a6a7a; padding: 40px 24px; }
-.welcome-banner { width: min(480px, 90%); border-radius: 16px; box-shadow: 0 8px 24px rgba(37,99,235,0.12); margin-bottom: 8px; }
+.welcome-hero-img { width: min(480px, 90%); border-radius: 16px; box-shadow: 0 8px 24px rgba(37,99,235,0.12); margin-bottom: 8px; }
 .welcome h2 { color: #1e2a3a; font-size: 24px; margin: 0; }
 .editor { flex: 1; display: flex; flex-direction: column; }
 .editor-toolbar { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #e8f0fa; }
@@ -464,11 +464,11 @@ onMounted(async () => {
 .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
 .msg { font-size: 13px; margin-top: 10px; color: #16a34a; }
 .msg.err { color: #ef4444; }
-.welcome-banner, .credits-banner {
+.welcome-toast, .credits-banner {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
   padding: 12px 16px; margin-bottom: 12px; border-radius: 10px; font-size: 13px;
 }
-.welcome-banner { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.welcome-toast { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
 .credits-banner { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
 .credits-banner a { color: #2563eb; font-weight: 600; text-decoration: none; }
 .welcome-close {
