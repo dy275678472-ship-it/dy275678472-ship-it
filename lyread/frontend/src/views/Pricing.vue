@@ -58,7 +58,7 @@
           <div class="pkg-price">¥{{ pkg.price }}</div>
           <div class="pkg-credits">{{ pkg.credits }} 点</div>
           <p class="pkg-desc">{{ pkg.desc }}</p>
-          <button class="btn-buy" :disabled="!isLoggedIn" @click="buy(pkg)">
+          <button class="btn-buy" type="button" @click="buy(pkg)">
             {{ isLoggedIn ? '立即充值' : '登录后充值' }}
           </button>
         </div>
@@ -152,7 +152,7 @@ async function buy(pkg) {
   payError.value = ''
   if (!isLoggedIn.value) {
     trackEvent('pricing_buy_click', { category: 'funnel', label: 'redirect_login', value: pkg.price })
-    router.push({ path: '/login', query: { redirect: '/pricing' } })
+    router.push({ path: '/login', query: { mode: 'register', redirect: '/pricing' } })
     return
   }
   trackEvent('pricing_buy_click', { category: 'funnel', label: pkg.id, value: pkg.price })
