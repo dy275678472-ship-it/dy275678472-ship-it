@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow">
+<title>Contract Review ROI Calculator | Attyflow</title>
+<meta name="description" content="Calculate how much time and billable value AI contract review saves your firm. Compare ROI against Attyflow Solo at $69/month.">
+<link rel="canonical" href="https://attyflow.com/roi-calculator/">
+<link rel="icon" href="/assets/icon-32.png" sizes="32x32">
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/site-p1.css">
+<link rel="stylesheet" href="/assets/site-p2.css">
+<meta property="og:image" content="https://attyflow.com/og-image.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Contract Review ROI Calculator","applicationCategory":"BusinessApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+</head>
+<body>
+<header class="nav-wrap"><nav class="nav"><a class="logo" href="/">ATTYFLOW</a><button class="nav-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">☰</button><div class="nav-links"><a href="/product">Product</a><a href="/pricing" class="nav-cta">Pricing</a></div></nav></header>
+<main class="article">
+<h1>Contract review ROI calculator</h1>
+<p class="lead">Estimate monthly time savings and dollar value from AI-assisted first-pass review. Adjust inputs to match your firm's contract volume.</p>
+<div class="roi-calc">
+<form class="card" id="roi-form">
+<label for="contracts">Contracts reviewed per month</label>
+<input type="number" id="contracts" value="25" min="1" max="500">
+<label for="hours">Hours per contract (first-pass review)</label>
+<input type="number" id="hours" value="1.5" min="0.25" max="20" step="0.25">
+<label for="rate">Blended hourly rate ($)</label>
+<input type="number" id="rate" value="350" min="50" max="2000" step="25">
+<label for="saved">Time saved with AI (%)</label>
+<select id="saved"><option value="25">25% — conservative</option><option value="40" selected>40% — typical</option><option value="55">55% — high volume NDA/MSA</option></select>
+<label for="plan">Attyflow plan cost ($/mo)</label>
+<select id="plan"><option value="0">Sandbox $0</option><option value="69" selected>Solo $69</option><option value="249">Team $249</option></select>
+</form>
+<div class="roi-result">
+<h3>Your estimated monthly ROI</h3>
+<p>Hours saved: <span class="roi-kpi" id="hours-saved">15.0</span></p>
+<p>Value recovered: <span class="roi-kpi" id="value-saved">$5,250</span></p>
+<p>Net after subscription: <span class="roi-kpi" id="net-monthly">$5,181</span></p>
+<p>ROI: <strong id="roi-pct">7409%</strong></p>
+<p class="note">Illustrative only. Actual savings depend on clause complexity, playbook maturity, and attorney review time. Not legal advice.</p>
+<a class="btn btn-gold" href="/taskpane.html">Validate with 3 Free Audits</a>
+</div>
+</div>
+<h2>How firms use this math</h2>
+<p>Transactional teams typically apply AI to first-pass triage — flagging indemnity, liability, and confidentiality issues before partner review. Even 30 minutes saved per contract at 20 contracts/month exceeds Solo subscription cost.</p>
+</main>
+<footer class="site-footer"><p class="copyright">© 2026 Attyflow.</p></footer>
+<script src="/assets/roi-calculator.js" defer></script>
+<script src="/tracker.js" defer></script>
+</body>
+</html>
