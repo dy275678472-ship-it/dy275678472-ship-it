@@ -32,6 +32,15 @@
 
   <section id="tab-dash" class="panel active">
     <div class="stats" id="stats"></div>
+    <div class="card card-warn">
+      <h2>⚠️ 静态站同步提醒</h2>
+      <p>本后台修改的是数据库内容；线上 HTML 由 <code>generate_pages.py</code> 生成。编辑后必须：</p>
+      <ol>
+        <li>在服务器运行 <code>python3 generate_pages.py</code></li>
+        <li>将 <code>frontend/dist</code> 同步到 Nginx 根目录</li>
+        <li>用 §15 清单验证（知识库/案例/Logo 未回滚）</li>
+      </ol>
+    </div>
     <div class="card">
       <h2>使用说明</h2>
       <ol>

@@ -72,7 +72,7 @@ def contact_promises_html(lang: str = "zh") -> str:
     cards = []
     for img, title, desc in items:
         icon = (
-            f'<img src="{asset_url(img)}" alt="" class="contact-promise-icon" width="48" height="48">'
+            f'<img src="{asset_url(img)}" alt="{title}" class="contact-promise-icon" width="48" height="48">'
             if has_asset(img)
             else '<span class="contact-promise-dot" aria-hidden="true"></span>'
         )
@@ -922,7 +922,7 @@ def main():
 <dt>邮箱</dt><dd><a href="mailto:{EMAIL}">{EMAIL}</a></dd>
 <dt>电话</dt><dd><a href="tel:{PHONE}">{PHONE_DISPLAY}</a></dd>
 <dt>地址</dt><dd>{ADDRESS}</dd>
-<dt>服务时间</dt><dd>{HOURS}<br><span class="muted">7×24 响应技术与商务咨询</span></dd>
+<dt>服务时间</dt><dd>{HOURS}</dd>
 </dl>
 <div class="contact-wechat-row">
 <img src="{wechat_src}" alt="微信二维码" class="contact-wechat" width="140" height="140">
@@ -958,7 +958,10 @@ def main():
     pages["en/contact.html"] = page(
         "Contact — ZK Guoci",
         f"Contact ZK Guoci: {PHONE_DISPLAY} {EMAIL} {ADDRESS_EN}",
-        f"""{page_hero("Contact Us", "Sensing the future · Fast response", "contact/banner.jpg")}
+        f"""{page_hero("Contact Us", "24-hour response commitment · Direct to engineers", "contact/banner.jpg")}
+<div style="background:#eff6ff;border-bottom:2px solid var(--blue);padding:14px 24px;text-align:center;font-size:15px;font-weight:600;color:var(--blue)">
+  ✅ We respond within 24 hours (same business day when possible)
+</div>
 <section class="contact-promises-section"><div class="container">{contact_promises_html("en")}</div></section>
 <section class="contact-main"><div class="container contact-layout">
 <div class="contact-info">
@@ -968,7 +971,7 @@ def main():
 <dt>Email</dt><dd><a href="mailto:{EMAIL}">{EMAIL}</a></dd>
 <dt>Phone</dt><dd><a href="tel:{PHONE}">{PHONE_DISPLAY}</a></dd>
 <dt>Address</dt><dd>{ADDRESS_EN}</dd>
-<dt>Hours</dt><dd>{HOURS_EN}<br><span class="muted">7×24 technical &amp; commercial response</span></dd>
+<dt>Hours</dt><dd>{HOURS_EN}</dd>
 </dl>
 <div class="contact-wechat-row">
 <img src="{wechat_src}" alt="WeChat QR" class="contact-wechat" width="140" height="140">
@@ -1065,7 +1068,7 @@ def main():
         f"""<a href="/cases/{c['slug']}.html" class="case-card">
 <img src="{asset_url(c['cover'])}" alt="{c['title']}" class="case-cover" loading="lazy">
 <div class="case-body">
-<span class="tag">{c['industry']}</span>
+<span class="tag">{c['industry']}</span>{'<span class="tag tag-wip">评估中</span>' if '进行中' in c['title'] or 'In Progress' in c.get('title_en', '') else ''}
 <h3>{c['title']}</h3>
 <p class="case-customer">{c['customer']}</p>
 <p>{c['summary']}</p>
@@ -1388,7 +1391,7 @@ def main():
         f"""<a href="/cases/{c['slug']}.html" class="case-card">
 <img src="{asset_url(c['cover'])}" alt="{c['title_en']}" class="case-cover" loading="lazy">
 <div class="case-body">
-<span class="tag">{c['industry_en']}</span>
+<span class="tag">{c['industry_en']}</span>{'<span class="tag tag-wip">In progress</span>' if 'In Progress' in c.get('title_en', '') else ''}
 <h3>{c['title_en']}</h3>
 <p class="case-customer">{c['customer_en']}</p>
 <p>{c['summary_en']}</p>

@@ -26,6 +26,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const form = document.getElementById('lead-form');
   if (form) {
+    const params = new URLSearchParams(window.location.search);
+    const productMap = {
+      'kd0100-02s-t1': ['KD0100-02S-T1 探头', 'KD0100-02S-T1 Probe'],
+      'kd0100-02s-to': ['KD0100-02S-TO 插针', 'KD0100-02S-TO Pin'],
+      'mask-o2-sensor': ['面罩用氧传感器', 'Mask O₂ Sensor'],
+    };
+    const productSlug = params.get('product');
+    const reqSpec = params.get('req') === 'spec';
+    if (productSlug && productMap[productSlug]) {
+      const sel = form.querySelector('[name="product_interest"]');
+      if (sel) {
+        const opts = productMap[productSlug];
+        for (const o of sel.options) {
+          if (opts.includes(o.value)) { sel.value = o.value; break; }
+        }
+      }
+    }
+    if (reqSpec) {
+      const ta = form.querySelector('[name="requirement"]');
+      if (ta && !ta.value.trim()) {
+        ta.value = document.documentElement.lang === 'en'
+          ? 'Please send the product datasheet (PDF).'
+          : '请发送产品规格书（PDF）';
+      }
+    }
     form.addEventListener('submit', async e => {
       e.preventDefault();
       const msg = form.querySelector('.form-msg');

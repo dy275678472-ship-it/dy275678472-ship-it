@@ -20,6 +20,8 @@
 .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
 .stat b{display:block;font-size:28px;color:var(--navy);margin-top:4px}
 .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.card-warn{border-color:#fdba74;background:#fffbeb}
+.card-warn h2{color:#c2410c}
 .card h2{margin:0 0 10px;font-size:16px}
 .toolbar{display:flex;gap:8px;margin-bottom:12px;align-items:center}
 .table-wrap{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:12px}

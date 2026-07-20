@@ -42,7 +42,7 @@
 <p class="article-deck">梳理 KD0100 系列氧传感器常见故障现象（读数偏高/偏低/无响应/漂移），结合硬件检查、气路排查与控制器自检，给出系统性排查流程。</p>
 </div></section>
 <section class="article-section"><div class="container article-layout">
-<figure class="article-cover"><img src="/assets/images/news/understand-o2-sensor.webp" alt="氧传感器故障诊断：常见问题与排查思路"></figure>
+<figure class="article-cover"><img src="/assets/images/products/probe-alt.webp" alt="氧传感器故障诊断：常见问题与排查思路"></figure>
 <div class="article-body content-block">
 <h2>一、排查前提：先确认这三件事</h2>
 <p>在判断传感器本体故障前，必须先排除以下三类外部原因，否则很容易误换好的传感器：</p>
@@ -55,7 +55,7 @@
 <h2>二、常见故障与排查表</h2>
 <table>
 <tr><th>故障现象</th><th>可能原因</th><th>排查步骤</th></tr>
-<tr><td>读数异常偏高（远超实际氧浓度）</td><td>参考气腔污染；气路有外部氧气渗入</td><td>检查气路密封；若条件允许，通纯氮气验证零点</td></tr>
+<tr><td>读数异常偏高（远超实际氧分压）</td><td>气路有外部氧气渗入；样品气未稳定</td><td>检查气路密封；若条件允许，通纯氮气验证低氧点</td></tr>
 <tr><td>读数异常偏低</td><td>气路泄漏；加热不足导致离子迁移率低</td><td>检查接头；实测加热电压（应在 4.3–4.7V 或 8.5–9.5V）</td></tr>
 <tr><td>读数漂移（随温度或时间变化）</td><td>传感器预热未完成；电极老化</td><td>开机预热 ≥3 分钟再取读数；若老化则需更换</td></tr>
 <tr><td>无响应 / 输出固定值</td><td>接线断路；传感器永久损坏（如超压烧毁）</td><td>用万用表测传感器阻抗；若短路或断路，传感器已损坏</td></tr>
@@ -64,7 +64,7 @@
 </table>
 
 <h2>三、控制器自检方法（KD0100-03）</h2>
-<p>KD0100-03 提供内置自检功能（详见控制器说明书）。若输出 OBD 故障码，优先对照故障码表排查，不要直接更换传感器。</p>
+<p>KD0100-03 提供内置自检与状态指示（详见控制器说明书）。若控制器报告加热异常、通信中断或量程超限，优先对照说明书排查接线与供电，不要直接更换传感器。</p>
 
 <h2>四、防止传感器损坏的操作规范</h2>
 <ul>

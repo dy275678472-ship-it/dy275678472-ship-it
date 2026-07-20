@@ -25,7 +25,7 @@ NAME_MAP = {
     "56160521.png": "about-factory.png",
     "56164209.png": "team-advisor.png",
     "56164220.png": "team-engineer.png",
-    "56164313.png": "logo.png",
+    # Do NOT map 56164313.png → logo.png — old CDN asset is AVIC「航宇救生」, not 中科国瓷
     "code.png": "wechat-qr.png",
     "favicon.ico": "favicon.ico",
 }

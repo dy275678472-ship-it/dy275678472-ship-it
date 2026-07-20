@@ -12,7 +12,7 @@ from __future__ import annotations
 MAP_LAT = "31.83560"
 MAP_LNG = "117.12885"
 MAP_TITLE = "安徽中科国瓷新型元器件有限公司"
-MAP_ADDRESS = "安徽省合肥市高新区望江西路5089号嵌入式研发楼103-C3"
+MAP_ADDRESS = "安徽省合肥市高新区望江西路5089号嵌入式研发楼103-C3（科大先研院-智源楼）"
 
 KNOWLEDGE = [
     {
@@ -268,7 +268,7 @@ KNOWLEDGE = [
         "title_en": "Complete Selection Guide: T1, TO, or Mask Oxygen Sensor?",
         "summary": "从气体环境、安装约束、量程、精度与控制器匹配四个维度系统梳理三款 KD0100 系列传感器的适用场景与差异，帮助工程师快速缩小选型范围。",
         "summary_en": "A systematic four-dimension framework—gas environment, mounting, range, accuracy, and controller matching—to narrow down T1, TO, or mask-type selections.",
-        "cover": "news/understand-o2-sensor.jpg",
+        "cover": "products/kd0100-02s-t1.png",
         "related_products": ["kd0100-02s-t1", "kd0100-02s-to", "mask-o2-sensor"],
         "body": """
 <h2>一、选型前必须明确的四个问题</h2>
@@ -288,7 +288,7 @@ KNOWLEDGE = [
 <tr><td>氧分压量程</td><td>0.5–101 kPa</td><td>0.5–101 kPa</td><td>低温段优化</td></tr>
 <tr><td>工作气体温度</td><td>-50~200 °C</td><td>-50~200 °C</td><td>低温侧优化</td></tr>
 <tr><td>接口</td><td>线束（Vh-/Vh+/Sense/Common/Pump）</td><td>4-pin 插针</td><td>面罩专用接口</td></tr>
-<tr><td>加热电压</td><td>~4.5V / 9V 可选</td><td>~4.5V</td><td>—</td></tr>
+<tr><td>加热电压</td><td>~4.5V / 9V 可选</td><td>~4.5V / 9V 可选</td><td>—</td></tr>
 <tr><td>适合集成方式</td><td>外挂、气路插入</td><td>PCB 直插或 SMT 过渡</td><td>面罩气腔密封安装</td></tr>
 </table>
 
@@ -361,7 +361,7 @@ KNOWLEDGE = [
 <ul>
 <li>GB18352.6-2016 《轻型汽车污染物排放限值及测量方法（中国第六阶段）》</li>
 <li>GB17691-2018 《重型柴油车污染物排放限值及测量方法（中国第六阶段）》</li>
-<li>HJ/T 399-2007《车用汽油发动机与汽车排气污染物排放限值及测量方法》</li>
+<li>GB17691-2018 附录及配套 OBD 监测要求（重型柴油车国六）</li>
 </ul>
 """,
     },
@@ -374,7 +374,7 @@ KNOWLEDGE = [
         "title_en": "Working Principle of Zirconia (ZrO₂) Solid-Electrolyte Oxygen Sensors",
         "summary": "从能斯特方程与混合电位机制出发，系统说明氧化锆固体电解质的离子导电特性、传统开关型与宽域型氧传感器的工作差异，以及变频氧传感对传统路线的改进之处。",
         "summary_en": "From Nernst equation to mixed-potential mechanisms—how ZrO₂ ionic conductors power both conventional and variable-frequency oxygen sensors.",
-        "cover": "news/understand-o2-sensor.jpg",
+        "cover": "products/exploded.webp",
         "related_products": ["kd0100-02s-t1", "kd0100-02s-to"],
         "body": """
 <h2>一、固体电解质的离子导电性</h2>
@@ -417,7 +417,7 @@ KNOWLEDGE = [
         "title_en": "Oxygen Sensor Fault Diagnosis: Common Issues and Troubleshooting",
         "summary": "梳理 KD0100 系列氧传感器常见故障现象（读数偏高/偏低/无响应/漂移），结合硬件检查、气路排查与控制器自检，给出系统性排查流程。",
         "summary_en": "Systematic troubleshooting for KD0100-series issues: high/low readings, no response, and drift—hardware check, gas-path inspection, and controller self-test.",
-        "cover": "news/understand-o2-sensor.jpg",
+        "cover": "products/probe-alt.png",
         "related_products": ["kd0100-02s-t1", "kd0100-02s-to"],
         "body": """
 <h2>一、排查前提：先确认这三件事</h2>
@@ -431,7 +431,7 @@ KNOWLEDGE = [
 <h2>二、常见故障与排查表</h2>
 <table>
 <tr><th>故障现象</th><th>可能原因</th><th>排查步骤</th></tr>
-<tr><td>读数异常偏高（远超实际氧浓度）</td><td>参考气腔污染；气路有外部氧气渗入</td><td>检查气路密封；若条件允许，通纯氮气验证零点</td></tr>
+<tr><td>读数异常偏高（远超实际氧分压）</td><td>气路有外部氧气渗入；样品气未稳定</td><td>检查气路密封；若条件允许，通纯氮气验证低氧点</td></tr>
 <tr><td>读数异常偏低</td><td>气路泄漏；加热不足导致离子迁移率低</td><td>检查接头；实测加热电压（应在 4.3–4.7V 或 8.5–9.5V）</td></tr>
 <tr><td>读数漂移（随温度或时间变化）</td><td>传感器预热未完成；电极老化</td><td>开机预热 ≥3 分钟再取读数；若老化则需更换</td></tr>
 <tr><td>无响应 / 输出固定值</td><td>接线断路；传感器永久损坏（如超压烧毁）</td><td>用万用表测传感器阻抗；若短路或断路，传感器已损坏</td></tr>
@@ -440,7 +440,7 @@ KNOWLEDGE = [
 </table>
 
 <h2>三、控制器自检方法（KD0100-03）</h2>
-<p>KD0100-03 提供内置自检功能（详见控制器说明书）。若输出 OBD 故障码，优先对照故障码表排查，不要直接更换传感器。</p>
+<p>KD0100-03 提供内置自检与状态指示（详见控制器说明书）。若控制器报告加热异常、通信中断或量程超限，优先对照说明书排查接线与供电，不要直接更换传感器。</p>
 
 <h2>四、防止传感器损坏的操作规范</h2>
 <ul>
@@ -606,7 +606,7 @@ CASES = [
         "title_en": "Diesel SCR / OBD Gas Sensing Evaluation (In Progress)",
         "summary": "围绕国Ⅵ后处理与 OBD 需求，开展氧/氮氧相关传感路线评估与台架方案设计，尚未进入车规量产认定。",
         "summary_en": "Evaluation of O₂/NOx-related sensing for China VI SCR/OBD — not yet series-production certified.",
-        "cover": "news/nox-sensor-market.png",
+        "cover": "scenes/automotive.jpg",
         "product_slugs": ["kd0100-02s-t1", "kd0100-02s-to"],
         "challenge": "配套商需评估排气侧气体传感在 SCR 闭环与 OBD 监控中的补充/替代路径：关注响应、耐久、抗污染与法规符合性，同时希望先用可量化的氧分压测量能力做台架方法验证。",
         "solution": "以 KD0100 系列氧分压测量能力作为台架方法验证工具之一，结合客户台架工况设计采样点；同步梳理车规级氮氧传感量产所需的认证、耐久与供应链条件，输出《可行性与缺口清单》。",

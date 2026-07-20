@@ -141,6 +141,7 @@ a.values-card:hover{border-color:rgba(22,119,255,.3);transform:translateY(-2px);
 .card-body h3{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px}
 .card-body p{font-size:14px;color:var(--muted);margin-bottom:16px}
 .tag{display:inline-block;padding:3px 10px;background:#eff6ff;color:var(--blue);border-radius:6px;font-size:12px;font-weight:500;margin-right:6px}
+.tag-wip{background:#fff7ed;color:#c2410c;border:1px solid #fdba74}
 table{width:100%;border-collapse:collapse;background:var(--white);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
 th,td{padding:14px 18px;text-align:left;border-bottom:1px solid var(--border);font-size:14px}
 th{background:var(--navy);color:var(--white);font-weight:600}
