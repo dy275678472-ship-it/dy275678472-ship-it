@@ -14,6 +14,10 @@ CASES = [
     ("showcase_scifi_01.txt", "showcase_scifi_01"),
     ("showcase_suspense_01.txt", "showcase_suspense_01"),
     ("showcase_history_01.txt", "showcase_history_01"),
+    ("showcase_system_01.txt", "showcase_system_01"),
+    ("showcase_apocalypse_01.txt", "showcase_apocalypse_01"),
+    ("showcase_campus_01.txt", "showcase_campus_01"),
+    ("showcase_game_01.txt", "showcase_game_01"),
 ]
 
 
