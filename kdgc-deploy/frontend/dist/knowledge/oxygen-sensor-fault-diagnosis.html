@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-CN"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>测量精度曲线解读（1–100 kPa） — 中科国瓷</title><meta name="description" content="按公开精度分档解释如何设计抽检点与判定准则，避免用单点误差否定全量程能力。">
-<link rel="canonical" href="https://kdgc.cc/knowledge/accuracy-curve-reading.html"><link rel="stylesheet" href="/assets/css/style.css">
+<title>氧传感器故障诊断：常见问题与排查思路 — 中科国瓷</title><meta name="description" content="梳理 KD0100 系列氧传感器常见故障现象（读数偏高/偏低/无响应/漂移），结合硬件检查、气路排查与控制器自检，给出系统性排查流程。">
+<link rel="canonical" href="https://kdgc.cc/knowledge/oxygen-sensor-fault-diagnosis.html"><link rel="stylesheet" href="/assets/css/style.css">
 <link rel="icon" href="/assets/images/favicon.ico?v=20260720c">
 <script type="application/ld+json">{
   "@context":"https://schema.org",
@@ -16,7 +16,7 @@
   "address":{"@type":"PostalAddress","streetAddress":"望江西路5089号嵌入式研发楼103-C3","addressLocality":"合肥市","addressRegion":"安徽省","postalCode":"230088","addressCountry":"CN"},
   "sameAs":["https://kdgc.cc/en/"]
 }</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页","item":"https://kdgc.cc/"},{"@type":"ListItem","position":2,"name":"知识库","item":"https://kdgc.cc/knowledge/"},{"@type":"ListItem","position":3,"name":"测量精度曲线解读（1–100 kPa）","item":"https://kdgc.cc/knowledge/accuracy-curve-reading.html"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页","item":"https://kdgc.cc/"},{"@type":"ListItem","position":2,"name":"知识库","item":"https://kdgc.cc/knowledge/"},{"@type":"ListItem","position":3,"name":"氧传感器故障诊断：常见问题与排查思路","item":"https://kdgc.cc/knowledge/oxygen-sensor-fault-diagnosis.html"}]}</script>
 </head><body><nav class="nav"><div class="nav-inner">
 <a href="/" class="nav-logo" aria-label="中科国瓷">
 <picture>
@@ -37,24 +37,50 @@
 <button class="menu-toggle" aria-label="菜单">☰</button>
 </div></nav><main><article class="article">
 <section class="page-hero article-hero"><div class="container">
-<p class="article-meta"><span class="tag">工程</span><span class="tag">2026-07-07</span></p>
-<h1>测量精度曲线解读（1–100 kPa）</h1>
-<p class="article-deck">按公开精度分档解释如何设计抽检点与判定准则，避免用单点误差否定全量程能力。</p>
+<p class="article-meta"><span class="tag">维护</span><span class="tag">2026-07-20</span></p>
+<h1>氧传感器故障诊断：常见问题与排查思路</h1>
+<p class="article-deck">梳理 KD0100 系列氧传感器常见故障现象（读数偏高/偏低/无响应/漂移），结合硬件检查、气路排查与控制器自检，给出系统性排查流程。</p>
 </div></section>
 <section class="article-section"><div class="container article-layout">
-<figure class="article-cover"><img src="/assets/images/products/exploded.webp" alt="测量精度曲线解读（1–100 kPa）"></figure>
+<figure class="article-cover"><img src="/assets/images/news/understand-o2-sensor.webp" alt="氧传感器故障诊断：常见问题与排查思路"></figure>
 <div class="article-body content-block">
-<h2>精度是“分档”而不是一条直线</h2>
-<p>KD0100 系列在标准大气条件下的精度以氧分压区间给出。高氧分压段允许误差绝对值更大，这在气体传感中常见：同样 ±1 kPa，在 5 kPa 点与在 90 kPa 点的相对意义不同。</p>
-<h2>建议的验收设计</h2>
+<h2>一、排查前提：先确认这三件事</h2>
+<p>在判断传感器本体故障前，必须先排除以下三类外部原因，否则很容易误换好的传感器：</p>
+<ol>
+<li><strong>气路密封性</strong>：气路泄漏会导致读数系统性偏低或飘移，拧紧所有接头后重测；</li>
+<li><strong>电气接线</strong>：线序错误（尤其加热与信号脚互换）是损坏传感器和控制器的主要原因，对照说明书逐线确认；</li>
+<li><strong>控制器与供电</strong>：KD0100-03 加热电压是否在规格范围内？供电是否稳定？用万用表实测加热脚电压。</li>
+</ol>
+
+<h2>二、常见故障与排查表</h2>
+<table>
+<tr><th>故障现象</th><th>可能原因</th><th>排查步骤</th></tr>
+<tr><td>读数异常偏高（远超实际氧浓度）</td><td>参考气腔污染；气路有外部氧气渗入</td><td>检查气路密封；若条件允许，通纯氮气验证零点</td></tr>
+<tr><td>读数异常偏低</td><td>气路泄漏；加热不足导致离子迁移率低</td><td>检查接头；实测加热电压（应在 4.3–4.7V 或 8.5–9.5V）</td></tr>
+<tr><td>读数漂移（随温度或时间变化）</td><td>传感器预热未完成；电极老化</td><td>开机预热 ≥3 分钟再取读数；若老化则需更换</td></tr>
+<tr><td>无响应 / 输出固定值</td><td>接线断路；传感器永久损坏（如超压烧毁）</td><td>用万用表测传感器阻抗；若短路或断路，传感器已损坏</td></tr>
+<tr><td>输出噪声大</td><td>接地问题；EMC 干扰</td><td>检查信号屏蔽与接地；远离变频器/电机</td></tr>
+<tr><td>精度在某段不符合规格</td><td>校准失效；超量程使用</td><td>对照精度表确认量程；联系厂家重新标定</td></tr>
+</table>
+
+<h2>三、控制器自检方法（KD0100-03）</h2>
+<p>KD0100-03 提供内置自检功能（详见控制器说明书）。若输出 OBD 故障码，优先对照故障码表排查，不要直接更换传感器。</p>
+
+<h2>四、防止传感器损坏的操作规范</h2>
 <ul>
-<li>在目标工况点附近至少设置 2–3 个抽检点；</li>
-<li>每个点的判定限使用该点所在分档的公开精度；</li>
-<li>记录总压、温度、气流速率，确保落在允许气体温度与气流速率范围内；</li>
-<li>加热档位与控制器版本写入试验报告，保证可复现。</li>
+<li>严禁在传感器加热中途断电后立即通水气或液体，需等探头冷却；</li>
+<li>不得用手触摸陶瓷探头，油脂会污染电极表面；</li>
+<li>气体中若含硫化物、卤素或有机蒸气，会加速电极中毒，需提前评估；</li>
+<li>安装时避免机械碰撞，陶瓷芯片脆性较高。</li>
 </ul>
-<h2>常见误判</h2>
-<p>用“满量程百分比”一刀切、或在超量程/超气流条件下测试，都会造成不公正结论。若项目需要优于公开分档的指标，应在立项阶段作为定制开发需求提出，而不是默认官网规格已包含。</p>
+
+<h2>五、什么情况下需要联系厂家</h2>
+<ul>
+<li>按以上步骤排查后读数仍异常；</li>
+<li>超过保修范围的物理损坏（如意外落摔、进液）；</li>
+<li>需要定制标定或特殊气体适配评估。</li>
+</ul>
+<p><a href="/contact/" class="btn btn-primary">联系工程师</a></p>
 
 <div class="related-products"><h3>相关产品</h3><p><a href="/products/kd0100-02s-t1.html" class="tag">KD0100-02S-T1 探头</a> <a href="/products/kd0100-02s-to.html" class="tag">KD0100-02S-TO 插针</a></p></div>
 <p class="article-back"><a href="/knowledge/">&larr; 返回知识库</a>

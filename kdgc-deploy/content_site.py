@@ -258,6 +258,256 @@ KNOWLEDGE = [
 <p>公司产品承诺质保 5 年，但人为违规操作、超规格使用不在正常质量责任范围内。具体以合同与说明书约定为准。</p>
 """,
     },
+    # ─── 5 new articles ────────────────────────────────────────────────
+    {
+        "slug": "oxygen-sensor-selection-guide",
+        "category": "选型",
+        "category_en": "Selection",
+        "date": "2026-07-20",
+        "title": "变频氧传感器完整选型指南：T1、TO 与面罩型如何选？",
+        "title_en": "Complete Selection Guide: T1, TO, or Mask Oxygen Sensor?",
+        "summary": "从气体环境、安装约束、量程、精度与控制器匹配四个维度系统梳理三款 KD0100 系列传感器的适用场景与差异，帮助工程师快速缩小选型范围。",
+        "summary_en": "A systematic four-dimension framework—gas environment, mounting, range, accuracy, and controller matching—to narrow down T1, TO, or mask-type selections.",
+        "cover": "news/understand-o2-sensor.jpg",
+        "related_products": ["kd0100-02s-t1", "kd0100-02s-to", "mask-o2-sensor"],
+        "body": """
+<h2>一、选型前必须明确的四个问题</h2>
+<p>选型前，工程师需要先回答以下四个问题，任何一个答不出来都会导致选型失误或项目返工：</p>
+<ol>
+<li><strong>被测气体环境</strong>：是纯氧流、空气流、氮氧混合气，还是含有腐蚀性气体？温度范围？气压范围？</li>
+<li><strong>安装与封装约束</strong>：允许的外形尺寸是多少？需要焊接/插针/线束中哪种接口？是否需要气密安装？</li>
+<li><strong>量程与精度要求</strong>：目标量程是局部氧分压（kPa）还是百分比浓度？精度要求在哪个段最严？</li>
+<li><strong>控制器与信号链</strong>：是否已有 KD0100-03 控制器？还是需要自制接口板？CAN / UART / 模拟输出？</li>
+</ol>
+
+<h2>二、三款传感器核心差异对比</h2>
+<table>
+<tr><th>参数</th><th>KD0100-02S-T1（探头）</th><th>KD0100-02S-TO（插针）</th><th>面罩用氧传感器</th></tr>
+<tr><td>主要场景</td><td>工业气管路、气体分析仪</td><td>紧凑型仪器内嵌 OEM</td><td>航空/医疗面罩供氧监测</td></tr>
+<tr><td>外形封装</td><td>线束探头，≦35g</td><td>4-pin TO 插针，≦5g</td><td>低温专用形态</td></tr>
+<tr><td>氧分压量程</td><td>0.5–101 kPa</td><td>0.5–101 kPa</td><td>低温段优化</td></tr>
+<tr><td>工作气体温度</td><td>-50~200 °C</td><td>-50~200 °C</td><td>低温侧优化</td></tr>
+<tr><td>接口</td><td>线束（Vh-/Vh+/Sense/Common/Pump）</td><td>4-pin 插针</td><td>面罩专用接口</td></tr>
+<tr><td>加热电压</td><td>~4.5V / 9V 可选</td><td>~4.5V</td><td>—</td></tr>
+<tr><td>适合集成方式</td><td>外挂、气路插入</td><td>PCB 直插或 SMT 过渡</td><td>面罩气腔密封安装</td></tr>
+</table>
+
+<h2>三、按场景的选型建议</h2>
+<h3>场景 A：工业气体管路在线监测</h3>
+<p>推荐 <strong>KD0100-02S-T1（探头型）</strong>。探头可插入气管路，线束便于布线，适配 KD0100-03 控制器。注意气流速率须在 0–10 m/s 范围，气体温度 -50~200 °C 以内。</p>
+
+<h3>场景 B：仪器 OEM 内嵌，体积与重量约束严</h3>
+<p>推荐 <strong>KD0100-02S-TO（插针型）</strong>。插针型仅 ≦5g，直接插 PCB 或通过转接架固定。适合气室容积小、整机空间有限的场景。需注意接线方式与控制电路设计。</p>
+
+<h3>场景 C：航空面罩、高空供氧、呼吸器</h3>
+<p>推荐<strong>面罩用氧传感器</strong>。针对低温和呼吸场景优化，安装需与面罩气腔密封配合。如有具体方案需求请联系工程师评估。</p>
+
+<h3>场景 D：车用 SCR / 尾气氮氧检测</h3>
+<p>目前三款产品针对的是氧分压（O₂）测量，而不是 NOx 浓度测量。若场景需要 NOx 传感（氮氧化物），请联系销售了解后续产品规划。</p>
+
+<h2>四、控制器与接口配套</h2>
+<p>T1 和 TO 均需配合 KD0100-03 控制器或等效接口电路使用。控制器负责加热管理、信号调理与数字输出。自制接口板的工程师请参阅接线说明文章，并严格按照加热电压规格设计，加热超压是传感器损坏的最常见原因。</p>
+
+<h2>五、快速选型总结</h2>
+<ul>
+<li>有安装空间、需气路插入 → <a href="/products/kd0100-02s-t1.html">T1 探头型</a></li>
+<li>体积紧凑、PCB 集成 → <a href="/products/kd0100-02s-to.html">TO 插针型</a></li>
+<li>面罩 / 呼吸 / 低温 → <a href="/products/mask-o2-sensor.html">面罩用氧传感器</a></li>
+<li>不确定？→ <a href="/contact/">联系工程师</a></li>
+</ul>
+""",
+    },
+    {
+        "slug": "china-vi-oxygen-sensor-requirements",
+        "category": "应用",
+        "category_en": "Applications",
+        "date": "2026-07-20",
+        "title": "国六排放标准对氧传感器的要求与影响",
+        "title_en": "China VI Emission Standards: Requirements and Impact on Oxygen Sensors",
+        "summary": "梳理国六（GB18352.6-2016 / 重型 GB17691-2018）对排放后处理系统中氧传感器及氮氧传感器的具体要求，分析其对传感器选型和系统集成的影响。",
+        "summary_en": "How China VI light- and heavy-duty emission standards drive oxygen and NOx sensor requirements in aftertreatment systems.",
+        "cover": "news/nox-sensor-market.jpg",
+        "related_products": ["kd0100-02s-t1", "kd0100-02s-to"],
+        "body": """
+<h2>一、国六标准背景</h2>
+<p>中国第六阶段机动车排放标准分为轻型车（GB18352.6-2016，2020 年起实施）和重型车（GB17691-2018，2021 年起国六 A，2023 年国六 B）两类。国六在国五基础上大幅收紧了 NOx、PM 与 HC 的排放限值，同时强化了车载排放检测（PEMS）和车载诊断（OBD）要求。</p>
+<p>这些变化直接导致：后处理系统更复杂、传感器精度与寿命要求更高、OBD 监控覆盖传感器失效模式。</p>
+
+<h2>二、对氧传感器的具体要求</h2>
+<h3>1. SCR 闭环控制</h3>
+<p>SCR（选择性催化还原）系统通过喷射尿素（AdBlue）将 NOx 还原为 N₂。精确控制喷射量需要 SCR 前后各安装一个 NOx 传感器，并配合氧分压传感器进行气氛修正。氧分压偏差过大会导致 NOx 转化效率下降、OBD 故障码触发。</p>
+
+<h3>2. OBD 监控要求</h3>
+<p>国六 OBD 明确要求监控氧传感器和 NOx 传感器的性能退化（响应慢、偏移、失效），传感器需满足规定寿命（轻型 ≥160,000 km / 重型按运营里程）。这对传感器的耐高温、耐振动与抗中毒能力提出了更高要求。</p>
+
+<h3>3. 精度与响应速度</h3>
+<p>国六后处理系统对传感器响应时间要求较国五更严（一般要求 t₉₀ &lt; 1s），以满足动态工况下的精确控制。固定量程偏差须经 OBD 软件判断是否超过阈值，超限则记录故障码。</p>
+
+<h2>三、对选型的影响</h2>
+<p>与国五相比，国六选型重点变化如下：</p>
+<table>
+<tr><th>维度</th><th>国五</th><th>国六</th></tr>
+<tr><td>传感器精度</td><td>中等</td><td>更高，尤其 SCR 后端</td></tr>
+<tr><td>寿命要求</td><td>较宽泛</td><td>明确里程/时间要求</td></tr>
+<tr><td>OBD 监控</td><td>基本监控</td><td>传感器性能退化监控</td></tr>
+<tr><td>安装数量</td><td>1–2 个</td><td>2–4 个（SCR 前后 + λ 传感）</td></tr>
+</table>
+
+<h2>四、中科国瓷产品的适配说明</h2>
+<p>KD0100-02S 系列（T1/TO）为变频氧分压传感器，量程 0.5–101 kPa，适用于气体分析、面罩供氧等场景。该产品并非专为车用尾气 SCR 控制器（传统 LSU 型）设计，在选型时需确认接口与信号兼容性。</p>
+<p>若您的项目涉及 SCR 系统用氧传感或 NOx 传感路线，欢迎<a href="/contact/">联系我们</a>进行技术评估。</p>
+
+<h2>五、参考文献</h2>
+<ul>
+<li>GB18352.6-2016 《轻型汽车污染物排放限值及测量方法（中国第六阶段）》</li>
+<li>GB17691-2018 《重型柴油车污染物排放限值及测量方法（中国第六阶段）》</li>
+<li>HJ/T 399-2007《车用汽油发动机与汽车排气污染物排放限值及测量方法》</li>
+</ul>
+""",
+    },
+    {
+        "slug": "zirconia-oxygen-sensor-principle",
+        "category": "原理",
+        "category_en": "Principles",
+        "date": "2026-07-20",
+        "title": "氧化锆（ZrO₂）固体电解质氧传感器工作原理",
+        "title_en": "Working Principle of Zirconia (ZrO₂) Solid-Electrolyte Oxygen Sensors",
+        "summary": "从能斯特方程与混合电位机制出发，系统说明氧化锆固体电解质的离子导电特性、传统开关型与宽域型氧传感器的工作差异，以及变频氧传感对传统路线的改进之处。",
+        "summary_en": "From Nernst equation to mixed-potential mechanisms—how ZrO₂ ionic conductors power both conventional and variable-frequency oxygen sensors.",
+        "cover": "news/understand-o2-sensor.jpg",
+        "related_products": ["kd0100-02s-t1", "kd0100-02s-to"],
+        "body": """
+<h2>一、固体电解质的离子导电性</h2>
+<p>氧化锆（ZrO₂）在掺杂氧化钇（Y₂O₃）稳定化后，形成稳定的立方萤石晶体结构。在 300 °C 以上，O²⁻ 氧离子可以在晶格氧空位间定向迁移，表现出显著的离子导电性。这是所有基于 YSZ（钇稳定氧化锆）的氧传感器的物理基础。</p>
+
+<h2>二、能斯特方程与浓差电势</h2>
+<p>当 YSZ 固体电解质两侧暴露在氧分压不同的气氛中时，O²⁻ 在两侧迁移速率不同，形成浓差电势 E：</p>
+<p style="background:#f0f4f8;padding:12px;border-radius:8px;font-family:monospace">E = (RT/4F) × ln(P<sub>O₂,ref</sub> / P<sub>O₂,sample</sub>)</p>
+<p>其中 R 为气体常数，T 为热力学温度，F 为法拉第常数，P 为氧分压。这就是传统开关型/宽域型氧传感器的理论基础——<strong>能斯特电池</strong>。</p>
+<p>理论上，温度越高、两侧氧分压差越大，输出信号越强。但这也意味着传感器必须维持工作温度稳定（通常需要加热至 600–800 °C），否则读数漂移。</p>
+
+<h2>三、开关型氧传感器（二值传感）</h2>
+<p>传统开关型（Lambda）氧传感器将电化学电池的过渡点（空燃比 λ=1 时电压急剧跳变）作为判断依据，输出 ~0.1V 或 ~0.9V 两种状态。精度低、无法连续测量，但结构简单、成本极低，适用于三元催化器前后监控。</p>
+
+<h2>四、宽域氧传感器（LSU 型）</h2>
+<p>宽域氧传感（LSU/UEGO）引入额外泵浦电池，通过主动泵送维持参考腔氧浓度恒定，检测泵浦电流来推算样品气氧分压，从而实现连续线性测量。这是博世 LSU 4.x 系列的基本原理，广泛应用于国五以上排放控制系统。</p>
+
+<h2>五、变频氧传感的技术路线</h2>
+<p>中科国瓷 KD0100 系列采用<strong>变频检测</strong>路线：通过周期性改变施加在固体电解质上的交变激励信号频率，利用不同频率下 O²⁻ 迁移速率和界面阻抗的变化来推算氧分压，无需传统的恒流泵电路。其优点包括：</p>
+<ul>
+<li>减少对内置参考气腔的依赖，简化传感器结构；</li>
+<li>可在较宽气体温度范围内（-50~200 °C）工作，不限于高温尾气场景；</li>
+<li>适用于工业氧气管路、航空面罩等非尾气场景；</li>
+<li>配合专用控制器（KD0100-03），量程可达 0.5–101 kPa。</li>
+</ul>
+
+<h2>六、加热与温度管理</h2>
+<p>无论传统还是变频路线，YSZ 都需要一定工作温度以激活离子导电。KD0100-02S 配备加热元件，由 KD0100-03 控制器管理加热电压（~4.5V 或 9V 可选）。加热不足会导致响应慢、偏差大；过热则会加速电极老化甚至损坏。<strong>加热电压必须严格按照规格书设定，不得超压。</strong></p>
+
+<h2>七、总结</h2>
+<p>氧化锆氧传感器的核心是 YSZ 固体电解质的离子导电特性。开关型适合排放控制二值判断；宽域型适合连续空燃比闭环；变频型则适合更广泛的工业与特种气体场景，是中科国瓷 KD0100 系列的技术差异所在。</p>
+""",
+    },
+    {
+        "slug": "oxygen-sensor-fault-diagnosis",
+        "category": "维护",
+        "category_en": "Maintenance",
+        "date": "2026-07-20",
+        "title": "氧传感器故障诊断：常见问题与排查思路",
+        "title_en": "Oxygen Sensor Fault Diagnosis: Common Issues and Troubleshooting",
+        "summary": "梳理 KD0100 系列氧传感器常见故障现象（读数偏高/偏低/无响应/漂移），结合硬件检查、气路排查与控制器自检，给出系统性排查流程。",
+        "summary_en": "Systematic troubleshooting for KD0100-series issues: high/low readings, no response, and drift—hardware check, gas-path inspection, and controller self-test.",
+        "cover": "news/understand-o2-sensor.jpg",
+        "related_products": ["kd0100-02s-t1", "kd0100-02s-to"],
+        "body": """
+<h2>一、排查前提：先确认这三件事</h2>
+<p>在判断传感器本体故障前，必须先排除以下三类外部原因，否则很容易误换好的传感器：</p>
+<ol>
+<li><strong>气路密封性</strong>：气路泄漏会导致读数系统性偏低或飘移，拧紧所有接头后重测；</li>
+<li><strong>电气接线</strong>：线序错误（尤其加热与信号脚互换）是损坏传感器和控制器的主要原因，对照说明书逐线确认；</li>
+<li><strong>控制器与供电</strong>：KD0100-03 加热电压是否在规格范围内？供电是否稳定？用万用表实测加热脚电压。</li>
+</ol>
+
+<h2>二、常见故障与排查表</h2>
+<table>
+<tr><th>故障现象</th><th>可能原因</th><th>排查步骤</th></tr>
+<tr><td>读数异常偏高（远超实际氧浓度）</td><td>参考气腔污染；气路有外部氧气渗入</td><td>检查气路密封；若条件允许，通纯氮气验证零点</td></tr>
+<tr><td>读数异常偏低</td><td>气路泄漏；加热不足导致离子迁移率低</td><td>检查接头；实测加热电压（应在 4.3–4.7V 或 8.5–9.5V）</td></tr>
+<tr><td>读数漂移（随温度或时间变化）</td><td>传感器预热未完成；电极老化</td><td>开机预热 ≥3 分钟再取读数；若老化则需更换</td></tr>
+<tr><td>无响应 / 输出固定值</td><td>接线断路；传感器永久损坏（如超压烧毁）</td><td>用万用表测传感器阻抗；若短路或断路，传感器已损坏</td></tr>
+<tr><td>输出噪声大</td><td>接地问题；EMC 干扰</td><td>检查信号屏蔽与接地；远离变频器/电机</td></tr>
+<tr><td>精度在某段不符合规格</td><td>校准失效；超量程使用</td><td>对照精度表确认量程；联系厂家重新标定</td></tr>
+</table>
+
+<h2>三、控制器自检方法（KD0100-03）</h2>
+<p>KD0100-03 提供内置自检功能（详见控制器说明书）。若输出 OBD 故障码，优先对照故障码表排查，不要直接更换传感器。</p>
+
+<h2>四、防止传感器损坏的操作规范</h2>
+<ul>
+<li>严禁在传感器加热中途断电后立即通水气或液体，需等探头冷却；</li>
+<li>不得用手触摸陶瓷探头，油脂会污染电极表面；</li>
+<li>气体中若含硫化物、卤素或有机蒸气，会加速电极中毒，需提前评估；</li>
+<li>安装时避免机械碰撞，陶瓷芯片脆性较高。</li>
+</ul>
+
+<h2>五、什么情况下需要联系厂家</h2>
+<ul>
+<li>按以上步骤排查后读数仍异常；</li>
+<li>超过保修范围的物理损坏（如意外落摔、进液）；</li>
+<li>需要定制标定或特殊气体适配评估。</li>
+</ul>
+<p><a href="/contact/" class="btn btn-primary">联系工程师</a></p>
+""",
+    },
+    {
+        "slug": "domestic-vs-imported-oxygen-sensors",
+        "category": "选型",
+        "category_en": "Selection",
+        "date": "2026-07-20",
+        "title": "国产变频氧传感器与进口产品对比分析",
+        "title_en": "Domestic Variable-Frequency vs Imported Oxygen Sensors: A Comparative Analysis",
+        "summary": "从技术路线、指标可比性、供应链安全、价格与技术支持五个维度，客观分析国产变频氧传感器与传统进口宽域氧传感器的差异，供工程师选型参考。",
+        "summary_en": "A five-dimension comparison—technology, specs, supply chain, pricing, and support—between domestic VF and imported wideband oxygen sensors.",
+        "cover": "news/nox-sensor-market.jpg",
+        "related_products": ["kd0100-02s-t1", "kd0100-02s-to"],
+        "body": """
+<h2>一、前提说明</h2>
+<p>本文对比的对象是：中科国瓷 KD0100 系列<strong>变频氧分压传感器</strong>（工业与特种场景）与传统进口宽域氧传感器（主要面向车用 SCR/尾气场景，如博世 LSU 系列）。两者的目标场景有交集但不完全重合，对比需在相同应用场景下进行。</p>
+
+<h2>二、技术路线对比</h2>
+<table>
+<tr><th>维度</th><th>KD0100 变频型</th><th>典型进口宽域型（如 LSU）</th></tr>
+<tr><td>检测原理</td><td>变频激励 + 阻抗分析</td><td>电化学泵电流（Nernst+极限电流）</td></tr>
+<tr><td>工作温度范围</td><td>-50~200 °C（气体）</td><td>600~850 °C（尾气专用）</td></tr>
+<tr><td>量程</td><td>0.5–101 kPa 氧分压</td><td>λ 0.65–∞ / 0–25% O₂</td></tr>
+<tr><td>信号输出</td><td>数字（配 KD0100-03）</td><td>模拟电压 / CAN（需 ECU 配套）</td></tr>
+<tr><td>主要应用场景</td><td>工业气体、面罩、仪器 OEM</td><td>车用发动机尾气 SCR 控制</td></tr>
+</table>
+<p><strong>结论：两者技术路线不同，不能简单互换。场景匹配优先于品牌比较。</strong></p>
+
+<h2>三、指标可比性</h2>
+<p>KD0100 的精度指标（±0.5–2.5 kPa 分段）以氧分压（kPa）为单位，而进口车用宽域型通常以空燃比（λ）或浓度（%）标注。在工业气体和面罩供氧场景下，kPa 单位更直接、更有意义。</p>
+<p>不建议在不同场景下直接对比两者的"精度数字"，应以实际应用的气体范围和测量目的为准。</p>
+
+<h2>四、供应链与国产化</h2>
+<ul>
+<li><strong>供货稳定性</strong>：进口传感器受全球供应链波动影响，近年交期延迟问题明显。国产传感器交期可控，支持按需生产。</li>
+<li><strong>国产化要求</strong>：部分涉及航空、军工、能源等领域的项目有明确国产化采购要求，国产变频氧传感器可满足此类需求。</li>
+<li><strong>技术支持响应</strong>：国内厂家可提供本土工程师支持、原厂标定服务和定制化评估，响应周期短于进口渠道。</li>
+</ul>
+
+<h2>五、价格区间参考</h2>
+<p>进口宽域氧传感器（含车规型）批量价格视型号差异较大，国内代理价一般在数百元至千元以上。KD0100 系列价格请以官方报价为准，可联系销售获取。</p>
+<p>综合考虑供应链风险、交期与本土技术支持，对非车用尾气场景，国产变频氧传感器是值得评估的选项。</p>
+
+<h2>六、如何选择</h2>
+<ul>
+<li><strong>车用尾气 SCR 控制（国六配套）</strong>：仍需符合车规认证的专用型号，建议先确认 IATF 16949 与 OEM 认证要求。</li>
+<li><strong>工业气体、面罩、实验室仪器、特种装备</strong>：KD0100 系列是可靠的国产方案，欢迎申请试样评估。</li>
+</ul>
+<p><a href="/contact/" class="btn btn-primary">申请试样 / 联系工程师</a></p>
+""",
+    },
 ]
 
 CASES = [

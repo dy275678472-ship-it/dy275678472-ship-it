@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>变频氧传感器完整选型指南：T1、TO 与面罩型如何选？ — 中科国瓷</title><meta name="description" content="从气体环境、安装约束、量程、精度与控制器匹配四个维度系统梳理三款 KD0100 系列传感器的适用场景与差异，帮助工程师快速缩小选型范围。">
+<link rel="canonical" href="https://kdgc.cc/knowledge/oxygen-sensor-selection-guide.html"><link rel="stylesheet" href="/assets/css/style.css">
+<link rel="icon" href="/assets/images/favicon.ico?v=20260720c">
+<script type="application/ld+json">{
+  "@context":"https://schema.org",
+  "@type":"Organization",
+  "@id":"https://kdgc.cc/#org",
+  "name":"安徽中科国瓷新型元器件有限公司",
+  "alternateName":["中科国瓷","KDGC","ZK Guoci"],
+  "url":"https://kdgc.cc/",
+  "logo":"https://kdgc.cc/assets/images/logo.png",
+  "contactPoint":{"@type":"ContactPoint","telephone":"+86-15385884309","contactType":"sales","email":"guanwn@kdgc.cc","availableLanguage":["Chinese","English"]},
+  "address":{"@type":"PostalAddress","streetAddress":"望江西路5089号嵌入式研发楼103-C3","addressLocality":"合肥市","addressRegion":"安徽省","postalCode":"230088","addressCountry":"CN"},
+  "sameAs":["https://kdgc.cc/en/"]
+}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页","item":"https://kdgc.cc/"},{"@type":"ListItem","position":2,"name":"知识库","item":"https://kdgc.cc/knowledge/"},{"@type":"ListItem","position":3,"name":"变频氧传感器完整选型指南：T1、TO 与面罩型如何选？","item":"https://kdgc.cc/knowledge/oxygen-sensor-selection-guide.html"}]}</script>
+</head><body><nav class="nav"><div class="nav-inner">
+<a href="/" class="nav-logo" aria-label="中科国瓷">
+<picture>
+<source srcset="/assets/images/logo.webp?v=20260720c" type="image/webp">
+<img src="/assets/images/logo.png?v=20260720c" alt="中科国瓷 — 安徽中科国瓷新型元器件有限公司" class="nav-logo-img" width="326" height="96">
+</picture>
+</a>
+<div class="nav-links">
+<a href="/">首页</a>
+<a href="/products/">产品中心</a>
+<a href="/news/">新闻资讯</a>
+<a href="/knowledge/">知识库</a>
+<a href="/cases/">行业案例</a>
+<a href="/about/">关于中科国瓷</a>
+<a href="/en/" style="opacity:.8">EN</a>
+<a href="/contact/" class="nav-cta">联系我们</a>
+</div>
+<button class="menu-toggle" aria-label="菜单">☰</button>
+</div></nav><main><article class="article">
+<section class="page-hero article-hero"><div class="container">
+<p class="article-meta"><span class="tag">选型</span><span class="tag">2026-07-20</span></p>
+<h1>变频氧传感器完整选型指南：T1、TO 与面罩型如何选？</h1>
+<p class="article-deck">从气体环境、安装约束、量程、精度与控制器匹配四个维度系统梳理三款 KD0100 系列传感器的适用场景与差异，帮助工程师快速缩小选型范围。</p>
+</div></section>
+<section class="article-section"><div class="container article-layout">
+<figure class="article-cover"><img src="/assets/images/news/understand-o2-sensor.webp" alt="变频氧传感器完整选型指南：T1、TO 与面罩型如何选？"></figure>
+<div class="article-body content-block">
+<h2>一、选型前必须明确的四个问题</h2>
+<p>选型前，工程师需要先回答以下四个问题，任何一个答不出来都会导致选型失误或项目返工：</p>
+<ol>
+<li><strong>被测气体环境</strong>：是纯氧流、空气流、氮氧混合气，还是含有腐蚀性气体？温度范围？气压范围？</li>
+<li><strong>安装与封装约束</strong>：允许的外形尺寸是多少？需要焊接/插针/线束中哪种接口？是否需要气密安装？</li>
+<li><strong>量程与精度要求</strong>：目标量程是局部氧分压（kPa）还是百分比浓度？精度要求在哪个段最严？</li>
+<li><strong>控制器与信号链</strong>：是否已有 KD0100-03 控制器？还是需要自制接口板？CAN / UART / 模拟输出？</li>
+</ol>
+
+<h2>二、三款传感器核心差异对比</h2>
+<table>
+<tr><th>参数</th><th>KD0100-02S-T1（探头）</th><th>KD0100-02S-TO（插针）</th><th>面罩用氧传感器</th></tr>
+<tr><td>主要场景</td><td>工业气管路、气体分析仪</td><td>紧凑型仪器内嵌 OEM</td><td>航空/医疗面罩供氧监测</td></tr>
+<tr><td>外形封装</td><td>线束探头，≦35g</td><td>4-pin TO 插针，≦5g</td><td>低温专用形态</td></tr>
+<tr><td>氧分压量程</td><td>0.5–101 kPa</td><td>0.5–101 kPa</td><td>低温段优化</td></tr>
+<tr><td>工作气体温度</td><td>-50~200 °C</td><td>-50~200 °C</td><td>低温侧优化</td></tr>
+<tr><td>接口</td><td>线束（Vh-/Vh+/Sense/Common/Pump）</td><td>4-pin 插针</td><td>面罩专用接口</td></tr>
+<tr><td>加热电压</td><td>~4.5V / 9V 可选</td><td>~4.5V</td><td>—</td></tr>
+<tr><td>适合集成方式</td><td>外挂、气路插入</td><td>PCB 直插或 SMT 过渡</td><td>面罩气腔密封安装</td></tr>
+</table>
+
+<h2>三、按场景的选型建议</h2>
+<h3>场景 A：工业气体管路在线监测</h3>
+<p>推荐 <strong>KD0100-02S-T1（探头型）</strong>。探头可插入气管路，线束便于布线，适配 KD0100-03 控制器。注意气流速率须在 0–10 m/s 范围，气体温度 -50~200 °C 以内。</p>
+
+<h3>场景 B：仪器 OEM 内嵌，体积与重量约束严</h3>
+<p>推荐 <strong>KD0100-02S-TO（插针型）</strong>。插针型仅 ≦5g，直接插 PCB 或通过转接架固定。适合气室容积小、整机空间有限的场景。需注意接线方式与控制电路设计。</p>
+
+<h3>场景 C：航空面罩、高空供氧、呼吸器</h3>
+<p>推荐<strong>面罩用氧传感器</strong>。针对低温和呼吸场景优化，安装需与面罩气腔密封配合。如有具体方案需求请联系工程师评估。</p>
+
+<h3>场景 D：车用 SCR / 尾气氮氧检测</h3>
+<p>目前三款产品针对的是氧分压（O₂）测量，而不是 NOx 浓度测量。若场景需要 NOx 传感（氮氧化物），请联系销售了解后续产品规划。</p>
+
+<h2>四、控制器与接口配套</h2>
+<p>T1 和 TO 均需配合 KD0100-03 控制器或等效接口电路使用。控制器负责加热管理、信号调理与数字输出。自制接口板的工程师请参阅接线说明文章，并严格按照加热电压规格设计，加热超压是传感器损坏的最常见原因。</p>
+
+<h2>五、快速选型总结</h2>
+<ul>
+<li>有安装空间、需气路插入 → <a href="/products/kd0100-02s-t1.html">T1 探头型</a></li>
+<li>体积紧凑、PCB 集成 → <a href="/products/kd0100-02s-to.html">TO 插针型</a></li>
+<li>面罩 / 呼吸 / 低温 → <a href="/products/mask-o2-sensor.html">面罩用氧传感器</a></li>
+<li>不确定？→ <a href="/contact/">联系工程师</a></li>
+</ul>
+
+<div class="related-products"><h3>相关产品</h3><p><a href="/products/kd0100-02s-t1.html" class="tag">KD0100-02S-T1 探头</a> <a href="/products/kd0100-02s-to.html" class="tag">KD0100-02S-TO 插针</a> <a href="/products/mask-o2-sensor.html" class="tag">面罩用氧传感器</a></p></div>
+<p class="article-back"><a href="/knowledge/">&larr; 返回知识库</a>
+<a href="/contact/" class="btn btn-primary" style="margin-left:12px">咨询选型</a></p>
+</div></div></section>
+</article></main><footer><div class="footer-grid container" style="padding:0">
+<div><h4>中科国瓷</h4><p style="font-size:14px;margin-top:8px">变频氧传感器与氮氧传感技术 · 中科大技术转化</p>
+<p style="font-size:13px;margin-top:8px;opacity:.8">恪守诚信为本，产品承诺质保 5 年</p></div>
+<div><h4>产品</h4>
+<a href="/products/kd0100-02s-t1.html">KD0100-02S-T1 探头</a>
+<a href="/products/kd0100-02s-to.html">KD0100-02S-TO 插针</a>
+<a href="/products/mask-o2-sensor.html">面罩用氧传感器</a></div>
+<div><h4>公司</h4><a href="/">首页</a><a href="/products/">产品中心</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">行业案例</a><a href="/about/">关于中科国瓷</a><a href="/technology/">技术能力</a><a href="/applications/">应用场景</a><a href="/contact/">联系我们</a><a href="/privacy.html">隐私政策</a></div>
+<div><h4>联系</h4><a href="mailto:guanwn@kdgc.cc">guanwn@kdgc.cc</a><br>
+<a href="tel:15385884309">153-8588-4309</a>
+<p style="font-size:13px;margin-top:8px">安徽省合肥市高新区望江西路5089号嵌入式研发楼103-C3（科大先研院-智源楼）</p></div>
+</div>
+<div class="footer-bottom"><div class="footer-meta">
+<span>© 2026 安徽中科国瓷新型元器件有限公司</span><span class="sep">·</span>
+<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">皖ICP备2021010166号</a><span class="sep">·</span>
+<a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=34019202001633" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="" width="14" height="14">皖公网安备34019202001633号</a><span class="sep">·</span>
+<a href="/en/">English</a><span class="sep">|</span><a href="/">中文</a>
+</div></div></footer>
+<script src="/assets/js/main.js"></script></body></html>

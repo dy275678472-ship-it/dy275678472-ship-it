@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-CN"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>测量精度曲线解读（1–100 kPa） — 中科国瓷</title><meta name="description" content="按公开精度分档解释如何设计抽检点与判定准则，避免用单点误差否定全量程能力。">
-<link rel="canonical" href="https://kdgc.cc/knowledge/accuracy-curve-reading.html"><link rel="stylesheet" href="/assets/css/style.css">
+<title>国六排放标准对氧传感器的要求与影响 — 中科国瓷</title><meta name="description" content="梳理国六（GB18352.6-2016 / 重型 GB17691-2018）对排放后处理系统中氧传感器及氮氧传感器的具体要求，分析其对传感器选型和系统集成的影响。">
+<link rel="canonical" href="https://kdgc.cc/knowledge/china-vi-oxygen-sensor-requirements.html"><link rel="stylesheet" href="/assets/css/style.css">
 <link rel="icon" href="/assets/images/favicon.ico?v=20260720c">
 <script type="application/ld+json">{
   "@context":"https://schema.org",
@@ -16,7 +16,7 @@
   "address":{"@type":"PostalAddress","streetAddress":"望江西路5089号嵌入式研发楼103-C3","addressLocality":"合肥市","addressRegion":"安徽省","postalCode":"230088","addressCountry":"CN"},
   "sameAs":["https://kdgc.cc/en/"]
 }</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页","item":"https://kdgc.cc/"},{"@type":"ListItem","position":2,"name":"知识库","item":"https://kdgc.cc/knowledge/"},{"@type":"ListItem","position":3,"name":"测量精度曲线解读（1–100 kPa）","item":"https://kdgc.cc/knowledge/accuracy-curve-reading.html"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页","item":"https://kdgc.cc/"},{"@type":"ListItem","position":2,"name":"知识库","item":"https://kdgc.cc/knowledge/"},{"@type":"ListItem","position":3,"name":"国六排放标准对氧传感器的要求与影响","item":"https://kdgc.cc/knowledge/china-vi-oxygen-sensor-requirements.html"}]}</script>
 </head><body><nav class="nav"><div class="nav-inner">
 <a href="/" class="nav-logo" aria-label="中科国瓷">
 <picture>
@@ -37,24 +37,47 @@
 <button class="menu-toggle" aria-label="菜单">☰</button>
 </div></nav><main><article class="article">
 <section class="page-hero article-hero"><div class="container">
-<p class="article-meta"><span class="tag">工程</span><span class="tag">2026-07-07</span></p>
-<h1>测量精度曲线解读（1–100 kPa）</h1>
-<p class="article-deck">按公开精度分档解释如何设计抽检点与判定准则，避免用单点误差否定全量程能力。</p>
+<p class="article-meta"><span class="tag">应用</span><span class="tag">2026-07-20</span></p>
+<h1>国六排放标准对氧传感器的要求与影响</h1>
+<p class="article-deck">梳理国六（GB18352.6-2016 / 重型 GB17691-2018）对排放后处理系统中氧传感器及氮氧传感器的具体要求，分析其对传感器选型和系统集成的影响。</p>
 </div></section>
 <section class="article-section"><div class="container article-layout">
-<figure class="article-cover"><img src="/assets/images/products/exploded.webp" alt="测量精度曲线解读（1–100 kPa）"></figure>
+<figure class="article-cover"><img src="/assets/images/news/nox-sensor-market.webp" alt="国六排放标准对氧传感器的要求与影响"></figure>
 <div class="article-body content-block">
-<h2>精度是“分档”而不是一条直线</h2>
-<p>KD0100 系列在标准大气条件下的精度以氧分压区间给出。高氧分压段允许误差绝对值更大，这在气体传感中常见：同样 ±1 kPa，在 5 kPa 点与在 90 kPa 点的相对意义不同。</p>
-<h2>建议的验收设计</h2>
+<h2>一、国六标准背景</h2>
+<p>中国第六阶段机动车排放标准分为轻型车（GB18352.6-2016，2020 年起实施）和重型车（GB17691-2018，2021 年起国六 A，2023 年国六 B）两类。国六在国五基础上大幅收紧了 NOx、PM 与 HC 的排放限值，同时强化了车载排放检测（PEMS）和车载诊断（OBD）要求。</p>
+<p>这些变化直接导致：后处理系统更复杂、传感器精度与寿命要求更高、OBD 监控覆盖传感器失效模式。</p>
+
+<h2>二、对氧传感器的具体要求</h2>
+<h3>1. SCR 闭环控制</h3>
+<p>SCR（选择性催化还原）系统通过喷射尿素（AdBlue）将 NOx 还原为 N₂。精确控制喷射量需要 SCR 前后各安装一个 NOx 传感器，并配合氧分压传感器进行气氛修正。氧分压偏差过大会导致 NOx 转化效率下降、OBD 故障码触发。</p>
+
+<h3>2. OBD 监控要求</h3>
+<p>国六 OBD 明确要求监控氧传感器和 NOx 传感器的性能退化（响应慢、偏移、失效），传感器需满足规定寿命（轻型 ≥160,000 km / 重型按运营里程）。这对传感器的耐高温、耐振动与抗中毒能力提出了更高要求。</p>
+
+<h3>3. 精度与响应速度</h3>
+<p>国六后处理系统对传感器响应时间要求较国五更严（一般要求 t₉₀ &lt; 1s），以满足动态工况下的精确控制。固定量程偏差须经 OBD 软件判断是否超过阈值，超限则记录故障码。</p>
+
+<h2>三、对选型的影响</h2>
+<p>与国五相比，国六选型重点变化如下：</p>
+<table>
+<tr><th>维度</th><th>国五</th><th>国六</th></tr>
+<tr><td>传感器精度</td><td>中等</td><td>更高，尤其 SCR 后端</td></tr>
+<tr><td>寿命要求</td><td>较宽泛</td><td>明确里程/时间要求</td></tr>
+<tr><td>OBD 监控</td><td>基本监控</td><td>传感器性能退化监控</td></tr>
+<tr><td>安装数量</td><td>1–2 个</td><td>2–4 个（SCR 前后 + λ 传感）</td></tr>
+</table>
+
+<h2>四、中科国瓷产品的适配说明</h2>
+<p>KD0100-02S 系列（T1/TO）为变频氧分压传感器，量程 0.5–101 kPa，适用于气体分析、面罩供氧等场景。该产品并非专为车用尾气 SCR 控制器（传统 LSU 型）设计，在选型时需确认接口与信号兼容性。</p>
+<p>若您的项目涉及 SCR 系统用氧传感或 NOx 传感路线，欢迎<a href="/contact/">联系我们</a>进行技术评估。</p>
+
+<h2>五、参考文献</h2>
 <ul>
-<li>在目标工况点附近至少设置 2–3 个抽检点；</li>
-<li>每个点的判定限使用该点所在分档的公开精度；</li>
-<li>记录总压、温度、气流速率，确保落在允许气体温度与气流速率范围内；</li>
-<li>加热档位与控制器版本写入试验报告，保证可复现。</li>
+<li>GB18352.6-2016 《轻型汽车污染物排放限值及测量方法（中国第六阶段）》</li>
+<li>GB17691-2018 《重型柴油车污染物排放限值及测量方法（中国第六阶段）》</li>
+<li>HJ/T 399-2007《车用汽油发动机与汽车排气污染物排放限值及测量方法》</li>
 </ul>
-<h2>常见误判</h2>
-<p>用“满量程百分比”一刀切、或在超量程/超气流条件下测试，都会造成不公正结论。若项目需要优于公开分档的指标，应在立项阶段作为定制开发需求提出，而不是默认官网规格已包含。</p>
 
 <div class="related-products"><h3>相关产品</h3><p><a href="/products/kd0100-02s-t1.html" class="tag">KD0100-02S-T1 探头</a> <a href="/products/kd0100-02s-to.html" class="tag">KD0100-02S-TO 插针</a></p></div>
 <p class="article-back"><a href="/knowledge/">&larr; 返回知识库</a>

@@ -114,10 +114,10 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <script src="/assets/js/main.js"></script>"""
 
 NAV = """<nav class="nav"><div class="nav-inner">
-<a href="/" class="nav-logo" aria-label="国瓷 · 中科国瓷">
+<a href="/" class="nav-logo" aria-label="中科国瓷">
 <picture>
-<source srcset="/assets/images/logo.webp?v=20260720b" type="image/webp">
-<img src="/assets/images/logo.png?v=20260720b" alt="国瓷 · 安徽中科国瓷新型元器件有限公司" class="nav-logo-img" width="429" height="96">
+<source srcset="/assets/images/logo.webp?v=20260720c" type="image/webp">
+<img src="/assets/images/logo.png?v=20260720c" alt="中科国瓷 — 安徽中科国瓷新型元器件有限公司" class="nav-logo-img" width="326" height="96">
 </picture>
 </a>
 <div class="nav-links">
@@ -134,10 +134,10 @@ NAV = """<nav class="nav"><div class="nav-inner">
 </div></nav>"""
 
 NAV_EN = """<nav class="nav"><div class="nav-inner">
-<a href="/en/" class="nav-logo" aria-label="Guoci · Zhongke Guoci">
+<a href="/en/" class="nav-logo" aria-label="KDGC — Zhongke Guoci">
 <picture>
-<source srcset="/assets/images/logo.webp?v=20260720b" type="image/webp">
-<img src="/assets/images/logo.png?v=20260720b" alt="Anhui Zhongke Guoci New Components Co., Ltd." class="nav-logo-img" width="429" height="96">
+<source srcset="/assets/images/logo-en.webp?v=20260720c" type="image/webp">
+<img src="/assets/images/logo-en.png?v=20260720c" alt="KDGC — Zhongke Guoci Oxygen Sensors" class="nav-logo-img" width="383" height="96">
 </picture>
 </a>
 <div class="nav-links">
@@ -184,17 +184,57 @@ FOOTER_EN = f"""<footer><div class="footer-grid container" style="padding:0">
 <script src="/assets/js/main.js"></script>"""
 
 
-def page(title, desc, body, canonical="", lang="zh"):
+ORG_SCHEMA = """{
+  "@context":"https://schema.org",
+  "@type":"Organization",
+  "@id":"https://kdgc.cc/#org",
+  "name":"安徽中科国瓷新型元器件有限公司",
+  "alternateName":["中科国瓷","KDGC","ZK Guoci"],
+  "url":"https://kdgc.cc/",
+  "logo":"https://kdgc.cc/assets/images/logo.png",
+  "contactPoint":{"@type":"ContactPoint","telephone":"+86-15385884309","contactType":"sales","email":"guanwn@kdgc.cc","availableLanguage":["Chinese","English"]},
+  "address":{"@type":"PostalAddress","streetAddress":"望江西路5089号嵌入式研发楼103-C3","addressLocality":"合肥市","addressRegion":"安徽省","postalCode":"230088","addressCountry":"CN"},
+  "sameAs":["https://kdgc.cc/en/"]
+}"""
+
+def product_schema(p, slug):
+    return f"""{{
+  "@context":"https://schema.org",
+  "@type":"Product",
+  "name":"{p['name']}",
+  "description":"{p['summary']}",
+  "url":"https://kdgc.cc/products/{slug}.html",
+  "image":"https://kdgc.cc/assets/images/products/{slug}.png",
+  "brand":{{"@type":"Brand","name":"中科国瓷"}},
+  "manufacturer":{{"@id":"https://kdgc.cc/#org"}},
+  "offers":{{"@type":"Offer","availability":"https://schema.org/InStock","url":"https://kdgc.cc/contact/"}}
+}}"""
+
+def breadcrumb_schema(items):
+    elements = ",".join(
+        f'{{"@type":"ListItem","position":{i+1},"name":"{name}","item":"https://kdgc.cc{url}"}}'
+        for i,(name,url) in enumerate(items)
+    )
+    return f'{{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{elements}]}}'
+
+def page(title, desc, body, canonical="", lang="zh", schema_extra=""):
     nav = NAV if lang == "zh" else NAV_EN
     footer = FOOTER if lang == "zh" else FOOTER_EN
     lang_attr = "zh-CN" if lang == "zh" else "en"
     canon = f'<link rel="canonical" href="https://kdgc.cc{canonical}">' if canonical else ""
+    schemas = [ORG_SCHEMA]
+    if schema_extra:
+        schemas.append(schema_extra)
+    schema_tags = "\n".join(
+        f'<script type="application/ld+json">{s}</script>' for s in schemas
+    )
     return f"""<!DOCTYPE html>
 <html lang="{lang_attr}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title}</title><meta name="description" content="{desc}">
 {canon}<link rel="stylesheet" href="/assets/css/style.css">
-<link rel="icon" href="/assets/images/favicon.ico?v=20260720b">
+<link rel="icon" href="/assets/images/favicon.ico?v=20260720c">
+{schema_tags}
 </head><body>{nav}<main>{body}</main>{footer}</body></html>"""
 
 
@@ -512,6 +552,12 @@ def product_detail_html(p):
         notes = "<h3>注意事项</h3><ul>" + "".join(f"<li>{n}</li>" for n in p["notes"]) + "</ul>"
     adv = "".join(f"<li>{a}</li>" for a in p["advantages"])
     img = asset_url(p["image"])
+    # Download button (PDF placeholder — engineers can replace with real file)
+    download_btn = (
+        f'<a href="/contact/?product={p["slug"]}&req=spec" class="btn btn-ghost" '
+        f'style="margin-left:8px;border-color:var(--blue);color:var(--blue)">'
+        f'📄 要规格书</a>'
+    )
     extras = []
     if has_asset("products/exploded.png") or has_asset("products/exploded.webp"):
         extras.append(
@@ -532,11 +578,14 @@ def product_detail_html(p):
 <div class="content-block" style="margin:0">
 <p>{p['summary']}</p>
 <h3>产品优势</h3><ul>{adv}</ul>
-<p style="margin-top:20px"><a href="/contact/?product={p['slug']}" class="btn btn-primary">咨询此产品</a>
+<p style="margin-top:20px"><a href="/contact/?product={p['slug']}" class="btn btn-primary">工程师咨询</a>
+{download_btn}
 <a href="/products/" class="btn btn-ghost" style="margin-left:8px;color:var(--navy);border-color:var(--border)">返回产品中心</a></p>
 </div></div>
 <div class="container" style="margin-top:32px">
-<div class="content-block"><h2>规格参数</h2><table>{specs_rows}</table>
+<div class="content-block"><h2>规格参数</h2>
+<p style="font-size:13px;color:var(--muted);margin-bottom:12px">如需完整规格书（PDF），请<a href="/contact/?product={p['slug']}&req=spec" style="color:var(--blue)">联系我们</a>索取。</p>
+<table>{specs_rows}</table>
 {wiring}
 <h3 style="margin-top:24px">测量精度（标准大气条件下）</h3>
 <table><tr><th>氧分压范围</th><th>精度</th></tr>{acc_rows}</table>
@@ -674,12 +723,41 @@ def main():
 <div class="section-header"><div class="section-label">News</div><h2>新闻资讯</h2></div>
 <div class="grid-3">{news_cards}</div>
 </div></section>
+<section style="background:var(--gray)"><div class="container">
+<div class="section-header">
+<div class="section-label">Selection Tool</div>
+<h2>在线选型</h2>
+<p>不确定选哪款？60 秒对比三款传感器核心差异</p>
+</div>
+<div class="values-cards" style="max-width:960px;margin:0 auto 24px">
+<a class="values-card" href="/knowledge/oxygen-sensor-selection-guide.html">
+<span class="values-num" style="color:var(--blue)">探头型 T1</span>
+<h3>KD0100-02S-T1</h3>
+<p>气管路插入 · 线束 · ≦35g · 工业首选</p>
+</a>
+<a class="values-card" href="/knowledge/oxygen-sensor-selection-guide.html">
+<span class="values-num" style="color:var(--blue)">插针型 TO</span>
+<h3>KD0100-02S-TO</h3>
+<p>PCB 直插 · ≦5g · OEM 内嵌首选</p>
+</a>
+<a class="values-card" href="/knowledge/oxygen-sensor-selection-guide.html">
+<span class="values-num" style="color:var(--blue)">面罩型</span>
+<h3>面罩用氧传感器</h3>
+<p>低温优化 · 航空/呼吸场景专用</p>
+</a>
+</div>
+<p style="text-align:center;margin-top:8px">
+<a href="/knowledge/oxygen-sensor-selection-guide.html" class="btn btn-primary" style="margin-right:12px">查看完整选型指南</a>
+<a href="/contact/" class="btn btn-ghost" style="color:var(--navy);border-color:var(--navy)">咨询工程师</a>
+</p>
+</div></section>
 <section class="cta-section"><div class="container">
 <h2>获取氧传感器技术方案</h2>
 <p style="margin-bottom:24px;opacity:.9">填写需求，技术团队将尽快与您联系</p>
 <a href="/contact/" class="btn btn-white">立即咨询</a>
 </div></section>""",
         "/",
+        schema_extra=breadcrumb_schema([("首页", "/")]),
     )
 
     # Products index + details
@@ -692,7 +770,12 @@ def main():
     )
     for p in PRODUCTS:
         pages[f"products/{p['slug']}.html"] = page(
-            f"{p['name']} — 中科国瓷", p["summary"], product_detail_html(p), f"/products/{p['slug']}.html"
+            f"{p['name']} — 中科国瓷", p["summary"], product_detail_html(p), f"/products/{p['slug']}.html",
+            schema_extra="\n".join([
+                product_schema(p, p["slug"]),
+                breadcrumb_schema([("首页","/"),("产品中心","/products/"),
+                                   (p["name"], f"/products/{p['slug']}.html")]),
+            ])
         )
 
     # About — 核心团队不放图片，仅展示姓名、职务与履历
@@ -826,7 +909,10 @@ def main():
     pages["contact/index.html"] = page(
         "联系我们 — 中科国瓷",
         f"联系中科国瓷：{PHONE_DISPLAY} {EMAIL} {ADDRESS}",
-        f"""{page_hero("联系我们", "科技感知未来 · 快速响应", "contact/banner.jpg")}
+        f"""{page_hero("联系我们", "24 小时内回复承诺 · 技术工程师直通", "contact/banner.jpg")}
+<div style="background:#eff6ff;border-bottom:2px solid var(--blue);padding:14px 24px;text-align:center;font-size:15px;font-weight:600;color:var(--blue)">
+  ✅ 提交咨询后，我们承诺在 24 小时内由工程师回复您（工作日当天内优先响应）
+</div>
 <section class="contact-promises-section"><div class="container">{contact_promises_html("zh")}</div></section>
 <section class="contact-main"><div class="container contact-layout">
 <div class="contact-info">
@@ -969,6 +1055,9 @@ def main():
 </div></div></section>
 </article>""",
             f"/knowledge/{k['slug']}.html",
+            schema_extra=breadcrumb_schema([
+                ("首页","/"),("知识库","/knowledge/"),(k["title"],f"/knowledge/{k['slug']}.html")
+            ]),
         )
 
     # Industry cases
@@ -1024,6 +1113,9 @@ def main():
 </div></div></section>
 </article>""",
             f"/cases/{c['slug']}.html",
+            schema_extra=breadcrumb_schema([
+                ("首页","/"),("行业案例","/cases/"),(c["title"],f"/cases/{c['slug']}.html")
+            ]),
         )
 
     # Remove old ceramic tech/applications or redirect-style pages → sensor oriented
@@ -1368,13 +1460,31 @@ def main():
     urls += [f"/news/{n['slug']}.html" for n in NEWS]
     urls += [f"/knowledge/{k['slug']}.html" for k in KNOWLEDGE]
     urls += [f"/cases/{c['slug']}.html" for c in INDUSTRY_CASES]
-    sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    for u in urls:
-        sm += f"  <url><loc>https://kdgc.cc{u}</loc><changefreq>weekly</changefreq></url>\n"
-    sm += "</urlset>"
-    (DIST / "sitemap.xml").write_text(sm)
-    (DIST / "robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: https://kdgc.cc/sitemap.xml\n")
-    print("done", len(urls), "urls")
+    urls += ["/privacy.html", "/technology/", "/applications/"]
+
+    # EN sitemap
+    en_urls = [
+        "/en/", "/en/products.html", "/en/news.html", "/en/knowledge.html",
+        "/en/cases.html", "/en/about.html", "/en/contact.html",
+    ]
+    en_urls += [f"/en/products/{p['slug']}.html" for p in PRODUCTS]
+
+    def make_sm(url_list, domain="https://kdgc.cc"):
+        sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        for u in url_list:
+            sm += f"  <url><loc>{domain}{u}</loc><changefreq>weekly</changefreq><lastmod>2026-07-20</lastmod></url>\n"
+        sm += "</urlset>"
+        return sm
+
+    all_urls = urls + en_urls
+    (DIST / "sitemap.xml").write_text(make_sm(all_urls))
+    (DIST / "sitemap-en.xml").write_text(make_sm(en_urls))
+    (DIST / "robots.txt").write_text(
+        "User-agent: *\nAllow: /\n"
+        "Sitemap: https://kdgc.cc/sitemap.xml\n"
+        "Sitemap: https://kdgc.cc/sitemap-en.xml\n"
+    )
+    print("done", len(all_urls), "urls")
 
 
 if __name__ == "__main__":
