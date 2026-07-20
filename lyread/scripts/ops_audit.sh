@@ -49,6 +49,32 @@ for p in / /login /pricing /wallet /workspace /trending /admin; do
   if [[ "$code" == "200" ]]; then ok "page $p"; else bad "page $p ($code)"; fi
 done
 
+# 爬虫 SSR：首页 / 价格 / 案例应返回可索引 HTML（非 SPA shell）
+echo ""
+echo "[2b] Bot SSR"
+assert_bot_ssr() {
+  local path="$1"
+  local expect="$2"
+  local html
+  html=$(curl -sf -A "Googlebot" "$BASE_URL$path" || true)
+  if echo "$html" | grep -q "$expect" && ! echo "$html" | grep -q 'id="app"'; then
+    ok "bot SSR $path"
+  else
+    bad "bot SSR $path (expected content missing or still SPA)"
+  fi
+}
+assert_bot_ssr "/" "LyRead AI"
+assert_bot_ssr "/pricing" "点数"
+assert_bot_ssr "/trending" "案例"
+
+# ?ssr=1 预览开关（人类 UA）
+SSR_HOME=$(curl -sf "$BASE_URL/?ssr=1" || true)
+if echo "$SSR_HOME" | grep -q "注册领取" && ! echo "$SSR_HOME" | grep -q 'id="app"'; then
+  ok "ssr=1 homepage preview"
+else
+  bad "ssr=1 homepage preview"
+fi
+
 # --- 3. 收款链（沙箱/正式）---
 echo ""
 echo "[3] Payment chain"

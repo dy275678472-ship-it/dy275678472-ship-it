@@ -13,7 +13,7 @@ from fastapi.responses import HTMLResponse, PlainTextResponse
 from settings import database_config
 from api.auth import get_current_user
 from services.case_quality import public_case_sql_clause
-from services.seo_schema import breadcrumb, combine_json_ld, faq_graph
+from services.seo_schema import breadcrumb, combine_json_ld, faq_graph, website_graph
 
 router = APIRouter()
 
@@ -611,6 +611,56 @@ async def seo_about_page(request: Request):
 
 
 # --- 营销页 SSR（供搜索引擎与无 JS 环境索引）---
+# 注意：后端 main.py 已占用 GET / 返回 JSON，首页 HTML 走 /ssr/home，由 nginx 对爬虫反代。
+
+
+@router.get("/ssr/home", response_class=HTMLResponse)
+async def seo_home_page(request: Request):
+    """首页 SSR：供爬虫与 ?ssr=1 预览；人类用户仍由 nginx 返回 Vue SPA。"""
+    cases = _fetch_public_cases(8)
+    case_items = ""
+    for row in cases:
+        safe_title = escape(str(row.get("title") or "作品"))
+        safe_cat = escape(str(row.get("category") or "都市"))
+        case_items += (
+            f'<li><a href="{SITE_BASE}/ep/{int(row["id"])}">{safe_title}</a>'
+            f'<span class="tag">{safe_cat}</span>'
+            f'<span class="stat">{row.get("word_count", 0)}字</span></li>'
+        )
+    if not case_items:
+        case_items = '<li style="text-align:center;color:#7a8ba8;padding:24px;">暂无公开案例</li>'
+
+    body_html = f"""
+    <p><strong>LyRead AI</strong> 让 AI 陪你写完一部长篇小说：从书名、大纲到章节续写，自动记住人物与伏笔；也支持快速生成完整短故事。</p>
+    <div class="info-grid" style="margin:20px 0">
+      <div class="info-item"><strong>小说大脑</strong><br>人物、伏笔、章节摘要自动记忆</div>
+      <div class="info-item"><strong>长篇连载</strong><br>大纲 → 章纲 → 正文续写</div>
+      <div class="info-item"><strong>短故事</strong><br>几分钟生成完整短篇</div>
+      <div class="info-item"><strong>透明计费</strong><br>注册送 30 点 · 每日免费 5 点</div>
+    </div>
+    <h2 style="font-size:18px;margin:8px 0 12px">创作案例</h2>
+    <ul class="seo-list">{case_items}</ul>
+    <div class="seo-cta">
+      <a href="{SITE_BASE}/login?mode=register">注册领取 30 点 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">查看更多案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/pricing">价格说明 →</a>
+    </div>
+    """
+    title = "LyRead AI - 智能小说创作平台"
+    desc = "LyRead AI 智能小说创作平台，让 AI 陪你写完一部长篇小说。支持大纲、章节续写、人物伏笔记忆与按量点数计费。"
+    return PAGE_TEMPLATE.format(
+        title=title,
+        description=desc,
+        keywords="AI写小说,智能小说创作,网文AI,大纲生成,章节续写,LyRead",
+        url="/",
+        site_base=SITE_BASE,
+        meta_info="注册送 30 点 · 失败全额返还",
+        body_html=body_html,
+        json_ld=website_graph(),
+    )
+
 
 PRICE_ROWS = [
     ("生成书名", 1, "含 5 个候选书名与黄金钩子简介"),
