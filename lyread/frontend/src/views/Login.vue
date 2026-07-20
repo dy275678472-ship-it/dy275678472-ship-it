@@ -207,6 +207,7 @@ onMounted(async () => {
   }
   if (route.query.mode === 'register') {
     showRegister.value = true
+    trackEvent('register_cta_click', { category: 'funnel', label: 'query_mode' })
   }
   try {
     const cfg = await fetch('/health/config').then((r) => r.json()).catch(() => null)
