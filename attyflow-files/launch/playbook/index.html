@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Launch Playbook — Attyflow PH Day</title>
+<link rel="icon" href="/assets/icon-32.png" sizes="32x32">
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/site-p2.css">
+<style>
+.playbook{max-width:900px;margin:0 auto;padding:40px 22px 80px}
+.playbook h1{font-size:clamp(1.6rem,4vw,2.2rem);margin-bottom:8px}
+.playbook .sub{color:#64748b;margin-bottom:32px}
+.block{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:24px 0;position:relative}
+.block h2{font-size:1.1rem;margin:0 0 12px;color:#0f172a}
+.block pre{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,monospace;font-size:13px;line-height:1.55;margin:0;color:#334155;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:14px;max-height:320px;overflow:auto}
+.copy-btn{position:absolute;top:16px;right:16px;font-size:12px;padding:6px 12px;border:1px solid #cbd5e1;background:#fff;border-radius:6px;cursor:pointer}
+.copy-btn:hover{background:#f1f5f9}
+.copy-btn.ok{background:#dcfce7;border-color:#86efac}
+.cmd{background:#0f172a;color:#e2e8f0;padding:14px;border-radius:8px;font-family:ui-monospace,monospace;font-size:13px;margin:8px 0}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:12px 0}
+th,td{border:1px solid #e2e8f0;padding:10px;text-align:left}
+th{background:#f1f5f9}
+.nav-back{display:inline-block;margin-bottom:24px;color:#64748b;text-decoration:none}
+.nav-back:hover{color:#0f172a}
+</style>
+</head>
+<body>
+<header class="nav-wrap"><nav class="nav"><a class="logo" href="/">ATTYFLOW</a><div class="nav-links"><a href="/launch/">Launch</a><a href="/launch/playbook/" aria-current="page">Playbook</a></div></nav></header>
+
+<main class="playbook">
+<a class="nav-back" href="/launch/">← Back to launch page</a>
+<h1>Product Hunt Launch Playbook</h1>
+<p class="sub">Copy-paste social posts + server monitor commands. Replace <code>[YOUR_NAME]</code> and PH link when live.</p>
+
+<section class="block">
+<h2>Monitoring commands</h2>
+<div class="cmd">sudo python3 /var/www/attyflow/tools/attyflow_ph_monitor.py --watch 300</div>
+<div class="cmd">sudo python3 /var/www/attyflow/tools/attyflow_ph_monitor.py --date $(date -u +%Y-%m-%d) --save</div>
+<p style="font-size:14px;color:#64748b;margin:12px 0 0">Reports: <code>/var/www/attyflow/reports/ph-launch-YYYY-MM-DD.txt</code></p>
+</section>
+
+<section class="block" data-copy="linkedin-long">
+<button type="button" class="copy-btn" aria-label="Copy">Copy</button>
+<h2>LinkedIn — Launch post (long)</h2>
+<pre>Today we're launching Attyflow on Product Hunt 🚀
+
+Contract review shouldn't start with a blank ChatGPT prompt.
+
+Attyflow scores risky clauses, explains the loophole, and drafts negotiation-ready redlines — inside Microsoft Word.
+
+Free to try (no credit card):
+→ https://attyflow.com/taskpane.html
+→ Launch page: https://attyflow.com/launch/
+
+Built for solo attorneys, boutiques, and legal ops reviewing NDAs, MSAs, and vendor paper.
+
+Would love feedback from transactional lawyers — what clause would you test first?
+
+#LegalTech #ContractReview #LegalAI #ProductHunt #LawFirm</pre>
+</section>
+
+<section class="block" data-copy="linkedin-short">
+<button type="button" class="copy-btn" aria-label="Copy">Copy</button>
+<h2>LinkedIn — Short post</h2>
+<pre>We just launched Attyflow on Product Hunt — AI contract risk review + redlines for lawyers, Word-native.
+
+3 free clause audits, no card: https://attyflow.com/taskpane.html
+
+#LegalTech #ProductHunt</pre>
+</section>
+
+<section class="block" data-copy="reddit-legaltech">
+<button type="button" class="copy-btn" aria-label="Copy">Copy</button>
+<h2>Reddit r/legaltech — Title + body</h2>
+<pre>Title: [Launch] Attyflow — AI clause risk scoring + redlines for Word (3 free audits, no card)
+
+Hi r/legaltech — I'm the maker of Attyflow, launching today on Product Hunt.
+
+Problem: Generic AI chat isn't structured enough for contract triage.
+
+What Attyflow does:
+- Paste a clause → risk score + issue explanation
+- Negotiation-ready redline suggestion (attorney review required)
+- Buyer / seller / mutual position toggle
+- Word taskpane + browser sandbox
+
+Free: https://attyflow.com/taskpane.html (3 audits, no credit card)
+
+Not legal advice — software workflow only.
+
+Feedback welcome:
+1. Is the redline output useful enough to edit?
+2. Which clause type would you test first — NDA, indemnity, or liability cap?
+
+Product Hunt: [add link when live]</pre>
+</section>
+
+<section class="block" data-copy="reddit-lawyers">
+<button type="button" class="copy-btn" aria-label="Copy">Copy</button>
+<h2>Reddit r/lawyers (if rules allow)</h2>
+<pre>Title: Tool for first-pass contract clause review (free sandbox) — looking for attorney feedback
+
+Transactional attorneys — I built a focused contract review tool (not a general legal chatbot).
+
+Paste a clause, pick buyer/seller/mutual, get risk score + redline language. Browser or Word.
+
+Free sandbox: https://attyflow.com/taskpane.html
+
+Honest feedback welcome. Not legal advice.</pre>
+</section>
+
+<section class="block">
+<h2>Posting schedule (UTC)</h2>
+<table>
+<thead><tr><th>Time</th><th>Action</th></tr></thead>
+<tbody>
+<tr><td>T+0 07:15</td><td>LinkedIn long post</td></tr>
+<tr><td>T+0 07:30</td><td>Reddit r/legaltech</td></tr>
+<tr><td>T+0 08:00+</td><td>Reply to PH comments within 15 min</td></tr>
+<tr><td>T+2 09:00</td><td>LinkedIn short reshares</td></tr>
+<tr><td>End of day</td><td>Run monitor with --save</td></tr>
+</tbody>
+</table>
+</section>
+
+<p style="font-size:14px;color:#64748b">Full copy + supporter templates: <a href="/launch/SOCIAL_LAUNCH_COPY.md">SOCIAL_LAUNCH_COPY.md</a> · Cloudflare DNS: <a href="/CLOUDFLARE_DNSPOD_GUIDE.md">CLOUDFLARE_DNSPOD_GUIDE.md</a></p>
+</main>
+
+<script>
+document.querySelectorAll('.copy-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var pre = btn.parentElement.querySelector('pre');
+    if (!pre) return;
+    navigator.clipboard.writeText(pre.textContent.trim()).then(function(){
+      btn.textContent = 'Copied';
+      btn.classList.add('ok');
+      setTimeout(function(){ btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 2000);
+    });
+  });
+});
+</script>
+</body>
+</html>

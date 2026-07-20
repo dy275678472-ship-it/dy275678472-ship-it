@@ -1,0 +1,16 @@
+/* P2 — ROI calculator and glossary */
+.roi-calc{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:28px 0}
+.roi-calc label{display:block;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.roi-calc input,.roi-calc select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font:inherit;margin-bottom:14px}
+.roi-result{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;border-radius:16px;padding:28px}
+.roi-result h3{color:#fff;margin-top:0}
+.roi-kpi{font-size:36px;font-weight:900;color:var(--gold2);letter-spacing:-1px}
+.roi-result p{color:#94a3b8;font-size:14px}
+.glossary-grid{display:grid;gap:16px}
+.glossary-item{padding:18px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.glossary-item dt{font-size:17px;color:var(--navy);margin-bottom:6px}
+.glossary-item dd{margin:0;color:#475569;font-size:14px}
+.ph-checklist{list-style:none;padding:0}
+.ph-checklist li{padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
+.ph-checklist li::before{content:"☐ ";color:var(--gold)}
+@media(max-width:900px){.roi-calc{grid-template-columns:1fr}}
