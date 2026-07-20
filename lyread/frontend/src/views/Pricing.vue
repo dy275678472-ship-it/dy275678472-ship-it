@@ -163,15 +163,15 @@ async function buy(pkg) {
     return
   }
   if (res.sandbox || !res.alipay_ready) {
-    const ok = confirm(`沙箱模式：模拟支付 ¥${pkg.price} 获得 ${pkg.credits} 点？`)
+    const ok = confirm(`体验充值（沙箱）：确认模拟支付 ¥${pkg.price}，到账 ${pkg.credits} 点？点数可立即用于创作。`)
     if (!ok) return
     const paid = await ordersApi.sandboxConfirm(res.out_trade_no)
     if (paid?.success) {
       window.dispatchEvent(new Event('credits-changed'))
       payError.value = ''
-      alert(paid?.message || '充值完成，点数已到账')
+      alert(paid?.message || '体验充值完成，点数已到账')
     } else {
-      payError.value = paid?.detail || '沙箱充值失败'
+      payError.value = paid?.detail || '体验充值失败，请稍后再试'
     }
     return
   }
@@ -179,7 +179,7 @@ async function buy(pkg) {
     window.location.href = res.pay_url
     return
   }
-  payError.value = '支付宝下单失败。请确认商户密钥已配置，或联系管理员开启沙箱测试充值。'
+  payError.value = '支付宝下单暂不可用。请先使用注册赠送与每日免费额度，或稍后再试体验充值。'
 }
 </script>
 
