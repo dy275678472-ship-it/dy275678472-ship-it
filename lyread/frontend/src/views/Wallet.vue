@@ -39,6 +39,7 @@
         充值点数
       </router-link>
     </section>
+    <p class="pay-hint" v-if="payHint">{{ payHint }}</p>
     <p v-if="claimMsg" class="claim-msg" :class="{ ok: claimOk }">{{ claimMsg }}</p>
 
     <section class="transactions">
@@ -72,7 +73,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { creditsApi } from '../api'
+import { creditsApi, ordersApi } from '../api'
 import { IMAGES } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
 
@@ -83,6 +84,7 @@ const loading = ref(true)
 const claiming = ref(false)
 const claimMsg = ref('')
 const claimOk = ref(false)
+const payHint = ref('')
 
 const TYPE_LABELS = {
   signup_bonus: '注册赠送',
@@ -115,12 +117,20 @@ function formatTime(s) {
 async function load() {
   loading.value = true
   try {
-    const [bal, hist] = await Promise.all([
+    const [bal, hist, pkgs] = await Promise.all([
       creditsApi.balance(),
       creditsApi.transactions(40),
+      ordersApi.packages().catch(() => null),
     ])
     if (bal?.success) balance.value = bal
     if (hist?.success) txns.value = hist.transactions || []
+    if (pkgs?.payment_mode === 'sandbox') {
+      payHint.value = '充值页当前为体验沙箱：确认后模拟到账，点数可正常用于创作。'
+    } else if (pkgs && !pkgs.alipay_ready) {
+      payHint.value = '正式支付宝即将开通。可先领取每日免费点，或使用注册赠送额度继续创作。'
+    } else {
+      payHint.value = ''
+    }
   } finally {
     loading.value = false
   }
@@ -195,6 +205,10 @@ onMounted(load)
 }
 .claim-msg { font-size: 13px; margin-bottom: 24px; color: #ef4444; }
 .claim-msg.ok { color: #16a34a; }
+.pay-hint {
+  font-size: 13px; color: #5a6a7a; line-height: 1.55; margin: 0 0 20px;
+  padding: 10px 12px; border-radius: 10px; background: #f8fafc; border: 1px solid #e8f0fa;
+}
 
 .transactions h2 { font-size: 20px; margin-bottom: 16px; color: #1e2a3a; }
 .empty { text-align: center; color: #94a3b8; padding: 40px; background: #fff; border-radius: 12px; }

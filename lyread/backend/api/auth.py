@@ -254,11 +254,14 @@ async def forgot_password(req: ForgotPasswordRequest):
         if expose:
             return {
                 "success": True,
-                "message": "重置令牌已生成（邮件服务未配置时请保存下方链接）",
+                "message": "邮件发送暂未开通：请在本页用下方令牌直接重置密码（1 小时内有效）",
                 "reset_path": reset_path,
                 "token": token,
             }
-        return {"success": True, "message": "若账号与邮箱匹配，将发送重置邮件"}
+        return {
+            "success": True,
+            "message": "邮件发送暂未开通。若账号与邮箱匹配，请联系客服协助重置，或稍后再试。",
+        }
     finally:
         if conn.is_connected():
             conn.close()

@@ -48,6 +48,7 @@
 
       <!-- 找回密码 -->
       <form v-else-if="showForgot" @submit.prevent="handleForgot">
+        <p class="forgot-hint" v-if="smtpHint">{{ smtpHint }}</p>
         <input v-model="form.username" type="text" class="input" placeholder="用户名" required />
         <input v-model="form.email" type="email" class="input" placeholder="注册邮箱" required />
         <button type="submit" class="btn btn-primary" :disabled="loading">{{ loading ? '提交中...' : '获取重置链接' }}</button>
@@ -55,6 +56,7 @@
 
       <!-- 重置密码 -->
       <form v-else-if="showReset" @submit.prevent="handleReset">
+        <p class="forgot-hint" v-if="resetPathHint">{{ resetPathHint }}</p>
         <input v-model="resetToken" type="text" class="input" placeholder="重置令牌" required />
         <input v-model="form.password" type="password" class="input" placeholder="新密码（≥8位）" required />
         <input v-model="form.confirmPassword" type="password" class="input" placeholder="确认新密码" required />
@@ -133,6 +135,9 @@ const showRegister = ref(false)
 const showForgot = ref(false)
 const showReset = ref(false)
 const resetToken = ref('')
+const smtpConfigured = ref(true)
+const smtpHint = ref('')
+const resetPathHint = ref('')
 
 const form = reactive({
   username: '',
@@ -147,20 +152,29 @@ const toggleMode = () => {
   showReset.value = false
   error.value = ''
   success.value = ''
+  resetPathHint.value = ''
 }
 
 const handleForgot = async () => {
   loading.value = true
   error.value = ''
+  success.value = ''
+  resetPathHint.value = ''
   try {
     const res = await authApi.forgot(form.username, form.email)
     if (res?.token) {
       resetToken.value = res.token
       showForgot.value = false
       showReset.value = true
-      success.value = res.message || '请设置新密码'
+      success.value = res.message || '请在本页设置新密码'
+      resetPathHint.value = res.reset_path
+        ? `邮件暂未开通时，请直接在下方填写新密码完成重置（或打开 ${res.reset_path}）。`
+        : '邮件暂未开通时，重置令牌已填入下方，请直接设置新密码。'
     } else {
       success.value = res?.message || '若账号匹配将收到重置指引'
+      if (!smtpConfigured.value) {
+        success.value = res?.message || '邮件发送暂未开通。若账号匹配，请刷新后重试或联系客服协助重置。'
+      }
     }
   } catch (e) {
     error.value = '请求失败'
@@ -180,7 +194,7 @@ const handleReset = async () => {
   } finally { loading.value = false }
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (route.query.reset) {
     resetToken.value = route.query.reset
     showReset.value = true
@@ -188,6 +202,13 @@ onMounted(() => {
   if (route.query.mode === 'register') {
     showRegister.value = true
   }
+  try {
+    const cfg = await fetch('/health/config').then((r) => r.json()).catch(() => null)
+    smtpConfigured.value = !!cfg?.smtp?.configured
+    if (!smtpConfigured.value) {
+      smtpHint.value = '当前邮件发送暂未开通：提交后若账号匹配，将在本页给出重置令牌，无需等邮件。'
+    }
+  } catch { /* 忽略配置探测失败 */ }
 })
 
 function safeRedirectPath() {
@@ -373,6 +394,17 @@ const handleRegister = async () => {
   color: var(--lyread-text-secondary);
   font-size: 15px;
   margin-bottom: 40px;
+}
+.forgot-hint {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #5a6a7a;
+  background: #f8fafc;
+  border: 1px solid #e8f0fa;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 0 0 14px;
+  text-align: left;
 }
 
 .login-card form {

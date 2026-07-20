@@ -64,9 +64,15 @@
         </div>
       </div>
       <p class="pay-note pay-error" v-if="payError">{{ payError }}</p>
-      <p class="pay-note" v-if="sandboxMode">当前为<strong>沙箱充值模式</strong>：点击充值后确认即可模拟到账。配置支付宝商户密钥后将跳转真实支付。</p>
-      <p class="pay-note" v-else-if="alipayReady">支持支付宝扫码/网页支付，支付成功后点数自动到账。</p>
-      <p class="pay-note" v-else>支付宝参数配置中。可先使用注册赠送与每日免费额度，或联系管理员开通沙箱测试充值。</p>
+      <p class="pay-note pay-mode" v-if="sandboxMode">
+        当前为<strong>体验充值（沙箱）</strong>：登录后点「立即充值」→ 确认即可模拟到账，点数可真实用于创作。
+        支付宝正式收款开通后，将自动跳转扫码/网页支付。
+      </p>
+      <p class="pay-note pay-mode" v-else-if="alipayReady">支持支付宝扫码/网页支付，支付成功后点数自动到账。</p>
+      <p class="pay-note pay-mode" v-else>
+        正式支付宝支付即将开通。现在可先使用<strong>注册赠送 30 点</strong>与<strong>每日免费 5 点</strong>创作；
+        需要加量时也可在体验环境开启沙箱模拟充值。
+      </p>
     </section>
 
     <section class="faq">
@@ -122,6 +128,7 @@ const faqs = [
   { q: '点数会过期吗？', a: '充值点数长期有效。每日免费额度仅当日有效，次日重置为 5 点，不累计。' },
   { q: '生成失败会扣点吗？', a: '不会。任务失败会自动全额返还已冻结的点数。' },
   { q: '可以先免费试用吗？', a: '可以。首页支持匿名试用书名生成；注册后再领 30 点 + 每日 5 点。' },
+  { q: '现在能真实付款吗？', a: '正式支付宝收款开通前为沙箱体验充值：确认后模拟到账，点数可正常创作消耗。开通后将自动跳转支付宝。' },
 ]
 
 const isLoggedIn = computed(() => !!localStorage.getItem('token'))
@@ -224,7 +231,11 @@ th { background: #f8fafc; font-size: 13px; color: #64748b; }
   background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff; font-weight: 600;
 }
 .btn-buy:disabled { opacity: 0.55; cursor: not-allowed; }
-.pay-note { text-align: center; color: #94a3b8; font-size: 13px; margin-bottom: 48px; }
+.pay-note { text-align: center; color: #94a3b8; font-size: 13px; margin-bottom: 48px; line-height: 1.6; }
+.pay-mode {
+  max-width: 640px; margin-left: auto; margin-right: auto; margin-bottom: 48px;
+  padding: 12px 16px; border-radius: 10px; background: #f8fafc; border: 1px solid #e8f0fa; color: #5a6a7a;
+}
 
 .faq details {
   background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 10px;

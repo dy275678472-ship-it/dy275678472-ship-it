@@ -13,26 +13,30 @@
     </section>
 
     <section class="features">
-      <div class="feature-card">
+      <router-link to="/workspace" class="feature-card" @click="trackFeature('brain')">
         <img :src="images.features.brain" alt="小说大脑功能图标" class="icon-img" width="56" height="56" />
         <h3>小说大脑</h3>
         <p>人物档案、伏笔、章节摘要自动记忆，写到第 50 章也不乱</p>
-      </div>
-      <div class="feature-card">
+        <span class="feature-cta">进入创作台 →</span>
+      </router-link>
+      <router-link to="/workspace" class="feature-card" @click="trackFeature('novel')">
         <img :src="images.features.novel" alt="长篇连载功能图标" class="icon-img" width="56" height="56" />
         <h3>长篇连载</h3>
         <p>大纲 → 章纲 → 正文续写，专为日更作者设计</p>
-      </div>
-      <div class="feature-card">
+        <span class="feature-cta">开始连载 →</span>
+      </router-link>
+      <router-link to="/story" class="feature-card" @click="trackFeature('short')">
         <img :src="images.features.short" alt="短故事功能图标" class="icon-img" width="56" height="56" />
         <h3>短故事</h3>
         <p>输入想法，几分钟生成完整短篇，适合盐选/公众号</p>
-      </div>
-      <div class="feature-card">
+        <span class="feature-cta">预览短故事 →</span>
+      </router-link>
+      <router-link to="/pricing" class="feature-card" @click="trackFeature('credits')">
         <img :src="images.features.credits" alt="点数计费功能图标" class="icon-img" width="56" height="56" />
         <h3>点数计费</h3>
         <p>用多少付多少，注册送 30 点，每日免费 5 点</p>
-      </div>
+        <span class="feature-cta">查看价格 →</span>
+      </router-link>
     </section>
 
     <section class="data-proof" v-if="statsLoaded">
@@ -257,6 +261,10 @@ function trackCaseClick(c) {
   trackEvent('case_click', { category: 'funnel', label: String(c.id) })
 }
 
+function trackFeature(label) {
+  trackEvent('home_feature_click', { category: 'funnel', label })
+}
+
 onMounted(async () => {
   try {
     const [statsRes, casesRes] = await Promise.all([
@@ -429,6 +437,9 @@ const startTrial = async (append = false) => {
   z-index: 1; /* 确保浮动在英雄区之上 */
 }
 .feature-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
   background: var(--lyread-card-bg);
   border-radius: 16px;
   box-shadow: 0 4px 20px var(--lyread-shadow-medium);
@@ -438,10 +449,23 @@ const startTrial = async (append = false) => {
   -webkit-backdrop-filter: blur(8px); /* 元素自身也带点毛玻璃感 */
   backdrop-filter: blur(8px);
   background-color: rgba(255,255,255,0.9); /* 兜底 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px var(--lyread-shadow-medium);
 }
 .feature-card .icon-img { display: block; margin: 0 auto 16px; object-fit: contain; }
 .feature-card h3 { color: var(--lyread-text-dark); margin-bottom: 8px; }
 .feature-card p { color: var(--lyread-text-secondary); font-size: 14px; }
+.feature-cta {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lyread-primary-blue-end);
+}
 
 /* Data Proof Section */
 .data-proof {
