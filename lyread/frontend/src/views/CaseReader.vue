@@ -108,7 +108,8 @@ onMounted(async () => {
     const res = await casesApi.get(route.params.id)
     if (res?.success) {
       caseData.value = res.case
-      body.value = res.case.preview_excerpt || res.case.preview_body || ''
+      // Prefer full preview_body; preview_excerpt is a truncated OG/list teaser (~1500).
+      body.value = res.case.preview_body || res.case.preview_excerpt || ''
       setCaseMeta(res.case)
       trackEvent('case_read', { category: 'funnel', label: String(res.case.id) })
     }

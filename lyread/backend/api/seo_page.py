@@ -812,7 +812,7 @@ async def seo_pricing_page(request: Request):
     <h2 style="font-size:18px;margin-bottom:12px">充值套餐</h2>
     <div class="info-grid">{pkg_html}</div>
     <div class="seo-cta">
-      <a href="{SITE_BASE}/login">注册领取 30 点 →</a>
+      <a href="{SITE_BASE}/login?mode=register&redirect=/pricing">注册领取 30 点 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/workspace">进入创作台 →</a>
     </div>
