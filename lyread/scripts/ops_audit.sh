@@ -67,6 +67,20 @@ assert_bot_ssr "/" "LyRead AI"
 assert_bot_ssr "/pricing" "点数"
 assert_bot_ssr "/trending" "案例"
 
+# 案例 SPA 路径分享/爬虫：应返回正文 SSR（非首页 SPA shell）
+CASE_ID=$(curl -sf "$BASE_URL/api/cases?limit=1" | python3 -c "import sys,json; print(json.load(sys.stdin).get('cases',[{}])[0].get('id',''))" 2>/dev/null || echo "")
+if [[ -n "$CASE_ID" ]]; then
+  assert_bot_ssr "/case/$CASE_ID" "正文节选"
+  CASE_SSR=$(curl -sf "$BASE_URL/case/$CASE_ID?ssr=1" || true)
+  if echo "$CASE_SSR" | grep -q "正文节选" && echo "$CASE_SSR" | grep -q "rel=\"canonical\".*/ep/$CASE_ID" && ! echo "$CASE_SSR" | grep -q 'id="app"'; then
+    ok "ssr=1 /case/$CASE_ID + canonical /ep"
+  else
+    bad "ssr=1 /case/$CASE_ID (missing body or canonical)"
+  fi
+else
+  warn "no public case for /case bot SSR check"
+fi
+
 # ?ssr=1 预览开关（人类 UA）
 SSR_HOME=$(curl -sf "$BASE_URL/?ssr=1" || true)
 if echo "$SSR_HOME" | grep -q "注册领取" && ! echo "$SSR_HOME" | grep -q 'id="app"'; then

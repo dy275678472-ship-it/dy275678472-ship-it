@@ -271,16 +271,25 @@ def _json_ld_list(title: str, description: str, url_path: str) -> str:
     return json.dumps(data, ensure_ascii=False)
 
 
-@router.get("/ep/{content_id}", response_class=HTMLResponse)
-async def seo_content_page(content_id: int, request: Request):
-    """为爬虫生成内容详情页 HTML"""
+def _preview_og_description(title: str, category: str, word_count, heat, preview: str) -> str:
+    """OG/meta description：标题+分类摘要 + 正文节选，便于分享抓取。"""
+    base = f"{title} - {category}类型，{word_count}字，热度{heat}"
+    snippet = " ".join((preview or "").split())[:140]
+    if snippet:
+        return f"{base}｜{snippet}"
+    return f"{base}，AI智能创作平台"
+
+
+def _render_case_seo_page(content_id: int) -> HTMLResponse:
+    """案例详情 SSR（canonical 统一为 /ep/{id}，避免 /case 与 /ep 重复收录）。"""
     title = "LyRead AI - 智能小说创作平台"
     description = "LyRead AI智能小说创作平台，AI生成爆款网文"
     keywords = "AI写小说,网文创作,智能写作"
     body_html = '<p style="color: #7a8ba8; text-align: center; padding: 40px;">内容未找到</p>'
     meta_info = ""
-    url = str(request.url.path)
-    json_ld = _json_ld_article(title, description, url)
+    # 规范 URL 始终指向 /ep/，/case/ 仅作 SPA 阅读与 bot 入口别名
+    canonical = f"/ep/{content_id}"
+    json_ld = _json_ld_article(title, description, canonical)
 
     try:
         db = get_db()
@@ -297,16 +306,31 @@ async def seo_content_page(content_id: int, request: Request):
             if row:
                 safe_title = escape(str(row['title']))
                 safe_category = escape(str(row['category']))
+                preview = row.get("preview_body") or ""
                 title = f"{safe_title} - LyRead AI 小说作品"
-                description = f"{safe_title} - {safe_category}类型，{row['word_count']}字，热度{row['heat']}，AI智能创作平台"
+                description = escape(
+                    _preview_og_description(
+                        str(row["title"]),
+                        str(row["category"]),
+                        row["word_count"],
+                        row["heat"],
+                        preview,
+                    )
+                )
                 keywords = f"小说,{safe_category},{safe_title},AI写小说,网文"
                 meta_info = f"分类：{safe_category} ｜ 字数：{row['word_count']:,} ｜ 热度：{row['heat']}"
                 json_ld = combine_json_ld(
-                    _json_ld_article(safe_title, description, url, genre=safe_category, word_count=int(row.get('word_count') or 0)),
+                    _json_ld_article(
+                        safe_title,
+                        description,
+                        canonical,
+                        genre=safe_category,
+                        word_count=int(row.get("word_count") or 0),
+                    ),
                     breadcrumb([
                         ("首页", f"{SITE_BASE}/"),
                         ("案例阅读", f"{SITE_BASE}/trending"),
-                        (safe_title, f"{SITE_BASE}{url}"),
+                        (safe_title, f"{SITE_BASE}{canonical}"),
                     ]),
                 )
                 body_html = f"""
@@ -316,7 +340,6 @@ async def seo_content_page(content_id: int, request: Request):
                     <div class="info-item"><strong>热度</strong><br>{row['heat']}</div>
                     <div class="info-item"><strong>评分</strong><br>{row.get('score', 'N/A')}</div>
                 </div>"""
-                preview = row.get("preview_body") or ""
                 if preview:
                     safe_preview = escape(preview[:6000]).replace("\n", "<br>")
                     body_html += f"""
@@ -326,22 +349,37 @@ async def seo_content_page(content_id: int, request: Request):
                 </div>"""
                 body_html += f"""
                 <div class="seo-cta">
-                    <a href="{SITE_BASE}/login?redirect=/workspace">登录 LyRead 创作你的作品 →</a>
+                    <a href="{SITE_BASE}/case/{int(row['id'])}">打开阅读器 →</a>
+                    <a href="{SITE_BASE}/login?redirect=/workspace" style="margin-left:12px">登录创作 →</a>
                 </div>
                 """
     except Exception as e:
         print(f"[SEO Page] Error fetching content {content_id}: {e}")
 
-    return PAGE_TEMPLATE.format(
-        title=title,
-        description=description,
-        keywords=keywords,
-        url=url,
-        site_base=SITE_BASE,
-        meta_info=meta_info,
-        body_html=body_html,
-        json_ld=json_ld,
+    return HTMLResponse(
+        PAGE_TEMPLATE.format(
+            title=title,
+            description=description,
+            keywords=keywords,
+            url=canonical,
+            site_base=SITE_BASE,
+            meta_info=meta_info,
+            body_html=body_html,
+            json_ld=json_ld,
+        )
     )
+
+
+@router.get("/ep/{content_id}", response_class=HTMLResponse)
+async def seo_content_page(content_id: int):
+    """为爬虫生成内容详情页 HTML（规范 URL）。"""
+    return _render_case_seo_page(content_id)
+
+
+@router.get("/case/{content_id}", response_class=HTMLResponse)
+async def seo_case_alias_page(content_id: int):
+    """SPA 路径 /case/:id 的爬虫别名：返回与 /ep/:id 相同内容，canonical 指向 /ep/。"""
+    return _render_case_seo_page(content_id)
 
 
 @router.get("/sitemap.xml", response_class=PlainTextResponse)
