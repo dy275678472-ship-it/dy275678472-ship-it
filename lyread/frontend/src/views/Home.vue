@@ -64,7 +64,7 @@
       </div>
       <div v-if="casesLoading" class="hot-loading">加载案例中...</div>
       <div v-else-if="!hotCases.length" class="hot-empty">
-        <p>暂无公开案例，<router-link to="/workspace">开始创作</router-link> 并提交审核后将展示在这里</p>
+        <p>暂无公开案例，先去 <router-link to="/trending">案例阅读</router-link> 看看，或浏览 <router-link to="/story">短故事</router-link> 灵感</p>
       </div>
       <div v-else class="hot-grid">
         <a

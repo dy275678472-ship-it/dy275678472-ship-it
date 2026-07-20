@@ -6,6 +6,27 @@
       <p>选题材、写灵感，AI 一键生成完整短篇（约 3000 字，消耗 15 点）</p>
     </header>
 
+    <section v-if="samples.length" class="samples" aria-label="公开案例节选">
+      <h2>先读一段真实生成节选</h2>
+      <p class="samples-note">以下来自平台公开案例，无需登录即可浏览</p>
+      <div class="sample-grid">
+        <article v-for="s in samples" :key="s.id" class="sample-card">
+          <h3>{{ s.title }}</h3>
+          <p class="sample-meta">{{ s.category || '短篇' }} · {{ formatWords(s.word_count) }}</p>
+          <p class="sample-excerpt">{{ s.excerpt }}</p>
+          <router-link :to="`/case/${s.id}`" class="sample-link">阅读全文 →</router-link>
+        </article>
+      </div>
+    </section>
+
+    <div v-if="!loggedIn" class="gate-banner">
+      <div>
+        <strong>预览模式</strong>
+        <span>可自由选题材与灵感；生成短篇需注册（送 30 点）</span>
+      </div>
+      <router-link class="btn-gate" :to="registerTo">免费注册开始写</router-link>
+    </div>
+
     <div v-if="creditsLow" class="credits-banner">
       <span>点数不足</span>
       <router-link to="/wallet">领每日免费 5 点</router-link>
@@ -28,8 +49,8 @@
 
       <h2>2. 故事灵感</h2>
       <div class="action-row">
-        <button type="button" class="btn-secondary" @click="shuffleTemplates">🎲 换一批模板</button>
-        <button type="button" class="btn-secondary" :disabled="busy" @click="generateMoreIdeas">✨ AI 生成更多</button>
+        <button type="button" class="btn-secondary" @click="shuffleTemplates">换一批模板</button>
+        <button type="button" class="btn-secondary" :disabled="busy" @click="generateMoreIdeas">AI 生成更多</button>
       </div>
       <div class="templates">
         <button v-for="(t, i) in displayedTemplates" :key="i" type="button" class="tpl" @click="prompt = t">{{ t }}</button>
@@ -49,9 +70,10 @@
         >{{ g.icon }} {{ g.name }}</button>
       </div>
 
-      <button class="btn-generate" :disabled="busy || !canGenerate" @click="generate">
-        {{ busy ? '生成中...' : '一键生成完整短篇（15 点）' }}
+      <button class="btn-generate" :disabled="busy || (loggedIn && !canGenerate)" @click="generate">
+        {{ generateLabel }}
       </button>
+      <p v-if="!loggedIn" class="gate-hint">点击后将引导注册；注册送 30 点，生成一篇约 15 点</p>
       <p v-if="error" class="error">{{ error }}</p>
     </section>
 
@@ -72,10 +94,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { storyApi } from '../api'
+import { storyApi, casesApi } from '../api'
 import { IMAGES } from '../assets/images'
-import { templatesForGenre, allTemplatesForGenre } from '../constants/creation'
+import { allTemplatesForGenre } from '../constants/creation'
 import { pickRandom, mergeStringOptions } from '../utils/optionPool'
+import { trackEvent } from '../utils/analytics'
 
 const router = useRouter()
 const images = IMAGES
@@ -92,10 +115,28 @@ const busy = ref(false)
 const error = ref('')
 const creditsLow = ref(false)
 const result = ref(null)
+const samples = ref([])
+const loggedIn = ref(!!localStorage.getItem('token'))
 
-const templates = computed(() => templatesForGenre(genreId.value || 'default'))
 const genreLabel = computed(() => genreCustom.value || genreName.value || '都市')
 const canGenerate = computed(() => (genreId.value || genreCustom.value?.trim()) && prompt.value?.trim())
+const registerTo = computed(() => ({ path: '/login', query: { mode: 'register', redirect: '/story' } }))
+const generateLabel = computed(() => {
+  if (!loggedIn.value) return '免费注册并生成短篇'
+  if (busy.value) return '生成中...'
+  return '一键生成完整短篇（15 点）'
+})
+
+function formatWords(n) {
+  if (!n) return '—'
+  if (n >= 10000) return `${(n / 10000).toFixed(1)} 万字`
+  return `${n} 字`
+}
+
+function requireAuth(action) {
+  trackEvent('story_gate_click', { category: 'conversion', label: action })
+  router.push(registerTo.value)
+}
 
 function refreshTemplates() {
   ideaPool.value = mergeStringOptions(ideaPool.value, allTemplatesForGenre(genreId.value || 'default'))
@@ -105,6 +146,10 @@ function refreshTemplates() {
 function shuffleTemplates() { refreshTemplates() }
 
 async function generateMoreIdeas() {
+  if (!loggedIn.value) {
+    requireAuth('suggest_ideas')
+    return
+  }
   busy.value = true
   error.value = ''
   try {
@@ -126,6 +171,14 @@ function pickGenre(g) {
 }
 
 async function generate() {
+  if (!loggedIn.value) {
+    requireAuth('generate_short')
+    return
+  }
+  if (!canGenerate.value) {
+    error.value = '请先选择题材并填写灵感'
+    return
+  }
   busy.value = true
   error.value = ''
   creditsLow.value = false
@@ -139,6 +192,7 @@ async function generate() {
     if (res?.success) {
       result.value = res
       window.dispatchEvent(new Event('credits-changed'))
+      trackEvent('story_generate_ok', { category: 'creation' })
     } else if (res?.insufficient_credits || res?.status === 402) {
       creditsLow.value = true
       error.value = res.detail || '点数不足'
@@ -167,10 +221,18 @@ async function saveToWorkspace() {
 }
 
 onMounted(async () => {
-  const [g, gf] = await Promise.all([storyApi.suggestGenres(), storyApi.godfingers()])
+  loggedIn.value = !!localStorage.getItem('token')
+  const [g, gf, casesRes] = await Promise.all([
+    storyApi.suggestGenres(),
+    storyApi.godfingers(),
+    casesApi.list(6),
+  ])
   if (g?.success) genres.value = g.genres || []
   if (gf?.success) godfingers.value = gf.godfingers || []
+  const list = casesRes?.cases || []
+  samples.value = list.filter((c) => c.excerpt).slice(0, 3)
   refreshTemplates()
+  trackEvent('story_teaser_view', { category: 'growth', label: loggedIn.value ? 'auth' : 'anon' })
 })
 </script>
 
@@ -179,6 +241,68 @@ onMounted(async () => {
 .hero { text-align: center; margin-bottom: 28px; }
 .hero h1 { font-size: 26px; margin: 12px 0 8px; }
 .hero p { color: #5a6a7a; }
+.samples { margin-bottom: 24px; }
+.samples h2 { font-size: 18px; margin: 0 0 6px; color: #1e293b; }
+.samples-note { font-size: 13px; color: #64748b; margin: 0 0 14px; }
+.sample-grid { display: grid; gap: 12px; }
+@media (min-width: 720px) {
+  .sample-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.sample-card {
+  background: #fff;
+  border: 1px solid #e8f0fa;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 100%;
+}
+.sample-card h3 { font-size: 15px; margin: 0; color: #0f172a; line-height: 1.4; }
+.sample-meta { font-size: 12px; color: #94a3b8; margin: 0; }
+.sample-excerpt {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.7;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+.sample-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+  margin-top: 4px;
+}
+.gate-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #eff6ff, #f8fafc);
+  border: 1px solid #dbeafe;
+}
+.gate-banner strong { display: block; font-size: 14px; color: #1e40af; margin-bottom: 2px; }
+.gate-banner span { font-size: 13px; color: #475569; }
+.btn-gate {
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #4da1ff, #2563eb);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.gate-hint { font-size: 12px; color: #64748b; margin-top: 8px; text-align: center; }
 .panel { background: #fff; border-radius: 16px; padding: 24px; border: 1px solid #e8f0fa; }
 .panel h2 { font-size: 16px; margin: 20px 0 10px; color: #334155; }
 .panel h2:first-child { margin-top: 0; }
