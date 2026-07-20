@@ -116,8 +116,8 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 NAV = """<nav class="nav"><div class="nav-inner">
 <a href="/" class="nav-logo" aria-label="中科国瓷">
 <picture>
-<source srcset="/assets/images/logo.webp?v=20260720c" type="image/webp">
-<img src="/assets/images/logo.png?v=20260720c" alt="中科国瓷 — 安徽中科国瓷新型元器件有限公司" class="nav-logo-img" width="326" height="96">
+<source srcset="/assets/images/logo.webp?v=20260720e" type="image/webp">
+<img src="/assets/images/logo.png?v=20260720e" alt="中科国瓷" class="nav-logo-img" width="184" height="53">
 </picture>
 </a>
 <div class="nav-links">
@@ -134,10 +134,10 @@ NAV = """<nav class="nav"><div class="nav-inner">
 </div></nav>"""
 
 NAV_EN = """<nav class="nav"><div class="nav-inner">
-<a href="/en/" class="nav-logo" aria-label="KDGC — Zhongke Guoci">
+<a href="/en/" class="nav-logo" aria-label="KDGC">
 <picture>
-<source srcset="/assets/images/logo-en.webp?v=20260720c" type="image/webp">
-<img src="/assets/images/logo-en.png?v=20260720c" alt="KDGC — Zhongke Guoci Oxygen Sensors" class="nav-logo-img" width="383" height="96">
+<source srcset="/assets/images/logo-en.webp?v=20260720e" type="image/webp">
+<img src="/assets/images/logo-en.png?v=20260720e" alt="KDGC" class="nav-logo-img" width="172" height="49">
 </picture>
 </a>
 <div class="nav-links">
@@ -233,7 +233,7 @@ def page(title, desc, body, canonical="", lang="zh", schema_extra=""):
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title}</title><meta name="description" content="{desc}">
 {canon}<link rel="stylesheet" href="/assets/css/style.css">
-<link rel="icon" href="/assets/images/favicon.ico?v=20260720c">
+<link rel="icon" href="/assets/images/favicon.ico?v=20260720e">
 {schema_tags}
 </head><body>{nav}<main>{body}</main>{footer}</body></html>"""
 
