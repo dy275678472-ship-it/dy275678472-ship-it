@@ -33,6 +33,9 @@
     <footer class="site-footer">
       <img :src="logo" alt="LyRead AI" width="20" height="20" />
       <span>LyRead AI · 智能小说创作平台</span>
+      <span class="footer-sep" aria-hidden="true">·</span>
+      <a href="/faq" class="footer-link">常见问题</a>
+      <a href="/about" class="footer-link">关于我们</a>
     </footer>
   </div>
 </template>
@@ -105,9 +108,12 @@ body {
 #app { min-height: 100vh; display: flex; flex-direction: column; background: #f1f6fa; }
 .site-footer {
   margin-top: auto; padding: 20px; text-align: center; font-size: 13px; color: #94a3b8;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;
   border-top: 1px solid #e8f0fa; background: #fff;
 }
+.footer-sep { opacity: 0.6; }
+.footer-link { color: #64748b; text-decoration: none; }
+.footer-link:hover { color: #2563eb; }
 
 .navbar {
   display: flex;

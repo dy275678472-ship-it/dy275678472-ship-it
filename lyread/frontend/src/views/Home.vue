@@ -71,13 +71,11 @@
         <p>暂无公开案例，先去 <router-link to="/trending">案例阅读</router-link> 看看，或浏览 <router-link to="/story">短故事</router-link> 灵感</p>
       </div>
       <div v-else class="hot-grid">
-        <a
+        <router-link
           v-for="(c, i) in hotCases"
           :key="c.id"
-          :href="c.url"
+          :to="`/case/${c.id}`"
           class="hot-card hot-card-link"
-          target="_blank"
-          rel="noopener"
           @click="trackCaseClick(c)"
         >
           <img :src="coverForCase(c, i)" :alt="`${c.title} 封面`" class="hot-cover" loading="lazy" />
@@ -90,7 +88,7 @@
               <span>热度 {{ c.heat }}</span>
             </div>
           </div>
-        </a>
+        </router-link>
       </div>
     </section>
 
