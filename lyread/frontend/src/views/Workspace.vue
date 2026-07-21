@@ -221,6 +221,7 @@ function setMsg(text, err = false) {
 function handleApiError(res, fallback) {
   if (res?.insufficient_credits || res?.status === 402) {
     creditsLow.value = true
+    trackEvent('credits_low', { category: 'conversion', label: 'workspace' })
     setMsg(res.detail || '点数不足，请先充值或领取每日免费额度', true)
     return true
   }

@@ -320,6 +320,7 @@ function setMsg(text, err = false) {
 function handleErr(res, fallback) {
   if (res?.insufficient_credits || res?.status === 402) {
     creditsLow.value = true
+    trackEvent('credits_low', { category: 'conversion', label: 'wizard' })
     setMsg(res.detail || '点数不足', true)
     return true
   }

@@ -26,8 +26,13 @@
           <button type="button" class="btn-share" @click="copyShareLink">{{ copyLabel }}</button>
           <button v-if="canNativeShare" type="button" class="btn-share" @click="nativeShare">分享</button>
         </div>
-        <router-link :to="workspaceLink" class="btn-cta">用这个风格开始创作 →</router-link>
+        <router-link :to="workspaceLink" class="btn-cta" @click="trackCta('footer')">用这个风格开始创作 →</router-link>
       </footer>
+      <div class="sticky-cta" aria-hidden="false">
+        <router-link :to="workspaceLink" class="btn-cta sticky" @click="trackCta('sticky_mobile')">
+          用这个风格开始创作 →
+        </router-link>
+      </div>
     </article>
   </div>
 </template>
@@ -76,6 +81,14 @@ function setCaseMeta(c) {
   setMeta('meta[property="og:description"]', 'property', 'og:description', desc)
   setMeta('meta[property="og:url"]', 'property', 'og:url', shareUrl.value)
   setMeta('meta[property="og:type"]', 'property', 'og:type', 'article')
+}
+
+function trackCta(label) {
+  trackEvent('case_cta_click', {
+    category: 'conversion',
+    label,
+    value: Number(caseData.value?.id) || 0,
+  })
 }
 
 async function copyShareLink() {
@@ -141,10 +154,30 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
   display: inline-block; padding: 10px 18px; border-radius: 10px;
   background: #eff6ff; color: #2563eb; font-weight: 600; text-decoration: none;
 }
+.sticky-cta { display: none; }
 @media (max-width: 640px) {
-  .reader-page { padding: 20px 14px 64px; }
+  .reader-page { padding: 20px 14px 88px; }
   .article { padding: 20px 16px; border-radius: 12px; }
   h1 { font-size: 20px; }
   .body pre { font-size: 15px; line-height: 1.85; }
+  .sticky-cta {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 255, 255, 0.96);
+    border-top: 1px solid #e8f0fa;
+    box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.06);
+  }
+  .btn-cta.sticky {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 13px 16px;
+    box-sizing: border-box;
+  }
 }
 </style>

@@ -34,7 +34,7 @@
         <img :src="images.wallet.free" alt="每日免费" width="18" height="18" />
         {{ claiming ? '领取中...' : '领取今日免费 5 点' }}
       </button>
-      <router-link to="/pricing" class="btn-recharge">
+      <router-link to="/pricing" class="btn-recharge" @click="trackRecharge">
         <img :src="images.pricing.gem" alt="充值" width="18" height="18" />
         充值点数
       </router-link>
@@ -76,6 +76,7 @@ import { ref, onMounted } from 'vue'
 import { creditsApi, ordersApi } from '../api'
 import { IMAGES } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
+import { trackEvent } from '../utils/analytics'
 
 const images = IMAGES
 const balance = ref(null)
@@ -85,6 +86,10 @@ const claiming = ref(false)
 const claimMsg = ref('')
 const claimOk = ref(false)
 const payHint = ref('')
+
+function trackRecharge() {
+  trackEvent('wallet_recharge_click', { category: 'monetization', label: 'wallet' })
+}
 
 const TYPE_LABELS = {
   signup_bonus: '注册赠送',
@@ -139,25 +144,35 @@ async function load() {
 async function claimDaily() {
   claiming.value = true
   claimMsg.value = ''
+  trackEvent('wallet_claim_click', { category: 'monetization', label: 'daily_5' })
   try {
     const res = await creditsApi.dailyClaim()
     if (res?.success) {
       claimOk.value = !!res.claimed
       claimMsg.value = res.message || (res.claimed ? '领取成功' : '今日已领取')
+      trackEvent('wallet_claim_result', {
+        category: 'monetization',
+        label: res.claimed ? 'claimed' : 'already',
+      })
       if (res.balance) balance.value = { ...balance.value, ...res.balance, total: res.balance.free + res.balance.paid }
       await load()
     } else {
       claimMsg.value = res?.detail || '领取失败'
       claimOk.value = false
+      trackEvent('wallet_claim_result', { category: 'monetization', label: 'fail' })
     }
   } catch (e) {
     claimMsg.value = '领取失败，请稍后再试'
+    trackEvent('wallet_claim_result', { category: 'monetization', label: 'error' })
   } finally {
     claiming.value = false
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  trackEvent('wallet_view', { category: 'monetization', label: 'page_load' })
+  load()
+})
 </script>
 
 <style scoped>

@@ -195,6 +195,7 @@ async function generate() {
       trackEvent('story_generate_ok', { category: 'creation' })
     } else if (res?.insufficient_credits || res?.status === 402) {
       creditsLow.value = true
+      trackEvent('credits_low', { category: 'conversion', label: 'story' })
       error.value = res.detail || '点数不足'
     } else {
       error.value = res?.error || res?.detail || '生成失败'
