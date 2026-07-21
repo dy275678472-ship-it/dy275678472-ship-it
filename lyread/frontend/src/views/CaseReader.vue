@@ -26,7 +26,23 @@
         </div>
       </header>
       <section v-if="body" class="body">
-        <pre>{{ body }}</pre>
+        <div class="body-text">
+          <template v-for="(block, i) in bodyBlocks" :key="i">
+            <aside
+              v-if="block.type === 'mid_cta'"
+              class="mid-read-cta"
+              aria-label="读到一半，注册开写"
+            >
+              <p>读到一半了？注册送 30 点，用同风格接着写下去</p>
+              <router-link
+                :to="creationLink"
+                class="body-register-link"
+                @click="trackCta('mid_read_register')"
+              >免费注册开写 →</router-link>
+            </aside>
+            <p v-else class="body-para">{{ block.text }}</p>
+          </template>
+        </div>
         <aside
           v-if="!isLoggedIn"
           class="body-register-strip"
@@ -111,6 +127,18 @@ const sharePath = computed(() => `/ep/${caseData.value?.id || route.params.id}`)
 const shareUrl = computed(() => `https://lyread.cn${sharePath.value}`)
 const coverSrc = computed(() => coverForCase(caseData.value || {}, 0))
 const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
+
+/** 按空行拆段；长文中部插入游客软 CTA，减少读完才转化的流失 */
+const bodyBlocks = computed(() => {
+  const raw = String(body.value || '').replace(/\r\n/g, '\n').trim()
+  if (!raw) return []
+  const paras = raw.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
+  const blocks = paras.map((text) => ({ type: 'para', text }))
+  if (isLoggedIn.value || raw.length < 900 || blocks.length < 4) return blocks
+  const insertAt = Math.max(2, Math.floor(blocks.length / 2))
+  blocks.splice(insertAt, 0, { type: 'mid_cta', text: '' })
+  return blocks
+})
 
 const workspaceLink = computed(() => {
   const cat = caseData.value?.category || ''
@@ -299,7 +327,35 @@ watch(
 .cat { display: inline-block; padding: 4px 10px; background: #eff6ff; color: #2563eb; border-radius: 999px; font-size: 12px; }
 h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
 .meta { color: #94a3b8; font-size: 13px; margin-bottom: 16px; }
-.body pre { white-space: pre-wrap; line-height: 1.9; font-size: 16px; color: #1e2a3a; font-family: inherit; }
+.body-text {
+  font-size: 16px;
+  line-height: 1.95;
+  color: #1e2a3a;
+  letter-spacing: 0.01em;
+}
+.body-para {
+  margin: 0 0 1.05em;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.body-para:last-child { margin-bottom: 0; }
+.mid-read-cta {
+  margin: 22px 0;
+  padding: 12px 0;
+  border-top: 1px dashed #dbeafe;
+  border-bottom: 1px dashed #dbeafe;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+.mid-read-cta p {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+  flex: 1 1 220px;
+}
 .body-register-strip {
   margin: 20px 0 8px;
   padding: 14px 0 4px;
@@ -476,7 +532,7 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
   .article-header { gap: 12px; }
   .article-cover { width: 72px; height: 96px; }
   h1 { font-size: 20px; }
-  .body pre { font-size: 15px; line-height: 1.85; }
+  .body-text { font-size: 15px; line-height: 1.9; }
   .related { margin-top: 28px; padding-top: 20px; }
   .sticky-cta {
     display: block;
