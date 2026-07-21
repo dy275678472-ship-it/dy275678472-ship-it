@@ -3,17 +3,20 @@
     <aside class="sidebar" v-if="!editing">
       <div class="sidebar-head">
         <h2>我的作品</h2>
-        <button class="btn-new" @click="newStory">+ 新建</button>
+        <button class="btn-new" @click="startWizard('sidebar_head')">+ 新建</button>
       </div>
       <div v-if="loading" class="empty">加载中...</div>
       <EmptyState
         v-else-if="!stories.length"
         :image="images.emptyCreate"
         title="还没有作品"
-        description="创建第一部小说，开始 AI 辅助创作"
+        description="注册送 30 点。推荐引导创作长篇，或先写短故事热身。"
         :image-width="160"
       >
-        <button class="btn-new" @click="newStory">+ 新建作品</button>
+        <div class="empty-actions">
+          <button class="btn-new" @click="startWizard('sidebar')">引导创作</button>
+          <router-link class="btn-ghost" to="/story" @click="trackEmpty('short_story')">写短故事</router-link>
+        </div>
       </EmptyState>
       <ul v-else class="story-list">
         <li v-for="s in stories" :key="s.id" @click="openStory(s.id)" class="story-item">
@@ -142,8 +145,26 @@
     <div v-if="!editing && !loading" class="welcome">
       <img :src="images.workspace" alt="创作台欢迎横幅" class="welcome-hero-img" />
       <h2>创作台</h2>
-      <p>从左侧选择作品，或新建一部小说开始 AI 辅助创作。</p>
-      <button class="btn-new large" @click="newStory">+ 新建作品</button>
+      <template v-if="!stories.length">
+        <p>约 10 分钟走完引导，写出第一章。失败不扣点；点数不足会引导充值。</p>
+        <ol class="first-run-steps">
+          <li>选题材与灵感</li>
+          <li>AI 生成书名 / 大纲 / 章纲</li>
+          <li>续写正文并保存</li>
+        </ol>
+        <div class="welcome-ctas">
+          <button class="btn-new large" @click="startWizard('welcome')">+ 引导创作长篇</button>
+          <button class="btn-ghost large" @click="startBlank('welcome')">空白稿</button>
+          <router-link class="btn-ghost large" to="/story" @click="trackEmpty('short_story_welcome')">短故事 · 约 15 点</router-link>
+        </div>
+      </template>
+      <template v-else>
+        <p>从左侧选择作品，或新建一部小说继续创作。</p>
+        <div class="welcome-ctas">
+          <button class="btn-new large" @click="startWizard('welcome_has_stories')">+ 新建作品</button>
+          <button class="btn-ghost large" @click="startBlank('welcome_has_stories')">空白稿</button>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -153,6 +174,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { storyApi } from '../api'
 import { IMAGES } from '../assets/images'
+import { trackEvent } from '../utils/analytics'
 import EmptyState from '../components/EmptyState.vue'
 import PanelHeading from '../components/PanelHeading.vue'
 import CreationWizard from '../components/CreationWizard.vue'
@@ -242,11 +264,20 @@ async function loadMemory() {
   }
 }
 
-function newStory() {
+function resetForm() {
   Object.assign(form, { id: null, title: '', genre: '', intro: '', outline: '', characters: '', chapters: '[]', status: 'draft' })
-  chapterContent.value = ''; outlinePreview.value = ''; memory.summaries = []
-  wizardMode.value = true
-  editing.value = true
+  chapterContent.value = ''
+  outlinePreview.value = ''
+  memory.summaries = []
+  memory.characters = []
+  memory.foreshadowings = []
+  memory.settings = []
+  chapterList.value = []
+  creditsLow.value = false
+  msg.value = ''
+}
+
+function applyQuerySeed() {
   const q = route.query
   wizardInitial.value = {
     generatedTitle: q.generatedTitle,
@@ -256,6 +287,31 @@ function newStory() {
   if (q.generatedTitle) form.title = q.generatedTitle
   if (q.prompt) form.intro = q.prompt
   if (q.type) form.genre = q.type
+}
+
+function trackEmpty(label) {
+  trackEvent('workspace_empty_cta', { category: 'creation', label })
+}
+
+function startWizard(source = 'sidebar') {
+  resetForm()
+  applyQuerySeed()
+  wizardMode.value = true
+  editing.value = true
+  trackEvent('wizard_start', { category: 'creation', label: source })
+}
+
+function startBlank(source = 'welcome') {
+  resetForm()
+  wizardInitial.value = {}
+  wizardMode.value = false
+  editing.value = true
+  trackEvent('workspace_blank_start', { category: 'creation', label: source })
+}
+
+/** @deprecated prefer startWizard — kept for query deep-links */
+function newStory() {
+  startWizard('query_or_legacy')
 }
 
 async function finishWizard(payload) {
@@ -422,8 +478,19 @@ onMounted(async () => {
 .sidebar { width: 280px; border-right: 1px solid #e8f0fa; background: #fff; padding: 20px 16px; }
 .sidebar-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .sidebar-head h2 { font-size: 18px; }
-.btn-new { padding: 8px 14px; border: none; border-radius: 8px; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer; font-size: 13px; }
+.btn-new { padding: 8px 14px; border: none; border-radius: 8px; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
 .btn-new.large { padding: 12px 24px; font-size: 15px; }
+.btn-ghost {
+  padding: 8px 14px; border-radius: 8px; border: 1px solid #dbeafe; background: #fff;
+  color: #2563eb; font-weight: 600; cursor: pointer; font-size: 13px; text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.btn-ghost.large { padding: 12px 20px; font-size: 14px; }
+.empty-actions, .welcome-ctas { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
+.first-run-steps {
+  margin: 0 0 8px; padding-left: 1.2em; text-align: left; color: #64748b; font-size: 13px; line-height: 1.7;
+  max-width: 320px;
+}
 .story-list { list-style: none; }
 .story-item {
   display: flex; align-items: center; gap: 10px;

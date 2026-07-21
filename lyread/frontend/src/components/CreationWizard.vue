@@ -1,5 +1,12 @@
 <template>
   <div class="wizard">
+    <div v-if="showHint" class="wizard-hint" role="status">
+      <div>
+        <strong>首次创作提示</strong>
+        <p>共 7 步：题材 → 灵感 → 书名 → 设定 → 大纲 → 章纲 → 正文。每步可点 AI 或手填；失败不扣点，点数不足会提示充值。</p>
+      </div>
+      <button type="button" class="hint-dismiss" @click="dismissHint">知道了</button>
+    </div>
     <nav class="wizard-steps">
       <button
         v-for="(s, i) in steps"
@@ -216,6 +223,9 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { storyApi, creditsApi } from '../api'
 import { HOT_POINTS, WRITE_STYLES, allTemplatesForGenre, WIZARD_STEPS } from '../constants/creation'
 import { shuffleArray, pickRandom, mergeTitleCandidates, mergeStringOptions } from '../utils/optionPool'
+import { trackEvent } from '../utils/analytics'
+
+const HINT_KEY = 'lyread_wizard_hint_dismissed'
 
 const props = defineProps({
   initial: { type: Object, default: () => ({}) },
@@ -228,6 +238,7 @@ const busy = ref(false)
 const msg = ref('')
 const msgErr = ref(false)
 const creditsLow = ref(false)
+const showHint = ref(false)
 const genres = ref([])
 const allGenres = ref([])
 const displayedGenres = ref([])
@@ -483,7 +494,17 @@ function buildPayload() {
   }
 }
 
+function dismissHint() {
+  showHint.value = false
+  try { localStorage.setItem(HINT_KEY, '1') } catch { /* ignore */ }
+  trackEvent('wizard_hint_dismiss', { category: 'creation', label: 'first_run' })
+}
+
 onMounted(async () => {
+  try { showHint.value = localStorage.getItem(HINT_KEY) !== '1' } catch { showHint.value = true }
+  if (showHint.value) {
+    trackEvent('wizard_hint_view', { category: 'creation', label: 'first_run' })
+  }
   const [g, gf, ls, p] = await Promise.all([
     storyApi.suggestGenres(),
     storyApi.godfingers(),
@@ -508,6 +529,17 @@ onMounted(async () => {
 
 <style scoped>
 .wizard { max-width: 900px; }
+.wizard-hint {
+  display: flex; gap: 12px; align-items: flex-start; justify-content: space-between;
+  padding: 12px 14px; margin-bottom: 14px; border-radius: 12px;
+  background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a5f;
+}
+.wizard-hint strong { display: block; font-size: 13px; margin-bottom: 4px; }
+.wizard-hint p { margin: 0; font-size: 13px; line-height: 1.55; color: #334155; }
+.hint-dismiss {
+  flex-shrink: 0; padding: 6px 12px; border-radius: 8px; border: 1px solid #93c5fd;
+  background: #fff; color: #2563eb; font-weight: 600; cursor: pointer; font-size: 12px;
+}
 .wizard-steps { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 20px; padding-bottom: 4px; }
 .step-pill {
   display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px;
