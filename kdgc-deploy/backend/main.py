@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import uuid
 from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Optional
@@ -13,7 +14,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import engine, get_db
-from models import Base, Case, Knowledge, Lead, News, Product
+from models import Base, Case, ChatMessage, ChatSession, Knowledge, Lead, News, Product
 
 app = FastAPI(title="KDGC API", version="2.1.0")
 
@@ -64,6 +65,25 @@ class LeadStatusIn(BaseModel):
 
 class AIChatIn(BaseModel):
     question: str = Field(min_length=2, max_length=1000)
+
+
+class ChatSessionIn(BaseModel):
+    visitor_name: Optional[str] = Field(default=None, max_length=100)
+    visitor_contact: Optional[str] = Field(default=None, max_length=120)
+    page_url: Optional[str] = Field(default=None, max_length=500)
+
+
+class ChatMessageIn(BaseModel):
+    token: str = Field(min_length=20, max_length=100)
+    body: str = Field(min_length=1, max_length=1000)
+
+
+class AdminChatMessageIn(BaseModel):
+    body: str = Field(min_length=1, max_length=2000)
+
+
+class ChatStatusIn(BaseModel):
+    status: str = Field(pattern="^(open|closed)$")
 
 
 class NewsIn(BaseModel):
@@ -169,6 +189,94 @@ async def create_lead(data: LeadIn, request: Request, db: AsyncSession = Depends
         except Exception:
             pass
     return {"success": True, "message": "提交成功，我们将在24小时内联系您", "id": lead.id}
+
+
+def chat_message_dict(message: ChatMessage):
+    return {
+        "id": message.id,
+        "sender": message.sender,
+        "body": message.body,
+        "created_at": message.created_at.isoformat() if message.created_at else None,
+    }
+
+
+async def get_public_chat(public_id: str, token: str, db: AsyncSession):
+    result = await db.execute(select(ChatSession).where(ChatSession.public_id == public_id))
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(404, "会话不存在")
+    if session.visitor_token != token:
+        raise HTTPException(403, "会话凭证无效")
+    return session
+
+
+@app.post("/api/chat/sessions")
+async def create_chat_session(
+    data: ChatSessionIn, request: Request, db: AsyncSession = Depends(get_db)
+):
+    check_rate(f"chat-session:{request.client.host if request.client else 'unknown'}", limit=10, window=3600)
+    session = ChatSession(
+        public_id=str(uuid.uuid4()),
+        visitor_token=uuid.uuid4().hex,
+        visitor_name=(data.visitor_name or "").strip() or None,
+        visitor_contact=(data.visitor_contact or "").strip() or None,
+        page_url=(data.page_url or "").strip() or None,
+        status="open",
+        last_message_at=datetime.now(timezone.utc),
+    )
+    db.add(session)
+    await db.commit()
+    await db.refresh(session)
+    return {"public_id": session.public_id, "token": session.visitor_token, "status": session.status}
+
+
+@app.get("/api/chat/sessions/{public_id}/messages")
+async def public_chat_messages(
+    public_id: str,
+    token: str,
+    after: int = 0,
+    db: AsyncSession = Depends(get_db),
+):
+    session = await get_public_chat(public_id, token, db)
+    result = await db.execute(
+        select(ChatMessage)
+        .where(ChatMessage.session_id == session.id, ChatMessage.id > max(after, 0))
+        .order_by(ChatMessage.id)
+        .limit(200)
+    )
+    return [chat_message_dict(message) for message in result.scalars().all()]
+
+
+@app.post("/api/chat/sessions/{public_id}/messages")
+async def public_send_chat_message(
+    public_id: str,
+    data: ChatMessageIn,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    check_rate(f"chat-message:{request.client.host if request.client else 'unknown'}", limit=30, window=60)
+    session = await get_public_chat(public_id, data.token, db)
+    if session.status != "open":
+        raise HTTPException(409, "该会话已关闭，请刷新页面开始新会话")
+    message = ChatMessage(session_id=session.id, sender="visitor", body=data.body.strip())
+    session.last_message_at = datetime.now(timezone.utc)
+    db.add(message)
+    await db.commit()
+    await db.refresh(message)
+    if FEISHU_WEBHOOK:
+        text = (
+            f"💬 官网在线客服新消息\n"
+            f"访客：{session.visitor_name or '匿名'}\n"
+            f"联系方式：{session.visitor_contact or '-'}\n"
+            f"页面：{session.page_url or '-'}\n"
+            f"消息：{message.body}"
+        )
+        try:
+            async with httpx.AsyncClient(timeout=5) as client:
+                await client.post(FEISHU_WEBHOOK, json={"msg_type": "text", "content": {"text": text}})
+        except Exception:
+            pass
+    return chat_message_dict(message)
 
 
 @app.get("/api/products")
@@ -312,6 +420,9 @@ async def admin_stats(request: Request, db: AsyncSession = Depends(get_db)):
         return int(r.scalar() or 0)
 
     new_leads = await db.execute(select(func.count()).select_from(Lead).where(Lead.status == "new"))
+    open_chats = await db.execute(
+        select(func.count()).select_from(ChatSession).where(ChatSession.status == "open")
+    )
     return {
         "products": await count(Product),
         "news": await count(News),
@@ -319,6 +430,7 @@ async def admin_stats(request: Request, db: AsyncSession = Depends(get_db)):
         "knowledge": await count(Knowledge),
         "leads": await count(Lead),
         "leads_new": int(new_leads.scalar() or 0),
+        "chats_open": int(open_chats.scalar() or 0),
     }
 
 
@@ -354,6 +466,91 @@ async def update_lead(lead_id: int, data: LeadStatusIn, request: Request, db: As
     lead.status = data.status.strip()
     await db.commit()
     return {"ok": True, "id": lead.id, "status": lead.status}
+
+
+@app.get("/api/admin/chat/sessions")
+async def admin_chat_sessions(request: Request, db: AsyncSession = Depends(get_db)):
+    require_admin(request)
+    last_message = (
+        select(ChatMessage.body)
+        .where(ChatMessage.session_id == ChatSession.id)
+        .order_by(ChatMessage.id.desc())
+        .limit(1)
+        .scalar_subquery()
+    )
+    result = await db.execute(
+        select(ChatSession, last_message.label("last_message"))
+        .order_by(ChatSession.last_message_at.desc(), ChatSession.id.desc())
+        .limit(200)
+    )
+    return [
+        {
+            "id": session.id,
+            "public_id": session.public_id,
+            "visitor_name": session.visitor_name,
+            "visitor_contact": session.visitor_contact,
+            "page_url": session.page_url,
+            "status": session.status,
+            "last_message": latest,
+            "created_at": session.created_at.isoformat() if session.created_at else None,
+            "last_message_at": session.last_message_at.isoformat() if session.last_message_at else None,
+        }
+        for session, latest in result.all()
+    ]
+
+
+@app.get("/api/admin/chat/sessions/{session_id}/messages")
+async def admin_chat_messages(
+    session_id: int, request: Request, db: AsyncSession = Depends(get_db)
+):
+    require_admin(request)
+    session_result = await db.execute(select(ChatSession).where(ChatSession.id == session_id))
+    if not session_result.scalar_one_or_none():
+        raise HTTPException(404)
+    result = await db.execute(
+        select(ChatMessage).where(ChatMessage.session_id == session_id).order_by(ChatMessage.id)
+    )
+    return [chat_message_dict(message) for message in result.scalars().all()]
+
+
+@app.post("/api/admin/chat/sessions/{session_id}/messages")
+async def admin_send_chat_message(
+    session_id: int,
+    data: AdminChatMessageIn,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    require_admin(request)
+    result = await db.execute(select(ChatSession).where(ChatSession.id == session_id))
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(404)
+    if session.status != "open":
+        raise HTTPException(409, "会话已关闭")
+    message = ChatMessage(session_id=session.id, sender="admin", body=data.body.strip())
+    session.last_message_at = datetime.now(timezone.utc)
+    db.add(message)
+    await db.commit()
+    await db.refresh(message)
+    return chat_message_dict(message)
+
+
+@app.patch("/api/admin/chat/sessions/{session_id}")
+async def admin_update_chat_session(
+    session_id: int,
+    data: ChatStatusIn,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    require_admin(request)
+    result = await db.execute(select(ChatSession).where(ChatSession.id == session_id))
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(404)
+    session.status = data.status
+    session.last_message_at = datetime.now(timezone.utc)
+    await db.commit()
+    return {"ok": True, "id": session.id, "status": session.status}
 
 
 @app.get("/api/admin/news")

@@ -58,23 +58,27 @@ def page_hero(title: str, subtitle: str = "", banner: str | None = None) -> str:
 def contact_promises_html(lang: str = "zh") -> str:
     items = (
         [
-            ("contact/icon-response.png", "快速响应", "技术与商务咨询优先处理"),
-            ("contact/icon-24h.png", "7×24 响应", "客服时段 09:00–21:00，紧急需求全天候跟进"),
-            ("contact/icon-location.png", "合肥高新区", ADDRESS),
+            ("bolt", "快速响应", "技术与商务咨询优先处理"),
+            ("clock", "7×24 响应", "客服时段 09:00–21:00，紧急需求全天候跟进"),
+            ("pin", "合肥高新区", ADDRESS),
         ]
         if lang == "zh"
         else [
-            ("contact/icon-response.png", "Fast response", "Technical & commercial inquiries prioritized"),
-            ("contact/icon-24h.png", "7×24 follow-up", "Support 09:00–21:00; urgent requests tracked around the clock"),
-            ("contact/icon-location.png", "Hefei Hi-tech Zone", ADDRESS_EN),
+            ("bolt", "Fast response", "Technical & commercial inquiries prioritized"),
+            ("clock", "7×24 follow-up", "Support 09:00–21:00; urgent requests tracked around the clock"),
+            ("pin", "Hefei Hi-tech Zone", ADDRESS_EN),
         ]
     )
+    icons = {
+        "bolt": '<path d="M13 2 4.8 13.2h6.1L10 22l8.2-11.2h-6.1L13 2Z"/>',
+        "clock": '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/>',
+        "pin": '<path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.4"/>',
+    }
     cards = []
-    for img, title, desc in items:
+    for icon_name, title, desc in items:
         icon = (
-            f'<img src="{asset_url(img)}" alt="{title}" class="contact-promise-icon" width="48" height="48">'
-            if has_asset(img)
-            else '<span class="contact-promise-dot" aria-hidden="true"></span>'
+            '<span class="contact-promise-icon" aria-hidden="true">'
+            f'<svg viewBox="0 0 24 24">{icons[icon_name]}</svg></span>'
         )
         cards.append(
             f'<div class="contact-promise">{icon}<h3>{title}</h3><p>{desc}</p></div>'
@@ -92,6 +96,29 @@ ADDRESS = "安徽省合肥市高新区望江西路5089号嵌入式研发楼103-C
 ADDRESS_EN = "Room 103-C3, Embedded R&D Building, No. 5089 Wangjiang West Road, High-tech District, Hefei, Anhui, China"
 HOURS = "客服工作时间：09:00–21:00（7×24 响应）"
 HOURS_EN = "Support hours: 09:00–21:00 (7×24 response)"
+
+SERVICE_WIDGET_ZH = """<div class="service-rail" aria-label="在线服务">
+<button id="chat-open" class="service-rail-btn service-rail-primary" type="button" aria-label="在线客服">
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17.5 3.5 21l4.4-1.7c1.2.5 2.6.7 4.1.7 5 0 9-3.6 9-8s-4-8-9-8-9 3.6-9 8c0 2.1.8 4 2 5.5Z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg>
+<span>在线客服</span></button>
+<button id="wechat-open" class="service-rail-btn" type="button" aria-label="企业微信">
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5C4.9 5 2 7.4 2 10.4c0 1.7.9 3.2 2.4 4.2L3.8 17l2.8-1.2c.6.1 1.2.2 1.9.2 3.6 0 6.5-2.4 6.5-5.6S12.1 5 8.5 5Z"/><path d="M14.5 9c4.1 0 7.5 2.7 7.5 6 0 1.8-1 3.4-2.7 4.5l.7 2.5-3.1-1.3c-.8.2-1.6.3-2.4.3-3.5 0-6.4-1.9-7.2-4.5"/></svg>
+<span>企业微信</span></button>
+</div>
+<section id="chat-panel" class="support-panel" aria-hidden="true">
+<header><div><strong>中科国瓷在线客服</strong><small>工程师在线 · 通常很快回复</small></div><button class="support-close" type="button" aria-label="关闭">×</button></header>
+<div id="chat-messages" class="support-messages"><div class="support-bubble agent">您好，请问您想咨询产品选型、规格参数还是样品申请？</div></div>
+<div class="support-contact"><input id="chat-name" maxlength="60" placeholder="称呼（选填）"><input id="chat-phone" maxlength="30" placeholder="手机/邮箱（选填）"></div>
+<div class="support-compose"><textarea id="chat-input" maxlength="1000" rows="2" placeholder="请输入您的问题…"></textarea><button id="chat-send" type="button">发送</button></div>
+<p id="chat-state" class="support-state">消息将由客服后台接收</p>
+</section>
+<section id="wechat-panel" class="wechat-panel" aria-hidden="true">
+<button class="support-close" type="button" aria-label="关闭">×</button>
+<div class="wechat-placeholder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM15 14h2v2h-2zM18 14h2v5h-2zM14 18h3v2h-3z"/></svg></div>
+<strong>企业微信</strong><p>二维码即将上线<br>您也可以先使用在线客服沟通</p>
+</section>"""
+
+SERVICE_WIDGET_EN = SERVICE_WIDGET_ZH.replace("在线服务", "Online service").replace("在线客服", "Online support").replace("企业微信", "WeCom").replace("中科国瓷Online support", "ZK Guoci Support").replace("工程师在线 · 通常很快回复", "Engineer support · Fast response").replace("您好，请问您想咨询产品选型、规格参数还是样品申请？", "Hello. How can we help with product selection, specifications, or samples?").replace("称呼（选填）", "Name (optional)").replace("手机/邮箱（选填）", "Phone/email (optional)").replace("请输入您的问题…", "Type your question…").replace("发送", "Send").replace("消息将由客服后台接收", "Your message will be received by our support team").replace("二维码即将上线<br>您也可以先使用Online support沟通", "QR code coming soon<br>Please use online support for now").replace("关闭", "Close")
 
 FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <div><h4>中科国瓷</h4><p style="font-size:14px;margin-top:8px">变频氧传感器与氮氧传感技术 · 中科大技术转化</p>
@@ -113,14 +140,12 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="" width="14" height="14">{BEIAN_GA}</a><span class="sep">·</span>
 <a href="/en/">English</a><span class="sep">|</span><a href="/">中文</a>
 </div></div></footer>
+{SERVICE_WIDGET_ZH}
 <script src="/assets/js/main.js"></script>"""
 
 NAV = """<nav class="nav"><div class="nav-inner">
-<a href="/" class="nav-logo" aria-label="中科国瓷">
-<picture>
-<source srcset="/assets/images/logo.webp?v=20260720e" type="image/webp">
-<img src="/assets/images/logo.png?v=20260720e" alt="中科国瓷" class="nav-logo-img" width="184" height="53">
-</picture>
+<a href="/" class="nav-logo nav-wordmark" aria-label="中科国瓷">
+<span class="wordmark-cn">中科国瓷</span><span class="wordmark-divider"></span><span class="wordmark-en">KDGC<small>OXYGEN SENSING</small></span>
 </a>
 <div class="nav-links">
 <a href="/">首页</a>
@@ -136,11 +161,8 @@ NAV = """<nav class="nav"><div class="nav-inner">
 </div></nav>"""
 
 NAV_EN = """<nav class="nav"><div class="nav-inner">
-<a href="/en/" class="nav-logo" aria-label="KDGC">
-<picture>
-<source srcset="/assets/images/logo-en.webp?v=20260720e" type="image/webp">
-<img src="/assets/images/logo-en.png?v=20260720e" alt="KDGC" class="nav-logo-img" width="172" height="49">
-</picture>
+<a href="/en/" class="nav-logo nav-wordmark" aria-label="KDGC">
+<span class="wordmark-en wordmark-en-main">KDGC<small>OXYGEN SENSING</small></span><span class="wordmark-divider"></span><span class="wordmark-cn wordmark-cn-small">中科国瓷</span>
 </a>
 <div class="nav-links">
 <a href="/en/">Home</a>
@@ -181,6 +203,7 @@ FOOTER_EN = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="" width="14" height="14">{BEIAN_GA}</a><span class="sep">·</span>
 <a href="/en/">English</a><span class="sep">|</span><a href="/">中文</a>
 </div></div></footer>
+{SERVICE_WIDGET_EN}
 <script src="/assets/js/main.js"></script>"""
 
 
@@ -871,7 +894,6 @@ def main():
             f'<figure class="contact-campus"><img src="{asset_url("contact/campus.jpg")}" '
             f'alt="中科国瓷园区" loading="lazy"><figcaption>合肥高新区 · 望江西路园区</figcaption></figure>'
         )
-    wechat_src = asset_url("wechat-qr.png")
     map_zh = baidu_map_html("zh")
     map_en = baidu_map_html("en")
     pages["contact/index.html"] = page(
@@ -892,10 +914,6 @@ def main():
 <dt>地址</dt><dd>{ADDRESS}</dd>
 <dt>服务时间</dt><dd>{HOURS}</dd>
 </dl>
-<div class="contact-wechat-row">
-<img src="{wechat_src}" alt="微信二维码" class="contact-wechat" width="140" height="140">
-<p>微信扫码沟通</p>
-</div>
 </div>
 {campus_html}
 {map_zh}
@@ -941,10 +959,6 @@ def main():
 <dt>Address</dt><dd>{ADDRESS_EN}</dd>
 <dt>Hours</dt><dd>{HOURS_EN}</dd>
 </dl>
-<div class="contact-wechat-row">
-<img src="{wechat_src}" alt="WeChat QR" class="contact-wechat" width="140" height="140">
-<p>Scan WeChat QR</p>
-</div>
 </div>
 {campus_html}
 {map_en}

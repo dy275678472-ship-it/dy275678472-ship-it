@@ -1,6 +1,7 @@
 const titles = {
   dash: "概览",
   leads: "线索管理",
+  chat: "在线客服",
   knowledge: "知识库",
   cases: "行业案例",
   news: "新闻",
@@ -9,6 +10,8 @@ const titles = {
 };
 
 let TOKEN = localStorage.getItem("kdgc_admin_token") || "";
+let activeChat = null;
+let chatPollTimer = null;
 const tokenInput = document.getElementById("token");
 tokenInput.value = TOKEN;
 
@@ -57,10 +60,12 @@ document.querySelectorAll(".side nav button").forEach((btn) => {
     document.getElementById("page-title").textContent = titles[tab] || tab;
     if (tab === "dash") loadStats();
     if (tab === "leads") loadLeads();
+    if (tab === "chat") loadChats();
     if (tab === "knowledge") loadKnowledge();
     if (tab === "cases") loadCases();
     if (tab === "news") loadNews();
     if (tab === "products") loadProducts();
+    if (tab !== "chat") clearInterval(chatPollTimer);
   };
 });
 
@@ -70,6 +75,7 @@ async function loadStats() {
     document.getElementById("stats").innerHTML = [
       ["线索", s.leads],
       ["新线索", s.leads_new],
+      ["待接待会话", s.chats_open],
       ["知识库", s.knowledge],
       ["行业案例", s.cases],
       ["新闻", s.news],
@@ -108,6 +114,82 @@ async function setLeadStatus(id, status) {
   loadLeads();
   loadStats();
 }
+
+async function loadChats() {
+  const rows = await api("/api/admin/chat/sessions");
+  const filter = document.getElementById("chat-filter").value;
+  const list = filter ? rows.filter((item) => item.status === filter) : rows;
+  document.querySelector("#chat-table tbody").innerHTML = list.map((chat) => `<tr>
+    <td>${esc((chat.last_message_at || chat.created_at || "").replace("T", " ").slice(0, 19))}</td>
+    <td>${esc(chat.visitor_name || "匿名访客")}<br><span class="muted">${esc(chat.visitor_contact || "")}</span></td>
+    <td>${esc((chat.last_message || "新会话").slice(0, 80))}</td>
+    <td>${chat.status === "open" ? "待接待" : "已关闭"}</td>
+    <td><button class="btn" onclick='openChat(${JSON.stringify(chat).replace(/'/g, "&#39;")})'>查看</button>
+    ${chat.status === "closed" ? `<button class="btn" onclick="setChatStatus(${chat.id},'open')">重开</button>` : ""}</td>
+  </tr>`).join("") || `<tr><td colspan="5">暂无客服会话</td></tr>`;
+}
+document.getElementById("chat-filter").onchange = loadChats;
+
+async function openChat(chat) {
+  activeChat = chat;
+  document.getElementById("chat-admin-empty").hidden = true;
+  document.getElementById("chat-admin-active").hidden = false;
+  document.getElementById("chat-admin-title").textContent = chat.visitor_name || "匿名访客";
+  document.getElementById("chat-admin-meta").textContent =
+    [chat.visitor_contact, chat.page_url].filter(Boolean).join(" · ") || "未留联系方式";
+  document.getElementById("chat-close-session").disabled = chat.status === "closed";
+  await loadChatMessages();
+  clearInterval(chatPollTimer);
+  chatPollTimer = setInterval(loadChatMessages, 3000);
+}
+
+async function loadChatMessages() {
+  if (!activeChat) return;
+  const rows = await api(`/api/admin/chat/sessions/${activeChat.id}/messages`);
+  const box = document.getElementById("chat-admin-messages");
+  box.innerHTML = rows.map((message) => `<div class="chat-admin-message ${message.sender === "admin" ? "admin" : ""}">
+    ${esc(message.body)}<small>${message.sender === "admin" ? "客服" : "访客"} · ${esc((message.created_at || "").replace("T", " ").slice(0, 19))}</small>
+  </div>`).join("") || `<div class="muted">会话暂无消息</div>`;
+  box.scrollTop = box.scrollHeight;
+}
+
+async function sendChatReply() {
+  if (!activeChat) return;
+  const input = document.getElementById("chat-admin-input");
+  const body = input.value.trim();
+  if (!body) return;
+  await api(`/api/admin/chat/sessions/${activeChat.id}/messages`, {
+    method: "POST",
+    body: JSON.stringify({ body }),
+  });
+  input.value = "";
+  await loadChatMessages();
+  await loadChats();
+}
+
+async function setChatStatus(id, status) {
+  await api(`/api/admin/chat/sessions/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+  if (activeChat?.id === id) {
+    activeChat.status = status;
+    document.getElementById("chat-close-session").disabled = status === "closed";
+  }
+  await loadChats();
+  await loadStats();
+}
+
+document.getElementById("chat-admin-send").onclick = sendChatReply;
+document.getElementById("chat-admin-input").onkeydown = (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    sendChatReply();
+  }
+};
+document.getElementById("chat-close-session").onclick = () => {
+  if (activeChat) setChatStatus(activeChat.id, "closed");
+};
 
 function esc(s) {
   return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

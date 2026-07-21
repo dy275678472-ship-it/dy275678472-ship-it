@@ -77,32 +77,146 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const aiBtn = document.getElementById('ai-btn');
-  const aiPanel = document.getElementById('ai-panel');
-  const aiSend = document.getElementById('ai-send');
-  const aiInput = document.getElementById('ai-input');
-  const aiMessages = document.getElementById('ai-messages');
-  if (aiBtn && aiPanel) {
-    aiBtn.addEventListener('click', () => aiPanel.classList.toggle('open'));
-    const send = async () => {
-      const q = aiInput.value.trim();
-      if (!q) return;
-      aiMessages.innerHTML += `<p><strong>您：</strong>${q}</p>`;
-      aiInput.value = '';
-      try {
-        const res = await fetch('/api/ai/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question: q }),
-        });
-        const json = await res.json();
-        aiMessages.innerHTML += `<p><strong>助手：</strong>${json.answer}</p>`;
-        aiMessages.scrollTop = aiMessages.scrollHeight;
-      } catch {
-        aiMessages.innerHTML += `<p><strong>助手：</strong>暂时无法回答，请通过联系页留言。</p>`;
+  const chatOpen = document.getElementById('chat-open');
+  const wechatOpen = document.getElementById('wechat-open');
+  const chatPanel = document.getElementById('chat-panel');
+  const wechatPanel = document.getElementById('wechat-panel');
+  const chatSend = document.getElementById('chat-send');
+  const chatInput = document.getElementById('chat-input');
+  const chatMessages = document.getElementById('chat-messages');
+  const chatState = document.getElementById('chat-state');
+  let chatSession = null;
+  let pollTimer = null;
+  let lastMessageId = 0;
+
+  const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
+
+  const setPanel = (panel, open) => {
+    [chatPanel, wechatPanel].forEach((p) => {
+      if (p && p !== panel) {
+        p.classList.remove('open');
+        p.setAttribute('aria-hidden', 'true');
       }
-    };
-    aiSend?.addEventListener('click', send);
-    aiInput?.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+    });
+    if (!panel) return;
+    panel.classList.toggle('open', open);
+    panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+  };
+
+  const renderMessage = (message) => {
+    if (!chatMessages || chatMessages.querySelector(`[data-message-id="${message.id}"]`)) return;
+    const bubble = document.createElement('div');
+    bubble.className = `support-bubble ${message.sender === 'visitor' ? 'visitor' : 'agent'}`;
+    bubble.dataset.messageId = message.id;
+    bubble.innerHTML = esc(message.body).replace(/\n/g, '<br>');
+    chatMessages.appendChild(bubble);
+    lastMessageId = Math.max(lastMessageId, Number(message.id) || 0);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  };
+
+  const restoreSession = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('kdgc_chat_session') || 'null');
+      if (saved?.public_id && saved?.token) chatSession = saved;
+    } catch {
+      localStorage.removeItem('kdgc_chat_session');
+    }
+  };
+
+  const ensureSession = async () => {
+    if (chatSession) return chatSession;
+    const res = await fetch('/api/chat/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        visitor_name: document.getElementById('chat-name')?.value.trim() || null,
+        visitor_contact: document.getElementById('chat-phone')?.value.trim() || null,
+        page_url: location.pathname,
+      }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.detail || '无法创建会话');
+    chatSession = json;
+    localStorage.setItem('kdgc_chat_session', JSON.stringify(chatSession));
+    return chatSession;
+  };
+
+  const pollMessages = async () => {
+    if (!chatSession || document.hidden) return;
+    try {
+      const res = await fetch(`/api/chat/sessions/${chatSession.public_id}/messages?token=${encodeURIComponent(chatSession.token)}&after=${lastMessageId}`);
+      if (res.status === 404 || res.status === 403) {
+        localStorage.removeItem('kdgc_chat_session');
+        chatSession = null;
+        return;
+      }
+      if (!res.ok) return;
+      const rows = await res.json();
+      rows.forEach(renderMessage);
+    } catch {
+      // A temporary network error should not interrupt the visitor.
+    }
+  };
+
+  const startPolling = () => {
+    clearInterval(pollTimer);
+    pollMessages();
+    pollTimer = setInterval(pollMessages, 4000);
+  };
+
+  const sendMessage = async () => {
+    const body = chatInput?.value.trim();
+    if (!body || !chatSend) return;
+    chatSend.disabled = true;
+    if (chatState) chatState.textContent = '正在发送…';
+    try {
+      const session = await ensureSession();
+      const res = await fetch(`/api/chat/sessions/${session.public_id}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: session.token, body }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.detail || '发送失败');
+      renderMessage(json);
+      chatInput.value = '';
+      if (chatState) chatState.textContent = '已发送，客服回复会自动显示';
+      startPolling();
+    } catch (error) {
+      if (chatState) chatState.textContent = error.message || '发送失败，请稍后重试';
+    } finally {
+      chatSend.disabled = false;
+      chatInput?.focus();
+    }
+  };
+
+  if (chatOpen && chatPanel) {
+    restoreSession();
+    chatOpen.addEventListener('click', () => {
+      const opening = !chatPanel.classList.contains('open');
+      setPanel(chatPanel, opening);
+      if (opening) {
+        chatInput?.focus();
+        startPolling();
+      } else {
+        clearInterval(pollTimer);
+      }
+    });
+    chatSend?.addEventListener('click', sendMessage);
+    chatInput?.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
   }
+  wechatOpen?.addEventListener('click', () => setPanel(wechatPanel, !wechatPanel?.classList.contains('open')));
+  document.querySelectorAll('.support-close').forEach((button) => {
+    button.addEventListener('click', () => {
+      setPanel(button.closest('.support-panel,.wechat-panel'), false);
+      clearInterval(pollTimer);
+    });
+  });
 });

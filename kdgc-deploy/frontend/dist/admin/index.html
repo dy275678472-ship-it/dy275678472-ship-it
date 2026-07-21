@@ -12,6 +12,7 @@
   <nav>
     <button data-tab="dash" class="active">概览</button>
     <button data-tab="leads">线索管理</button>
+    <button data-tab="chat">在线客服</button>
     <button data-tab="knowledge">知识库</button>
     <button data-tab="cases">行业案例</button>
     <button data-tab="news">新闻</button>
@@ -65,6 +66,37 @@
     <div class="table-wrap"><table id="leads-table"><thead>
       <tr><th>时间</th><th>公司</th><th>联系人</th><th>电话</th><th>产品</th><th>需求</th><th>状态</th><th>操作</th></tr>
     </thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="tab-chat" class="panel">
+    <div class="toolbar">
+      <button class="btn" onclick="loadChats()">刷新会话</button>
+      <select id="chat-filter">
+        <option value="">全部状态</option>
+        <option value="open">待接待</option>
+        <option value="closed">已关闭</option>
+      </select>
+      <span class="muted">访客端每 4 秒自动接收回复</span>
+    </div>
+    <div class="chat-admin-layout">
+      <div class="table-wrap"><table id="chat-table"><thead>
+        <tr><th>最近消息</th><th>访客</th><th>内容</th><th>状态</th><th>操作</th></tr>
+      </thead><tbody></tbody></table></div>
+      <div class="chat-admin-box">
+        <div id="chat-admin-empty" class="chat-admin-empty">选择一个会话查看并回复</div>
+        <div id="chat-admin-active" hidden>
+          <div class="chat-admin-head">
+            <div><strong id="chat-admin-title">会话</strong><small id="chat-admin-meta"></small></div>
+            <button class="btn" id="chat-close-session">关闭会话</button>
+          </div>
+          <div id="chat-admin-messages" class="chat-admin-messages"></div>
+          <div class="chat-admin-compose">
+            <textarea id="chat-admin-input" rows="3" maxlength="2000" placeholder="输入客服回复…"></textarea>
+            <button class="btn primary" id="chat-admin-send">发送回复</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section id="tab-knowledge" class="panel">

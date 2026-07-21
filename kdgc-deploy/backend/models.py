@@ -43,6 +43,30 @@ class Lead(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+class ChatSession(Base):
+    __tablename__ = "chat_sessions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    public_id: Mapped[str] = mapped_column(String(36), unique=True, nullable=False, index=True)
+    visitor_token: Mapped[str] = mapped_column(String(64), nullable=False)
+    visitor_name: Mapped[str | None] = mapped_column(String(100))
+    visitor_contact: Mapped[str | None] = mapped_column(String(120))
+    page_url: Mapped[str | None] = mapped_column(String(500))
+    status: Mapped[str] = mapped_column(String(30), default="open", index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    last_message_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    session_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    sender: Mapped[str] = mapped_column(String(20), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class News(Base):
     __tablename__ = "news"
 
