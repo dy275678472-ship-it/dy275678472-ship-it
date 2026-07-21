@@ -159,7 +159,14 @@
             >
               {{ trialLoading ? '生成中...' : '🎲 再随机 5 个（1 点）' }}
             </button>
-            <span v-else class="guest-more-hint">注册后可无限换批生成书名</span>
+            <button
+              v-else
+              type="button"
+              class="btn-more-titles"
+              @click="goRegisterContinue('more_titles_gate')"
+            >
+              注册后续写换批书名 →
+            </button>
           </div>
           <div v-if="trialTitles.length" class="title-pick-grid">
             <button
@@ -177,7 +184,7 @@
           <p v-else class="result-title">{{ trialResult.title }}</p>
           <p class="result-hook">{{ trialResult.description }}</p>
           <div v-if="!isLoggedIn" class="trial-cta-row">
-            <button class="btn-continue-trial" @click="goRegisterContinue">
+            <button class="btn-continue-trial" @click="goRegisterContinue('continue_after_title')">
               用这个名字继续写 → 注册领 30 点
             </button>
             <p class="trial-cta-hint">注册即送 30 点，约可 AI 续写 3 章</p>
@@ -191,7 +198,7 @@
 
         <div class="trial-tips" v-if="!trialResult">
           <span class="tip-badge"><img :src="images.pricing.gift" alt="免费试用" width="16" height="16" /> 游客可免费试用一次</span>
-          <span class="tip-link" @click="goRegisterContinue">注册送 30 点 →</span>
+          <span class="tip-link" @click="goRegisterContinue('tip_link')">注册送 30 点 →</span>
         </div>
       </div>
     </div>
@@ -234,11 +241,12 @@ function goWorkspaceContinue() {
   showTrialModal.value = false
 }
 
-function goRegisterContinue() {
+function goRegisterContinue(label = 'continue_after_title') {
+  const eventLabel = typeof label === 'string' ? label : 'continue_after_title'
   const redirect = `/workspace?${new URLSearchParams(workspaceQuery()).toString()}`
   router.push({ path: '/login', query: { redirect, mode: 'register' } })
   showTrialModal.value = false
-  trackEvent('trial_register_cta', { category: 'funnel', label: 'continue_after_title' })
+  trackEvent('trial_register_cta', { category: 'funnel', label: eventLabel })
 }
 const statsLoaded = ref(false)
 const hotCases = ref([])
@@ -706,7 +714,7 @@ const startTrial = async (append = false) => {
   padding: 8px 14px; border-radius: 8px; border: 1px solid #93c5fd;
   background: #fff; color: #2563eb; font-size: 13px; font-weight: 600; cursor: pointer;
 }
-.guest-more-hint { font-size: 12px; color: #64748b; }
+.btn-more-titles:hover { background: #eff6ff; }
 .result-title { font-weight: 700; color: #1e2a3a; margin-bottom: 6px; }
 .result-hook { font-size: 13px; color: #5a6a7a; }
 .trial-cta-row { margin-top: 16px; text-align: center; }

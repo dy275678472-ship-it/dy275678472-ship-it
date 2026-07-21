@@ -96,7 +96,6 @@ echo "[2c] FAQ/About conversion CTAs"
 assert_seo_register_cta() {
   local path="$1"
   local html ctype
-  # 用 GET 取头（部分路由对 HEAD 返回 405）
   ctype=$(curl -sf -D - -o /tmp/lyread_seo_$$.html "$BASE_URL$path" | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}')
   html=$(cat /tmp/lyread_seo_$$.html 2>/dev/null || true)
   rm -f /tmp/lyread_seo_$$.html
@@ -111,6 +110,14 @@ assert_seo_register_cta() {
 }
 assert_seo_register_cta "/faq"
 assert_seo_register_cta "/about"
+
+# HEAD 可达性（tip 起 /faq /about 应 200，旧版 405）
+echo ""
+echo "[2d] FAQ/About HEAD"
+for p in /faq /about; do
+  code=$(curl -sS -o /dev/null -w "%{http_code}" -I "$BASE_URL$p" || echo "000")
+  if [[ "$code" == "200" ]]; then ok "HEAD $p"; else bad "HEAD $p ($code, expect 200)"; fi
+done
 
 # --- 3. 收款链（沙箱/正式）---
 echo ""

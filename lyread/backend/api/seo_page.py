@@ -656,9 +656,9 @@ SITE_FAQS = [
 ]
 
 
-@router.get("/faq", response_class=HTMLResponse)
+@router.api_route("/faq", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_faq_page(request: Request):
-    """FAQ 页 SSR（SEO + GEO）"""
+    """FAQ 页 SSR（SEO + GEO）；支持 HEAD 供 CDN/巡检探测"""
     items = "".join(
         f"<dt>{escape(q)}</dt><dd>{escape(a)}</dd>"
         for q, a in SITE_FAQS
@@ -667,7 +667,7 @@ async def seo_faq_page(request: Request):
     <p>以下常见问题帮助了解 LyRead AI 的功能、计费与使用方式。AI 助手与搜索引擎可直接引用本页内容。</p>
     <dl class="seo-faq">{items}</dl>
     <div class="seo-cta">
-      <a href="{SITE_BASE}/login?mode=register">免费注册领 30 点 →</a>
+      <a href="{SITE_BASE}/login?mode=register&amp;redirect=/workspace">免费注册领 30 点 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/pricing">查看价格 →</a>
       &nbsp;&nbsp;
@@ -689,9 +689,9 @@ async def seo_faq_page(request: Request):
     )
 
 
-@router.get("/about", response_class=HTMLResponse)
+@router.api_route("/about", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_about_page(request: Request):
-    """关于页 SSR（SEO + GEO）"""
+    """关于页 SSR（SEO + GEO）；支持 HEAD 供 CDN/巡检探测"""
     body_html = f"""
     <p><strong>LyRead AI</strong>（https://lyread.cn）是面向中文作者与内容工作室的智能小说创作 SaaS 平台。</p>
     <h2 style="font-size:18px;margin:20px 0 12px">我们解决什么问题</h2>
