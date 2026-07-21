@@ -21,10 +21,18 @@
       </button>
     </nav>
 
-    <div v-if="creditsLow" class="credits-banner">
-      <span>点数不足</span>
-      <router-link to="/wallet">领每日免费</router-link>
-      <router-link to="/pricing">充值</router-link>
+    <div v-if="creditsLow" class="credits-banner" role="status">
+      <span>点数不足 · 失败不扣点</span>
+      <button
+        type="button"
+        class="btn-claim-inline"
+        :disabled="claiming || claimDone"
+        @click="claimDailyInline"
+      >
+        {{ claiming ? '领取中...' : (claimDone ? '今日已领取' : '领取今日免费 5 点') }}
+      </button>
+      <router-link to="/pricing" @click="trackEvent('wizard_recharge_click', { category: 'conversion', label: '402' })">充值</router-link>
+      <router-link to="/wallet">点数中心</router-link>
     </div>
 
     <!-- Step 0: Genre -->
@@ -238,6 +246,8 @@ const busy = ref(false)
 const msg = ref('')
 const msgErr = ref(false)
 const creditsLow = ref(false)
+const claiming = ref(false)
+const claimDone = ref(false)
 const showHint = ref(false)
 const genres = ref([])
 const allGenres = ref([])
@@ -321,11 +331,51 @@ function handleErr(res, fallback) {
   if (res?.insufficient_credits || res?.status === 402) {
     creditsLow.value = true
     trackEvent('credits_low', { category: 'conversion', label: 'wizard' })
-    setMsg(res.detail || '点数不足', true)
+    setMsg(res.detail || '点数不足，可先领取每日免费额度', true)
+    refreshClaimState()
     return true
   }
   setMsg(res?.error || res?.detail || fallback, true)
   return false
+}
+
+async function refreshClaimState() {
+  try {
+    const bal = await creditsApi.balance()
+    if (bal?.success) claimDone.value = !!bal.claimed_today
+  } catch (_) { /* ignore */ }
+}
+
+async function claimDailyInline() {
+  if (claiming.value || claimDone.value) return
+  claiming.value = true
+  trackEvent('wizard_claim_click', { category: 'conversion', label: '402_inline' })
+  try {
+    const res = await creditsApi.dailyClaim()
+    if (res?.success) {
+      claimDone.value = true
+      const claimed = !!res.claimed
+      trackEvent('wizard_claim_result', {
+        category: 'conversion',
+        label: claimed ? 'claimed' : 'already',
+      })
+      if (claimed) {
+        creditsLow.value = false
+        setMsg(res.message || '已领取今日免费 5 点，可继续创作', false)
+        window.dispatchEvent(new Event('credits-changed'))
+      } else {
+        setMsg(res.message || '今日已领取，请充值后续写', true)
+      }
+    } else {
+      setMsg(res?.detail || '领取失败，请稍后再试', true)
+      trackEvent('wizard_claim_result', { category: 'conversion', label: 'fail' })
+    }
+  } catch (_) {
+    setMsg('领取失败，请稍后再试', true)
+    trackEvent('wizard_claim_result', { category: 'conversion', label: 'error' })
+  } finally {
+    claiming.value = false
+  }
 }
 
 function pickGenre(g) {
@@ -599,10 +649,15 @@ onMounted(async () => {
 .msg { font-size: 13px; color: #16a34a; margin: 8px 0; }
 .msg.err { color: #ef4444; }
 .credits-banner {
-  display: flex; gap: 12px; align-items: center; padding: 10px 14px; margin-bottom: 12px;
-  background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; font-size: 13px;
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 10px 14px; margin-bottom: 12px;
+  background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; font-size: 13px; color: #9a3412;
 }
 .credits-banner a { color: #2563eb; font-weight: 600; text-decoration: none; }
+.btn-claim-inline {
+  padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600;
+  background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
+}
+.btn-claim-inline:disabled { opacity: 0.65; cursor: not-allowed; }
 .report {
   margin-top: 12px; padding: 12px; background: #f8fafc; border-radius: 10px;
   font-size: 12px; white-space: pre-wrap; max-height: 200px; overflow: auto;

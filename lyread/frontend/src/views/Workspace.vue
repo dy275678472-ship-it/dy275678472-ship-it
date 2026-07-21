@@ -48,10 +48,18 @@
         欢迎！已到账 <strong>30 点</strong>，试试「AI 续写正文」感受完整创作流程。
         <button class="welcome-close" @click="welcomeBanner = false">知道了</button>
       </div>
-      <div v-if="creditsLow" class="credits-banner">
-        <span>点数不足，无法继续生成。</span>
-        <router-link to="/wallet">领取每日免费 5 点</router-link>
-        <router-link to="/pricing">立即充值</router-link>
+      <div v-if="creditsLow" class="credits-banner" role="status">
+        <span>点数不足，无法继续生成 · 失败不扣点</span>
+        <button
+          type="button"
+          class="btn-claim-inline"
+          :disabled="claiming || claimDone"
+          @click="claimDailyInline"
+        >
+          {{ claiming ? '领取中...' : (claimDone ? '今日已领取' : '领取今日免费 5 点') }}
+        </button>
+        <router-link to="/pricing" @click="trackEvent('workspace_recharge_click', { category: 'conversion', label: '402' })">立即充值</router-link>
+        <router-link to="/wallet">点数中心</router-link>
         <button class="welcome-close" @click="creditsLow = false">×</button>
       </div>
       <div class="editor-toolbar">
@@ -183,7 +191,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { storyApi } from '../api'
+import { storyApi, creditsApi } from '../api'
 import { IMAGES } from '../assets/images'
 import { trackEvent } from '../utils/analytics'
 import EmptyState from '../components/EmptyState.vue'
@@ -202,6 +210,8 @@ const busy = ref(false)
 const msg = ref('')
 const msgErr = ref(false)
 const creditsLow = ref(false)
+const claiming = ref(false)
+const claimDone = ref(false)
 const welcomeBanner = ref(false)
 const mobileListOpen = ref(false)
 const outlinePreview = ref('')
@@ -222,11 +232,51 @@ function handleApiError(res, fallback) {
   if (res?.insufficient_credits || res?.status === 402) {
     creditsLow.value = true
     trackEvent('credits_low', { category: 'conversion', label: 'workspace' })
-    setMsg(res.detail || '点数不足，请先充值或领取每日免费额度', true)
+    setMsg(res.detail || '点数不足，可先领取每日免费额度', true)
+    refreshClaimState()
     return true
   }
   setMsg(res?.error || res?.detail || fallback, true)
   return false
+}
+
+async function refreshClaimState() {
+  try {
+    const bal = await creditsApi.balance()
+    if (bal?.success) claimDone.value = !!bal.claimed_today
+  } catch (_) { /* ignore */ }
+}
+
+async function claimDailyInline() {
+  if (claiming.value || claimDone.value) return
+  claiming.value = true
+  trackEvent('workspace_claim_click', { category: 'conversion', label: '402_inline' })
+  try {
+    const res = await creditsApi.dailyClaim()
+    if (res?.success) {
+      claimDone.value = true
+      const claimed = !!res.claimed
+      trackEvent('workspace_claim_result', {
+        category: 'conversion',
+        label: claimed ? 'claimed' : 'already',
+      })
+      if (claimed) {
+        creditsLow.value = false
+        setMsg(res.message || '已领取今日免费 5 点，可继续创作', false)
+        window.dispatchEvent(new Event('credits-changed'))
+      } else {
+        setMsg(res.message || '今日已领取，请充值后续写', true)
+      }
+    } else {
+      setMsg(res?.detail || '领取失败，请稍后再试', true)
+      trackEvent('workspace_claim_result', { category: 'conversion', label: 'fail' })
+    }
+  } catch (_) {
+    setMsg('领取失败，请稍后再试', true)
+    trackEvent('workspace_claim_result', { category: 'conversion', label: 'error' })
+  } finally {
+    claiming.value = false
+  }
 }
 
 async function loadList() {
@@ -550,8 +600,13 @@ onMounted(async () => {
   padding: 12px 16px; margin-bottom: 12px; border-radius: 10px; font-size: 13px;
 }
 .welcome-toast { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
-.credits-banner { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+.credits-banner { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; flex-wrap: wrap; gap: 10px; }
 .credits-banner a { color: #2563eb; font-weight: 600; text-decoration: none; }
+.btn-claim-inline {
+  padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600;
+  background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
+}
+.btn-claim-inline:disabled { opacity: 0.65; cursor: not-allowed; }
 .welcome-close {
   margin-left: auto; border: none; background: transparent; cursor: pointer;
   font-size: 14px; color: inherit; opacity: 0.7;

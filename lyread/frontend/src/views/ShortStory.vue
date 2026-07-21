@@ -27,10 +27,18 @@
       <router-link class="btn-gate" :to="registerTo">免费注册开始写</router-link>
     </div>
 
-    <div v-if="creditsLow" class="credits-banner">
-      <span>点数不足</span>
-      <router-link to="/wallet">领每日免费 5 点</router-link>
-      <router-link to="/pricing">充值</router-link>
+    <div v-if="creditsLow" class="credits-banner" role="status">
+      <span>点数不足 · 失败不扣点</span>
+      <button
+        type="button"
+        class="btn-claim-inline"
+        :disabled="claiming || claimDone"
+        @click="claimDailyInline"
+      >
+        {{ claiming ? '领取中...' : (claimDone ? '今日已领取' : '领取今日免费 5 点') }}
+      </button>
+      <router-link to="/pricing" @click="trackEvent('story_recharge_click', { category: 'conversion', label: '402' })">充值</router-link>
+      <router-link to="/wallet">点数中心</router-link>
     </div>
 
     <section class="panel" v-if="!result">
@@ -94,7 +102,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { storyApi, casesApi } from '../api'
+import { storyApi, casesApi, creditsApi } from '../api'
 import { IMAGES } from '../assets/images'
 import { allTemplatesForGenre } from '../constants/creation'
 import { pickRandom, mergeStringOptions } from '../utils/optionPool'
@@ -115,6 +123,8 @@ const displayedTemplates = ref([])
 const busy = ref(false)
 const error = ref('')
 const creditsLow = ref(false)
+const claiming = ref(false)
+const claimDone = ref(false)
 const result = ref(null)
 const samples = ref([])
 const loggedIn = ref(!!localStorage.getItem('token'))
@@ -229,7 +239,8 @@ async function generate() {
     } else if (res?.insufficient_credits || res?.status === 402) {
       creditsLow.value = true
       trackEvent('credits_low', { category: 'conversion', label: 'story' })
-      error.value = res.detail || '点数不足'
+      error.value = res.detail || '点数不足，可先领取每日免费额度'
+      refreshClaimState()
     } else {
       error.value = res?.error || res?.detail || '生成失败'
     }
@@ -239,6 +250,45 @@ async function generate() {
 function reset() {
   result.value = null
   prompt.value = ''
+}
+
+async function refreshClaimState() {
+  try {
+    const bal = await creditsApi.balance()
+    if (bal?.success) claimDone.value = !!bal.claimed_today
+  } catch (_) { /* ignore */ }
+}
+
+async function claimDailyInline() {
+  if (claiming.value || claimDone.value) return
+  claiming.value = true
+  trackEvent('story_claim_click', { category: 'conversion', label: '402_inline' })
+  try {
+    const res = await creditsApi.dailyClaim()
+    if (res?.success) {
+      claimDone.value = true
+      const claimed = !!res.claimed
+      trackEvent('story_claim_result', {
+        category: 'conversion',
+        label: claimed ? 'claimed' : 'already',
+      })
+      if (claimed) {
+        creditsLow.value = false
+        error.value = ''
+        window.dispatchEvent(new Event('credits-changed'))
+      } else {
+        error.value = res.message || '今日已领取，请充值后续写'
+      }
+    } else {
+      error.value = res?.detail || '领取失败，请稍后再试'
+      trackEvent('story_claim_result', { category: 'conversion', label: 'fail' })
+    }
+  } catch (_) {
+    error.value = '领取失败，请稍后再试'
+    trackEvent('story_claim_result', { category: 'conversion', label: 'error' })
+  } finally {
+    claiming.value = false
+  }
 }
 
 async function saveToWorkspace() {
@@ -367,8 +417,13 @@ onMounted(async () => {
 .btn-generate, .btn-primary { background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff; width: 100%; }
 .btn-secondary { background: #f1f5f9; color: #334155; }
 .error { color: #dc2626; font-size: 13px; margin-top: 10px; }
-.credits-banner { display: flex; gap: 12px; padding: 12px; background: #fff7ed; border-radius: 10px; margin-bottom: 16px; font-size: 13px; }
+.credits-banner { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 12px; background: #fff7ed; border-radius: 10px; margin-bottom: 16px; font-size: 13px; color: #9a3412; }
 .credits-banner a { color: #2563eb; font-weight: 600; text-decoration: none; }
+.btn-claim-inline {
+  padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600;
+  background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
+}
+.btn-claim-inline:disabled { opacity: 0.65; cursor: not-allowed; }
 .result-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .content { white-space: pre-wrap; line-height: 1.9; font-size: 15px; color: #1e2a3a; max-height: 60vh; overflow: auto; }
 .actions { display: flex; gap: 10px; margin-top: 16px; }
