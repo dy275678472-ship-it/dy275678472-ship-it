@@ -96,7 +96,17 @@
           <div class="hot-body">
             <div class="hot-type">{{ c.category || '都市' }}</div>
             <h3>{{ c.title }}</h3>
-            <p v-if="c.excerpt" class="hot-excerpt">{{ c.excerpt }}</p>
+            <p
+              v-if="c.excerpt"
+              class="hot-excerpt"
+              :class="{ expanded: expandedExcerptId === c.id }"
+            >{{ c.excerpt }}</p>
+            <button
+              v-if="c.excerpt && c.excerpt.length > 72"
+              type="button"
+              class="excerpt-toggle"
+              @click.prevent.stop="toggleExcerpt(c)"
+            >{{ expandedExcerptId === c.id ? '收起节选' : '展开节选' }}</button>
             <div class="hot-tags">
               <span>{{ formatWords(c.word_count) }}</span>
               <span>热度 {{ c.heat }}</span>
@@ -283,6 +293,7 @@ function goRegisterContinue(label = 'continue_after_title') {
 const statsLoaded = ref(false)
 const hotCases = ref([])
 const casesLoading = ref(true)
+const expandedExcerptId = ref(null)
 
 const stats = ref({
   users: '—',
@@ -297,6 +308,16 @@ function openTrial() {
 
 function trackCaseClick(c) {
   trackEvent('case_click', { category: 'funnel', label: String(c.id) })
+}
+
+function toggleExcerpt(c) {
+  const next = expandedExcerptId.value === c.id ? null : c.id
+  expandedExcerptId.value = next
+  trackEvent('home_excerpt_toggle', {
+    category: 'engagement',
+    label: next ? 'expand' : 'collapse',
+    value: Number(c.id) || 0,
+  })
 }
 
 function trackFeature(label) {
@@ -616,17 +637,34 @@ const startTrial = async (append = false) => {
   font-size: 12px;
   color: #64748b;
   line-height: 1.55;
-  margin: 0 0 10px;
+  margin: 0 0 6px;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   transition: color 0.15s ease;
 }
+.hot-excerpt.expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  color: #475569;
+}
+.excerpt-toggle {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  font-size: 12px;
+  padding: 0;
+  margin: 0 0 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.excerpt-toggle:hover { color: #1d4ed8; text-decoration: underline; }
 @media (hover: hover) and (pointer: fine) {
   .hot-excerpt { -webkit-line-clamp: 2; }
-  .hot-card:hover .hot-excerpt,
-  .hot-card:focus-within .hot-excerpt {
+  .hot-card:hover .hot-excerpt:not(.expanded),
+  .hot-card:focus-within .hot-excerpt:not(.expanded) {
     -webkit-line-clamp: 6;
     color: #475569;
   }

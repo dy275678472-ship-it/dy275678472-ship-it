@@ -13,6 +13,7 @@
       <p class="subtitle">AI小说创作引擎</p>
       <p v-if="showRegister" class="bonus-hint">新用户注册即送 30 点创作额度</p>
       <p v-else-if="!showForgot && !showReset" class="bonus-hint muted">还没有账号？注册即可领取 30 点试用</p>
+      <p v-if="redirectHint && !showForgot && !showReset" class="redirect-hint">{{ redirectHint }}</p>
       
       <!-- 注册表单 -->
       <form v-if="showRegister" @submit.prevent="handleRegister">
@@ -119,7 +120,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { authApi } from '../api'
 import { IMAGES } from '../assets/images'
@@ -146,6 +147,26 @@ const form = reactive({
   password: '',
   email: '',
   confirmPassword: ''
+})
+
+/** 从案例/创作台/短故事等漏斗带来的 redirect，提示注册后去向，降低跳出 */
+function safeRedirectPath() {
+  const raw = route.query.redirect
+  if (typeof raw === 'string' && raw.startsWith('/') && !raw.startsWith('//')) {
+    return raw
+  }
+  return null
+}
+
+const redirectHint = computed(() => {
+  const path = safeRedirectPath()
+  if (!path) return ''
+  if (path.startsWith('/workspace')) return '完成后将进入创作台，题材与草稿会一并带上'
+  if (path.startsWith('/case/') || path.startsWith('/ep/')) return '完成后可返回案例，并用同风格开写'
+  if (path.startsWith('/story')) return '完成后将回到短故事页，继续生成完整短篇'
+  if (path.startsWith('/pricing') || path.startsWith('/wallet')) return '完成后可领取赠点，再按需充值'
+  if (path.startsWith('/trending')) return '完成后将回到案例阅读，随时用同风格开写'
+  return '完成后将回到你刚才浏览的页面'
 })
 
 const toggleMode = () => {
@@ -217,14 +238,6 @@ onMounted(async () => {
     }
   } catch { /* 忽略配置探测失败 */ }
 })
-
-function safeRedirectPath() {
-  const raw = route.query.redirect
-  if (typeof raw === 'string' && raw.startsWith('/') && !raw.startsWith('//')) {
-    return raw
-  }
-  return null
-}
 
 function afterAuth(isRegister = false) {
   const redirect = safeRedirectPath()
@@ -409,7 +422,7 @@ const handleRegister = async () => {
   border: 1px solid rgba(147, 197, 253, 0.7);
   border-radius: 10px;
   padding: 8px 12px;
-  margin: 0 0 28px;
+  margin: 0 0 12px;
   font-weight: 500;
 }
 .bonus-hint.muted {
@@ -418,6 +431,17 @@ const handleRegister = async () => {
   border-color: #e8f0fa;
   font-weight: 400;
 }
+.redirect-hint {
+  font-size: 12px;
+  color: #0f766e;
+  background: rgba(15, 118, 110, 0.06);
+  border: 1px solid rgba(45, 212, 191, 0.45);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+.login-card > form { margin-top: 12px; }
 .forgot-hint {
   font-size: 13px;
   line-height: 1.55;

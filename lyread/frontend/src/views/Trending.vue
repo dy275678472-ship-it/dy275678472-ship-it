@@ -67,7 +67,17 @@
         <div class="case-body">
           <span class="cat">{{ c.category || '都市' }}</span>
           <h3>{{ c.title }}</h3>
-          <p v-if="c.excerpt" class="excerpt">{{ c.excerpt }}</p>
+          <p
+            v-if="c.excerpt"
+            class="excerpt"
+            :class="{ expanded: expandedExcerptId === c.id }"
+          >{{ c.excerpt }}</p>
+          <button
+            v-if="c.excerpt && c.excerpt.length > 72"
+            type="button"
+            class="excerpt-toggle"
+            @click.prevent.stop="toggleExcerpt(c)"
+          >{{ expandedExcerptId === c.id ? '收起节选' : '展开节选' }}</button>
           <div class="meta">
             <span>{{ c.word_count }} 字</span>
             <span class="heat"><img :src="images.fire" alt="热度" width="14" height="14" /> {{ c.heat }}</span>
@@ -95,6 +105,7 @@ const images = IMAGES
 const cases = ref([])
 const loading = ref(true)
 const activeCategory = ref('')
+const expandedExcerptId = ref(null)
 const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
 
 /** 游客首屏强调注册赠点，缩短案例浏览 → 注册路径 */
@@ -178,6 +189,17 @@ function onCaseClick(c) {
     category: 'funnel',
     label: String(c.id),
     value: Number(c.heat) || 0,
+  })
+}
+
+/** 触控端无 hover：点按展开节选，避免只能看 2～3 行钩子 */
+function toggleExcerpt(c) {
+  const next = expandedExcerptId.value === c.id ? null : c.id
+  expandedExcerptId.value = next
+  trackEvent('trending_excerpt_toggle', {
+    category: 'engagement',
+    label: next ? 'expand' : 'collapse',
+    value: Number(c.id) || 0,
   })
 }
 
@@ -280,22 +302,39 @@ onMounted(async () => {
 .case-card:hover { box-shadow: 0 8px 24px rgba(77,161,255,0.12); transform: translateY(-2px); border-color: #bfdbfe; }
 .cat { display: inline-block; padding: 3px 10px; background: rgba(77,161,255,0.12); color: #2563eb; border-radius: 999px; font-size: 12px; margin-bottom: 10px; }
 .case-card h3 { font-size: 16px; color: #1e2a3a; margin-bottom: 8px; line-height: 1.4; }
-/* tip 列表节选约 200 字：触控默认多露一行；桌面 hover/focus 展开到约满节选 */
+/* tip 列表节选约 200 字：触控默认多露一行；桌面 hover/focus 展开；按钮可点按展开满节选 */
 .excerpt {
   font-size: 12px;
   color: #64748b;
   line-height: 1.55;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   transition: color 0.15s ease;
 }
+.excerpt.expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  color: #475569;
+}
+.excerpt-toggle {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  font-size: 12px;
+  padding: 0;
+  margin: 0 0 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.excerpt-toggle:hover { color: #1d4ed8; text-decoration: underline; }
 @media (hover: hover) and (pointer: fine) {
   .excerpt { -webkit-line-clamp: 2; }
-  .case-card:hover .excerpt,
-  .case-card:focus-within .excerpt {
+  .case-card:hover .excerpt:not(.expanded),
+  .case-card:focus-within .excerpt:not(.expanded) {
     -webkit-line-clamp: 6;
     color: #475569;
   }

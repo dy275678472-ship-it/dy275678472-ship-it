@@ -72,6 +72,10 @@
         </div>
       </div>
       <p class="pay-note pay-error" v-if="payError">{{ payError }}</p>
+      <p class="pay-note pay-success" v-if="paySuccess">
+        {{ paySuccess }}
+        <router-link class="pay-success-link" to="/workspace?mode=new">去创作台开写 →</router-link>
+      </p>
       <p class="pay-note pay-mode" v-if="sandboxMode">
         当前为<strong>体验充值（沙箱）</strong>：登录后点「立即充值」→ 确认即可模拟到账，点数可真实用于创作。
         支付宝正式收款开通后，将自动跳转扫码/网页支付。
@@ -105,6 +109,7 @@ const info = ref(null)
 const sandboxMode = ref(false)
 const alipayReady = ref(false)
 const payError = ref('')
+const paySuccess = ref('')
 const images = IMAGES
 
 const LABELS = {
@@ -158,6 +163,7 @@ onMounted(async () => {
 
 async function buy(pkg) {
   payError.value = ''
+  paySuccess.value = ''
   if (!isLoggedIn.value) {
     trackEvent('pricing_buy_click', { category: 'funnel', label: 'redirect_login', value: pkg.price })
     router.push({ path: '/login', query: { mode: 'register', redirect: '/pricing' } })
@@ -177,7 +183,8 @@ async function buy(pkg) {
     if (paid?.success) {
       window.dispatchEvent(new Event('credits-changed'))
       payError.value = ''
-      alert(paid?.message || '体验充值完成，点数已到账')
+      paySuccess.value = paid?.message || `体验充值完成，已到账 ${pkg.credits} 点`
+      trackEvent('pricing_sandbox_success', { category: 'conversion', label: pkg.id, value: pkg.credits })
     } else {
       payError.value = paid?.detail || '体验充值失败，请稍后再试'
     }
@@ -256,6 +263,15 @@ th { background: #f8fafc; font-size: 13px; color: #64748b; }
   max-width: 640px; margin-left: auto; margin-right: auto; margin-bottom: 48px;
   padding: 12px 16px; border-radius: 10px; background: #f8fafc; border: 1px solid #e8f0fa; color: #5a6a7a;
 }
+.pay-success {
+  max-width: 640px; margin-left: auto; margin-right: auto; margin-bottom: 24px;
+  padding: 12px 16px; border-radius: 10px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46;
+  display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: center;
+}
+.pay-success-link {
+  color: #0f766e; font-weight: 600; text-decoration: none; white-space: nowrap;
+}
+.pay-success-link:hover { text-decoration: underline; }
 
 .faq details {
   background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 10px;
