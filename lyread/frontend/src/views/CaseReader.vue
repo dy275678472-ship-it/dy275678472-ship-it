@@ -28,6 +28,23 @@
         </div>
         <router-link :to="workspaceLink" class="btn-cta" @click="trackCta('footer')">用这个风格开始创作 →</router-link>
       </footer>
+      <section v-if="related.length" class="related" aria-label="相关案例">
+        <h2 class="related-title">同风格还可读</h2>
+        <p class="related-sub">继续浏览相近题材，找到想写的味道再开写</p>
+        <ul class="related-list">
+          <li v-for="(c, i) in related" :key="c.id">
+            <router-link :to="`/case/${c.id}`" class="related-link" @click="onRelatedClick(c)">
+              <img :src="coverForCase(c, i)" :alt="`${c.title} 封面`" class="related-cover" width="48" height="64" loading="lazy" />
+              <span class="related-text">
+                <span class="related-cat">{{ c.category || '都市' }}</span>
+                <span class="related-name">{{ c.title }}</span>
+                <span class="related-meta">{{ c.word_count }} 字 · 热度 {{ c.heat }}</span>
+              </span>
+            </router-link>
+          </li>
+        </ul>
+        <router-link to="/trending" class="related-more" @click="trackRelatedMore">查看全部案例 →</router-link>
+      </section>
       <div class="sticky-cta" aria-hidden="false">
         <router-link :to="workspaceLink" class="btn-cta sticky" @click="trackCta('sticky_mobile')">
           用这个风格开始创作 →
@@ -38,9 +55,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { casesApi } from '../api'
+import { coverForCase } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
 import { trackEvent } from '../utils/analytics'
 
@@ -48,6 +66,7 @@ const route = useRoute()
 const loading = ref(true)
 const caseData = ref(null)
 const body = ref('')
+const related = ref([])
 const copyLabel = ref('复制分享链接')
 const canNativeShare = ref(typeof navigator !== 'undefined' && typeof navigator.share === 'function')
 
@@ -81,6 +100,7 @@ function setCaseMeta(c) {
   setMeta('meta[property="og:description"]', 'property', 'og:description', desc)
   setMeta('meta[property="og:url"]', 'property', 'og:url', shareUrl.value)
   setMeta('meta[property="og:type"]', 'property', 'og:type', 'article')
+  setMeta('meta[property="og:image"]', 'property', 'og:image', 'https://lyread.cn/images/og-share.png')
 }
 
 function trackCta(label) {
@@ -88,6 +108,21 @@ function trackCta(label) {
     category: 'conversion',
     label,
     value: Number(caseData.value?.id) || 0,
+  })
+}
+
+function onRelatedClick(c) {
+  trackEvent('related_case_click', {
+    category: 'funnel',
+    label: String(c.id),
+    value: Number(caseData.value?.id) || 0,
+  })
+}
+
+function trackRelatedMore() {
+  trackEvent('related_case_more', {
+    category: 'funnel',
+    label: String(caseData.value?.id || ''),
   })
 }
 
@@ -116,18 +151,73 @@ async function nativeShare() {
   }
 }
 
-onMounted(async () => {
+/** 与 coverForCase 对齐的题材家族，便于同风格推荐（showcase 类目常一对一） */
+function genreFamily(category) {
+  const cat = String(category || '').toLowerCase()
+  if (/仙侠|玄幻|修仙/.test(cat)) return 'xianxia'
+  if (/言情|甜宠|恋爱/.test(cat)) return 'romance'
+  if (/科幻|脑洞|末世/.test(cat)) return 'scifi'
+  if (/悬疑|推理|惊悚/.test(cat)) return 'suspense'
+  if (/历史|架空|宫廷/.test(cat)) return 'history'
+  if (/战神|都市|神豪|系统|游戏|竞技/.test(cat)) return 'urban'
+  if (/重生|穿越|校园|青春/.test(cat)) return 'reborn'
+  return 'other'
+}
+
+function pickRelated(pool, currentId, category, limit = 4) {
+  const id = Number(currentId)
+  const family = genreFamily(category)
+  const others = (pool || []).filter((c) => Number(c.id) !== id)
+  const sameCat = others.filter((c) => (c.category || '') === (category || ''))
+  const sameFamily = others.filter(
+    (c) => (c.category || '') !== (category || '') && genreFamily(c.category) === family,
+  )
+  const rest = others.filter(
+    (c) => (c.category || '') !== (category || '') && genreFamily(c.category) !== family,
+  )
+  const seen = new Set()
+  const out = []
+  for (const c of [...sameCat, ...sameFamily, ...rest]) {
+    if (seen.has(c.id)) continue
+    seen.add(c.id)
+    out.push(c)
+    if (out.length >= limit) break
+  }
+  return out
+}
+
+async function loadCase(id) {
+  loading.value = true
+  caseData.value = null
+  body.value = ''
+  related.value = []
   try {
-    const res = await casesApi.get(route.params.id)
+    const res = await casesApi.get(id)
     if (res?.success) {
       caseData.value = res.case
       // Prefer full preview_body; preview_excerpt is a truncated OG/list teaser (~1500).
       body.value = res.case.preview_body || res.case.preview_excerpt || ''
       setCaseMeta(res.case)
       trackEvent('case_read', { category: 'funnel', label: String(res.case.id) })
+      try {
+        const listRes = await casesApi.list(24)
+        related.value = pickRelated(listRes?.cases || [], res.case.id, res.case.category, 4)
+      } catch {
+        related.value = []
+      }
     }
-  } finally { loading.value = false }
-})
+  } finally {
+    loading.value = false
+  }
+}
+
+watch(
+  () => route.params.id,
+  (id) => {
+    if (id != null && id !== '') loadCase(id)
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped>
@@ -154,12 +244,94 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
   display: inline-block; padding: 10px 18px; border-radius: 10px;
   background: #eff6ff; color: #2563eb; font-weight: 600; text-decoration: none;
 }
+.related {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid #e8f0fa;
+}
+.related-title {
+  font-size: 18px;
+  margin: 0 0 6px;
+  color: #0f172a;
+}
+.related-sub {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #64748b;
+}
+.related-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.related-link {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  background: #f8fbff;
+  border: 1px solid transparent;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.related-link:hover,
+.related-link:focus-visible {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  outline: none;
+}
+.related-cover {
+  width: 48px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: #e2e8f0;
+}
+.related-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.related-cat {
+  font-size: 11px;
+  color: #2563eb;
+  font-weight: 600;
+}
+.related-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.related-meta {
+  font-size: 12px;
+  color: #94a3b8;
+}
+.related-more {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+}
 .sticky-cta { display: none; }
 @media (max-width: 640px) {
   .reader-page { padding: 20px 14px 88px; }
   .article { padding: 20px 16px; border-radius: 12px; }
   h1 { font-size: 20px; }
   .body pre { font-size: 15px; line-height: 1.85; }
+  .related { margin-top: 28px; padding-top: 20px; }
   .sticky-cta {
     display: block;
     position: fixed;
