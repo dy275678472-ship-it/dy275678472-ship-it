@@ -44,7 +44,7 @@ rm -f /tmp/lyread_cfg_$$.txt
 # --- 2. 前端页面 ---
 echo ""
 echo "[2] Frontend pages"
-for p in / /login /pricing /wallet /workspace /trending /admin; do
+for p in / /login /pricing /wallet /workspace /trending /story /admin; do
   code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL$p")
   if [[ "$code" == "200" ]]; then ok "page $p"; else bad "page $p ($code)"; fi
 done
@@ -66,6 +66,7 @@ assert_bot_ssr() {
 assert_bot_ssr "/" "LyRead AI"
 assert_bot_ssr "/pricing" "点数"
 assert_bot_ssr "/trending" "案例"
+assert_bot_ssr "/story" "短故事"
 
 # 案例 SPA 路径分享/爬虫：应返回正文 SSR（非首页 SPA shell）
 CASE_ID=$(curl -sf "$BASE_URL/api/cases?limit=1" | python3 -c "import sys,json; print(json.load(sys.stdin).get('cases',[{}])[0].get('id',''))" 2>/dev/null || echo "")

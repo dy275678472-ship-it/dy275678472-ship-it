@@ -475,7 +475,8 @@ async def sitemap_xml():
         (f"{SITE_BASE}/faq", "monthly", "0.8", today),
         (f"{SITE_BASE}/about", "monthly", "0.7", today),
         (f"{SITE_BASE}/login", "monthly", "0.5", today),
-        # /story /reader 需登录，不列入 sitemap，避免爬虫撞 SPA 登录壳
+        # /story 已开放匿名预览落地页（生成仍需登录）；/reader 仍需登录不列入
+        (f"{SITE_BASE}/story", "weekly", "0.85", today),
         (f"{SITE_BASE}/ep", "weekly", "0.7", today),
     ]
 
@@ -517,7 +518,6 @@ Disallow: /api/
 Disallow: /workspace
 Disallow: /wallet
 Disallow: /admin
-Disallow: /story
 Disallow: /reader
 Sitemap: {SITE_BASE}/sitemap.xml
 
@@ -571,6 +571,7 @@ async def llms_txt():
 
 - 价格说明：https://lyread.cn/pricing
 - 创作案例：https://lyread.cn/trending
+- 短故事预览：https://lyread.cn/story
 - 常见问题：https://lyread.cn/faq
 - 关于我们：https://lyread.cn/about
 - 案例索引：https://lyread.cn/ep
@@ -635,6 +636,7 @@ LyRead AI 是中文智能小说创作平台，帮助作者从题材灵感生成�
 ## 联系方式与品牌
 
 - 网站：https://lyread.cn
+- 短故事预览：https://lyread.cn/story
 - 品牌名：LyRead AI / LyRead 智能小说创作
 """
 
@@ -943,6 +945,81 @@ async def seo_trending_page(request: Request):
         meta_info=f"共 {len(cases)} 部公开作品",
         body_html=body_html,
         json_ld=_json_ld_trending(cases),
+    )
+
+
+def _fetch_public_case_excerpts(limit: int = 6) -> list:
+    """短故事落地页：带节选的公开案例。"""
+    rows = []
+    try:
+        db = get_db()
+        if db:
+            cursor = db.cursor(dictionary=True)
+            cursor.execute(
+                f"SELECT id, title, category, word_count, heat, preview_body FROM contents "
+                f"WHERE {public_case_sql_clause()} AND preview_body IS NOT NULL AND preview_body != '' "
+                "ORDER BY heat DESC LIMIT %s",
+                (limit,),
+            )
+            rows = cursor.fetchall()
+            cursor.close()
+            db.close()
+    except Exception as e:
+        print(f"[SEO Page] fetch case excerpts: {e}")
+    return rows
+
+
+def _json_ld_story() -> str:
+    import json
+    return json.dumps({
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "短故事一键生成 - LyRead AI",
+        "url": f"{SITE_BASE}/story",
+        "description": "选题材、写灵感，AI 一键生成约 3000 字完整短篇；游客可预览，注册送 30 点。",
+        "isPartOf": {"@type": "WebSite", "name": "LyRead AI", "url": SITE_BASE},
+    }, ensure_ascii=False)
+
+
+@router.get("/story", response_class=HTMLResponse)
+async def seo_story_page(request: Request):
+    """短故事匿名预览落地页 SSR（人类仍走 Vue ShortStory）。"""
+    samples = _fetch_public_case_excerpts(6)[:3]
+    items_html = ""
+    for row in samples:
+        safe_title = escape(str(row.get("title") or "作品"))
+        safe_cat = escape(str(row.get("category") or "短篇"))
+        excerpt = escape((row.get("preview_body") or "").strip()[:160])
+        items_html += f"""
+        <li>
+            <a href="{SITE_BASE}/ep/{int(row['id'])}">{safe_title}</a>
+            <span class="tag">{safe_cat}</span>
+            <p class="excerpt">{excerpt}</p>
+        </li>"""
+    if not items_html:
+        items_html = '<li style="text-align:center;color:#7a8ba8;padding:24px;">暂无公开节选，注册后即可生成短篇</li>'
+
+    body_html = f"""
+    <p>选题材、写灵感，AI 一键生成完整短篇（约 3000 字，消耗 15 点）。游客可自由预览题材与灵感；生成需注册（送 30 点）。</p>
+    <h2 style="font-size:18px;margin:8px 0 12px">先读一段真实生成节选</h2>
+    <ul class="seo-list">{items_html}</ul>
+    <div class="seo-cta">
+      <a href="{SITE_BASE}/login?mode=register&redirect=/story">免费注册并生成短篇 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">浏览更多案例 →</a>
+    </div>
+    """
+    title = "短故事一键生成 - LyRead AI"
+    desc = "预览题材与灵感模板，注册后一键生成约 3000 字完整短篇；注册送 30 点。"
+    return _seo_html(
+        title=title,
+        description=desc,
+        keywords="AI短故事,一键写短篇,短篇小说生成,网文短篇,LyRead",
+        url="/story",
+        site_base=SITE_BASE,
+        meta_info="游客可预览 · 注册送 30 点",
+        body_html=body_html,
+        json_ld=_json_ld_story(),
     )
 
 

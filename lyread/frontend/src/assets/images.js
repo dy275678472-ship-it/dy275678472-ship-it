@@ -74,6 +74,8 @@ export function coverForCase(item, index = 0) {
   if (/历史|架空|宫廷/.test(cat)) return IMAGES.covers[7]
   if (/战神|都市|神豪/.test(cat)) return IMAGES.covers[1]
   if (/重生|穿越/.test(cat)) return IMAGES.covers[2]
+  // 与后端 _cover_path_for_category 对齐：系统/游戏/校园用都市封面（webp，OG 可用）
+  if (/系统|游戏|竞技|校园|青春/.test(cat)) return IMAGES.covers[0]
   return IMAGES.covers[index % 3]
 }
 

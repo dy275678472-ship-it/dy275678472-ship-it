@@ -34,7 +34,21 @@
       :title="activeCategory ? `暂无「${activeCategory}」案例` : '暂无案例'"
       :description="activeCategory ? '试试其他分类，或用这个风格去创作台开写' : '审核通过的作品将展示在这里，敬请期待'"
       :image-width="160"
-    />
+    >
+      <div class="empty-actions">
+        <button
+          v-if="activeCategory"
+          type="button"
+          class="btn-ghost"
+          @click="selectCategory('')"
+        >查看全部案例</button>
+        <router-link
+          class="btn-cta-sm"
+          :to="emptyWorkspaceLink"
+          @click="trackEmptyWrite"
+        >{{ activeCategory ? '用这个风格开写' : '开始创作' }} →</router-link>
+      </div>
+    </EmptyState>
     <div v-else class="case-grid">
       <router-link
         v-for="(c, i) in filteredCases"
@@ -93,9 +107,24 @@ const filteredCases = computed(() => {
   return cases.value.filter((c) => (c.category || '') === activeCategory.value)
 })
 
+const emptyWorkspaceLink = computed(() => {
+  if (!activeCategory.value) return { path: '/workspace', query: { mode: 'new' } }
+  return {
+    path: '/workspace',
+    query: { type: activeCategory.value, prompt: `写一个${activeCategory.value}题材的故事` },
+  }
+})
+
 function selectCategory(cat) {
   activeCategory.value = cat
   trackEvent('trending_filter', { category: 'funnel', label: cat || 'all' })
+}
+
+function trackEmptyWrite() {
+  trackEvent('trending_empty_cta', {
+    category: 'conversion',
+    label: activeCategory.value || 'all',
+  })
 }
 
 function onCaseClick(c) {
@@ -149,6 +178,34 @@ onMounted(async () => {
   font-weight: 600;
 }
 .loading { text-align: center; color: #94a3b8; padding: 60px; }
+.empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+.btn-ghost {
+  appearance: none;
+  border: 1px solid #dbe7f5;
+  background: #fff;
+  color: #5a6a7a;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn-ghost:hover { border-color: #93c5fd; color: #2563eb; }
+.btn-cta-sm {
+  display: inline-block;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #4da1ff, #2563eb);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+}
 .heat { display: inline-flex; align-items: center; gap: 4px; }
 .case-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
 .case-card {
