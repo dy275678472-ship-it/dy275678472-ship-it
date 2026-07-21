@@ -17,25 +17,29 @@
         <img :src="images.features.brain" alt="小说大脑功能图标" class="icon-img" width="56" height="56" />
         <h3>小说大脑</h3>
         <p>人物档案、伏笔、章节摘要自动记忆，写到第 50 章也不乱</p>
-        <span class="feature-cta">进入创作台 →</span>
+        <span class="feature-cta">{{ isLoggedIn ? '进入创作台 →' : '注册开写 →' }}</span>
       </router-link>
       <router-link to="/workspace" class="feature-card" @click="trackFeature('novel')">
         <img :src="images.features.novel" alt="长篇连载功能图标" class="icon-img" width="56" height="56" />
         <h3>长篇连载</h3>
         <p>大纲 → 章纲 → 正文续写，专为日更作者设计</p>
-        <span class="feature-cta">开始连载 →</span>
+        <span class="feature-cta">{{ isLoggedIn ? '开始连载 →' : '注册开写 →' }}</span>
       </router-link>
       <router-link to="/story" class="feature-card" @click="trackFeature('short')">
         <img :src="images.features.short" alt="短故事功能图标" class="icon-img" width="56" height="56" />
         <h3>短故事</h3>
         <p>输入想法，几分钟生成完整短篇，适合盐选/公众号</p>
-        <span class="feature-cta">预览短故事 →</span>
+        <span class="feature-cta">{{ isLoggedIn ? '去写短故事 →' : '免费预览 →' }}</span>
       </router-link>
-      <router-link to="/pricing" class="feature-card" @click="trackFeature('credits')">
+      <router-link
+        :to="isLoggedIn ? '/pricing' : { path: '/login', query: { mode: 'register', redirect: '/pricing' } }"
+        class="feature-card"
+        @click="trackFeature('credits')"
+      >
         <img :src="images.features.credits" alt="点数计费功能图标" class="icon-img" width="56" height="56" />
         <h3>点数计费</h3>
         <p>用多少付多少，注册送 30 点，每日免费 5 点</p>
-        <span class="feature-cta">查看价格 →</span>
+        <span class="feature-cta">{{ isLoggedIn ? '查看价格 →' : '免费注册领 30 点 →' }}</span>
       </router-link>
     </section>
 
@@ -296,7 +300,10 @@ function trackCaseClick(c) {
 }
 
 function trackFeature(label) {
-  trackEvent('home_feature_click', { category: 'funnel', label })
+  trackEvent('home_feature_click', {
+    category: 'funnel',
+    label: isLoggedIn.value ? label : `guest_${label}`,
+  })
 }
 
 onMounted(async () => {

@@ -27,6 +27,18 @@
       </header>
       <section v-if="body" class="body">
         <pre>{{ body }}</pre>
+        <aside
+          v-if="!isLoggedIn"
+          class="body-register-strip"
+          aria-label="注册开写"
+        >
+          <p>读到这里了？注册送 30 点，用同风格接着写</p>
+          <router-link
+            :to="creationLink"
+            class="body-register-link"
+            @click="trackCta('body_end_register')"
+          >免费注册开写 →</router-link>
+        </aside>
       </section>
       <section v-else class="body empty-body">
         <p>该案例暂无正文节选。可先浏览同风格作品，或直接用这个题材开写。</p>
@@ -288,6 +300,34 @@ watch(
 h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
 .meta { color: #94a3b8; font-size: 13px; margin-bottom: 16px; }
 .body pre { white-space: pre-wrap; line-height: 1.9; font-size: 16px; color: #1e2a3a; font-family: inherit; }
+.body-register-strip {
+  margin: 20px 0 8px;
+  padding: 14px 0 4px;
+  border-top: 1px dashed #dbeafe;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+.body-register-strip p {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+  flex: 1 1 220px;
+}
+.body-register-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f766e;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.body-register-link:hover,
+.body-register-link:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
 .empty-body { color: #64748b; font-size: 14px; line-height: 1.7; }
 .empty-actions {
   display: flex;
