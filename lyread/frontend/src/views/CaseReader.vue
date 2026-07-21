@@ -4,9 +4,17 @@
     <EmptyState
       v-else-if="!caseData"
       title="案例不存在或已下架"
-      description="去看看其他热门案例，或用同样风格开始创作。"
+      description="去看看其他热门案例，或注册后直接开写同风格作品。"
     >
-      <router-link to="/trending" class="btn-secondary">浏览案例</router-link>
+      <div class="empty-cta-row">
+        <router-link to="/trending" class="btn-secondary">浏览案例</router-link>
+        <router-link
+          v-if="!isLoggedIn"
+          :to="{ path: '/login', query: { mode: 'register', redirect: '/workspace?mode=new' } }"
+          class="btn-cta"
+          @click="trackEvent('case_missing_register', { category: 'conversion', label: 'guest' })"
+        >免费注册，送 30 点 →</router-link>
+      </div>
     </EmptyState>
     <article v-else class="article">
       <header class="article-header">
@@ -51,7 +59,15 @@
             </router-link>
           </li>
         </ul>
-        <router-link to="/trending" class="related-more" @click="trackRelatedMore">查看全部案例 →</router-link>
+        <div class="related-actions">
+          <router-link to="/trending" class="related-more" @click="trackRelatedMore">查看全部案例 →</router-link>
+          <router-link
+            v-if="!isLoggedIn"
+            :to="creationLink"
+            class="related-register"
+            @click="trackCta('related_register')"
+          >读完想写？免费注册送 30 点 →</router-link>
+        </div>
       </section>
       <div class="sticky-cta" aria-hidden="false">
         <p v-if="!isLoggedIn" class="sticky-hint">注册送 30 点 · 用同风格开写</p>
@@ -295,6 +311,13 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
   display: inline-block; padding: 10px 18px; border-radius: 10px;
   background: #eff6ff; color: #2563eb; font-weight: 600; text-decoration: none;
 }
+.empty-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
 .related {
   margin-top: 36px;
   padding-top: 24px;
@@ -368,13 +391,31 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
   font-size: 12px;
   color: #94a3b8;
 }
+.related-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  align-items: center;
+  margin-top: 14px;
+}
 .related-more {
   display: inline-block;
-  margin-top: 14px;
   font-size: 13px;
   font-weight: 600;
   color: #2563eb;
   text-decoration: none;
+}
+.related-register {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f766e;
+  text-decoration: none;
+}
+.related-register:hover,
+.related-register:focus-visible {
+  text-decoration: underline;
+  outline: none;
 }
 .guest-cta-hint {
   margin: 0 0 10px;
