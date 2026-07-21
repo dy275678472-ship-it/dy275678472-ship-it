@@ -124,15 +124,15 @@ echo "[4] Creation APIs"
 if curl -sf "$BASE_URL/api/credits/prices" | grep -q signup_bonus; then ok "credits/prices"; else bad "credits/prices"; fi
 if curl -sf "$BASE_URL/api/cases" | grep -q '"success":true'; then ok "public cases"; else bad "public cases"; fi
 
-# 题材 OG / 封面光栅资源（社交爬虫不吃 SVG）
+# 题材 OG / 封面光栅资源（社交爬虫不吃 SVG；缺文件时 nginx SPA 也会 200 HTML，需验 Content-Type）
 echo ""
 echo "[4b] Genre OG assets"
 OG_OK=0
 for f in og-genre-xianxia.webp og-genre-romance.webp og-genre-scifi.webp og-genre-suspense.webp og-genre-history.webp cover-xianxia.webp cover-romance.webp; do
-  code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/images/$f")
-  if [[ "$code" == "200" ]]; then OG_OK=$((OG_OK + 1)); fi
+  ctype=$(curl -sI "$BASE_URL/images/$f" | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}')
+  if [[ "$ctype" == image/* ]]; then OG_OK=$((OG_OK + 1)); fi
 done
-if [[ "$OG_OK" -ge 7 ]]; then ok "genre OG/cover webp assets ($OG_OK/7)"; else bad "genre OG/cover webp assets ($OG_OK/7)"; fi
+if [[ "$OG_OK" -ge 7 ]]; then ok "genre OG/cover webp assets ($OG_OK/7)"; else bad "genre OG/cover webp assets ($OG_OK/7, need image/* not SPA HTML)"; fi
 
 # --- 5. 安全 ---
 echo ""
