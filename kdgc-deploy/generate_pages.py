@@ -100,7 +100,7 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="/products/kd0100-02s-t1.html">KD0100-02S-T1 探头</a>
 <a href="/products/kd0100-02s-to.html">KD0100-02S-TO 插针</a>
 <a href="/products/mask-o2-sensor.html">面罩用氧传感器</a></div>
-<div><h4>公司</h4><a href="/">首页</a><a href="/products/">产品中心</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">行业案例</a><a href="/about/">关于中科国瓷</a><a href="/technology/">技术能力</a><a href="/applications/">应用场景</a><a href="/contact/">联系我们</a><a href="/privacy.html">隐私政策</a></div>
+<div><h4>公司</h4><a href="/">首页</a><a href="/products/">产品中心</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">行业案例</a><a href="/about/">关于中科国瓷</a><a href="/contact/">联系我们</a><a href="/privacy.html">隐私政策</a></div>
 <div><h4>联系</h4><a href="mailto:{EMAIL}">{EMAIL}</a><br>
 <a href="tel:{PHONE}">{PHONE_DISPLAY}</a>
 <p style="font-size:13px;margin-top:8px">{ADDRESS}</p></div>
@@ -167,8 +167,6 @@ FOOTER_EN = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="/en/knowledge.html">Knowledge</a>
 <a href="/en/cases.html">Industry Cases</a>
 <a href="/en/about.html">About</a>
-<a href="/technology/">Technology</a>
-<a href="/applications/">Applications</a>
 <a href="/en/contact.html">Contact</a>
 <a href="/privacy.html">Privacy</a></div>
 <div><h4>Contact</h4><a href="mailto:{EMAIL}">{EMAIL}</a><br>
@@ -644,37 +642,6 @@ def main():
     if has_asset("home/hero-oxygen-sensor.jpg") or has_asset("home/hero-oxygen-sensor.webp"):
         hero_bg = f'style="background-image:linear-gradient(100deg,rgba(7,20,38,.88) 0%,rgba(7,20,38,.55) 45%,rgba(7,20,38,.35) 100%),url(\'{asset_url("home/hero-oxygen-sensor.jpg")}\');background-size:cover;background-position:center right"'
 
-    def scene_cards(lang: str = "zh") -> str:
-        rows = (
-            [
-                ("scenes/automotive.jpg", "车用尾气 / SCR", "/products/"),
-                ("scenes/aviation-mask.jpg", "航空面罩供氧监测", "/products/mask-o2-sensor.html"),
-                ("scenes/industrial-gas.jpg", "工业气体氧分压", "/products/kd0100-02s-t1.html"),
-            ]
-            if lang == "zh"
-            else [
-                ("scenes/automotive.jpg", "Automotive SCR / OBD", "/en/products.html"),
-                ("scenes/aviation-mask.jpg", "Aviation mask O₂ monitoring", "/en/products/mask-o2-sensor.html"),
-                ("scenes/industrial-gas.jpg", "Industrial O₂ partial pressure", "/en/products/kd0100-02s-t1.html"),
-            ]
-        )
-        cards = []
-        for key, title, href in rows:
-            if has_asset(key) or has_asset(key.replace(".jpg", ".webp")):
-                cards.append(
-                    f'<a href="{href}" class="card"><img src="{asset_url(key)}" alt="{title}" class="card-img" loading="lazy">'
-                    f'<div class="card-body"><h3>{title}</h3></div></a>'
-                )
-        return "".join(cards)
-
-    scenes_zh = scene_cards("zh")
-    scenes_html = (
-        f'<section style="background:var(--white)"><div class="container">'
-        f'<div class="section-header"><div class="section-label">Applications</div><h2>应用场景</h2></div>'
-        f'<div class="grid-3">{scenes_zh}</div></div></section>'
-        if scenes_zh
-        else ""
-    )
     pages["index.html"] = page(
         "中科国瓷 — 变频氧传感器与氮氧传感技术",
         "安徽中科国瓷新型元器件有限公司，专注变频氧传感器、氮氧传感器研发与生产。中科大技术转化，科技感知未来。",
@@ -708,7 +675,6 @@ def main():
 <div class="section-header"><div class="section-label">Products</div><h2>产品中心</h2><p>探头型、插针型与面罩用氧传感器，完整规格与详情</p></div>
 <div class="grid-3">{prod_cards}</div>
 </div></section>
-{scenes_html}
 <section class="values-teaser"><div class="container">
 <div class="section-header"><div class="section-label">Values</div><h2>我们的价值观</h2>
 <p>诚信 · 创新 · 响应 — 支撑长期合作</p></div>
@@ -1121,30 +1087,6 @@ def main():
             ]),
         )
 
-    # Remove old ceramic tech/applications or redirect-style pages → sensor oriented
-    pages["technology/index.html"] = page(
-        "技术能力 — 中科国瓷",
-        "变频氧传感器与氮氧传感技术能力",
-        """<section class="page-hero"><div class="container"><h1>技术能力</h1><p>固体电解质陶瓷 · 变频氧传感 · 氮氧敏感电极</p></div></section>
-<section><div class="container content-block">
-<p>公司掌握氧敏陶瓷材料、变频氧传感结构设计与控制器配套能力，产品覆盖探头型、插针型及航空面罩低温型等形态。</p>
-<p>核心专利方向：<strong>变频氧传感器</strong>（申请号 202110555297.8）。质量管理体系覆盖氮氧传感器研发和生产（ISO 9001:2015）。</p>
-<p><a href="/products/" class="btn btn-primary">查看产品规格</a></p>
-</div></section>""",
-        "/technology/",
-    )
-    pages["applications/index.html"] = page(
-        "应用场景 — 中科国瓷",
-        "氧传感器应用：汽车尾气、航空面罩、工业燃烧气氛",
-        """<section class="page-hero"><div class="container"><h1>应用场景</h1></div></section>
-<section><div class="container grid-3">
-<div class="content-block"><h3>汽车尾气 / SCR / OBD</h3><p>监测排气氧浓度与氮氧化物相关气体信息，服务节能减排与排放法规。</p></div>
-<div class="content-block"><h3>航空面罩供氧</h3><p>战机飞行员面罩用低温型变频式氧传感器，响应快、外壳温升可控。</p></div>
-<div class="content-block"><h3>工业气体与燃烧控制</h3><p>空气、纯氧及氮氧混合气氧分压测量，服务炉窑与工艺气氛控制。</p></div>
-</div></section>""",
-        "/applications/",
-    )
-
     pages["privacy.html"] = page(
         "隐私政策 — 中科国瓷",
         "隐私政策",
@@ -1176,15 +1118,6 @@ def main():
 <p style="font-size:13px;color:var(--muted);margin:0">Full article in Chinese →</p></div></a>"""
         for n in NEWS
     )
-    scenes_en = scene_cards("en")
-    en_scenes_html = (
-        f'<section style="background:var(--white)"><div class="container">'
-        f'<div class="section-header"><div class="section-label">Applications</div><h2>Applications</h2></div>'
-        f'<div class="grid-3">{scenes_en}</div></div></section>'
-        if scenes_en
-        else ""
-    )
-
     pages["en/index.html"] = page(
         "ZK Guoci — Variable-Frequency Oxygen Sensors",
         "Anhui ZK Guoci New Components Co., Ltd. — variable-frequency oxygen sensors and NOx sensing technology. USTC tech transfer.",
@@ -1219,7 +1152,6 @@ def main():
 <p>Probe, pin, and mask oxygen sensors with full specifications</p></div>
 <div class="grid-3">{en_prod_cards}</div>
 </div></section>
-{en_scenes_html}
 <section style="background:var(--white)"><div class="container">
 <div class="section-header"><div class="section-label">News</div><h2>News &amp; Insights</h2></div>
 <div class="grid-3">{en_news_cards}</div>
@@ -1432,6 +1364,8 @@ def main():
         "knowledge/igbt-substrate-guide.html",
         "cases/semiconductor-packaging.html",
         "cases/ev-power-module.html",
+        "technology/index.html",
+        "applications/index.html",
         "en/technology.html",
         "en/applications.html",
     ]:
@@ -1448,8 +1382,6 @@ def main():
         "/knowledge/",
         "/cases/",
         "/contact/",
-        "/technology/",
-        "/applications/",
         "/en/",
         "/en/products.html",
         "/en/news.html",
@@ -1463,7 +1395,7 @@ def main():
     urls += [f"/news/{n['slug']}.html" for n in NEWS]
     urls += [f"/knowledge/{k['slug']}.html" for k in KNOWLEDGE]
     urls += [f"/cases/{c['slug']}.html" for c in INDUSTRY_CASES]
-    urls += ["/privacy.html", "/technology/", "/applications/"]
+    urls += ["/privacy.html"]
 
     # EN sitemap
     en_urls = [
