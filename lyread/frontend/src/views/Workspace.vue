@@ -1,6 +1,10 @@
 <template>
   <div class="workspace">
-    <aside class="sidebar" v-if="!editing">
+    <aside
+      class="sidebar"
+      v-if="!editing"
+      :class="{ 'is-empty': !stories.length && !loading, 'mobile-open': mobileListOpen }"
+    >
       <div class="sidebar-head">
         <h2>我的作品</h2>
         <button class="btn-new" @click="startWizard('sidebar_head')">+ 新建</button>
@@ -159,7 +163,14 @@
         </div>
       </template>
       <template v-else>
-        <p>从左侧选择作品，或新建一部小说继续创作。</p>
+        <p>从作品列表选择一部继续创作，或新建作品。</p>
+        <button
+          type="button"
+          class="btn-ghost mobile-list-toggle"
+          @click="mobileListOpen = !mobileListOpen"
+        >
+          {{ mobileListOpen ? '收起作品列表' : `打开作品列表（${stories.length}）` }}
+        </button>
         <div class="welcome-ctas">
           <button class="btn-new large" @click="startWizard('welcome_has_stories')">+ 新建作品</button>
           <button class="btn-ghost large" @click="startBlank('welcome_has_stories')">空白稿</button>
@@ -192,6 +203,7 @@ const msg = ref('')
 const msgErr = ref(false)
 const creditsLow = ref(false)
 const welcomeBanner = ref(false)
+const mobileListOpen = ref(false)
 const outlinePreview = ref('')
 const chapterContent = ref('')
 const memory = reactive({ summaries: [], characters: [], foreshadowings: [], settings: [] })
@@ -238,6 +250,7 @@ async function openStory(id) {
   } catch { chapterContent.value = '' }
   outlinePreview.value = form.outline
   editing.value = true
+  mobileListOpen.value = false
   await loadMemory()
   await loadChapterList()
 }
@@ -354,7 +367,7 @@ async function runConsistency() {
   } finally { busy.value = false }
 }
 
-function backToList() { editing.value = false; loadList() }
+function backToList() { editing.value = false; mobileListOpen.value = false; loadList() }
 
 async function save() {
   busy.value = true
@@ -509,7 +522,7 @@ onMounted(async () => {
 .editor-toolbar { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #e8f0fa; }
 .btn-back { border: none; background: none; color: #2563eb; cursor: pointer; font-weight: 600; }
 .toolbar-title { flex: 1; font-weight: 700; }
-.toolbar-actions { display: flex; gap: 8px; }
+.toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .btn-sm { padding: 6px 12px; border-radius: 8px; border: 1px solid #dbeafe; background: #fff; cursor: pointer; font-size: 13px; }
 .btn-sm.danger { color: #dc2626; border-color: #fecaca; }
 .editor-body { padding: 20px; max-width: 900px; margin: 0 auto; width: 100%; }
@@ -552,9 +565,18 @@ onMounted(async () => {
 .brain-block { margin-bottom: 12px; font-size: 13px; color: #5a6a7a; }
 .brain-block h4 { font-size: 12px; color: #2563eb; margin-bottom: 6px; }
 .brain-block p.done { opacity: 0.5; text-decoration: line-through; }
+.mobile-list-toggle { display: none; }
 @media (max-width: 768px) {
   .workspace { flex-direction: column; }
-  .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #e8f0fa; }
+  .sidebar {
+    width: 100%; border-right: none; border-bottom: 1px solid #e8f0fa;
+    order: 2; display: none;
+  }
+  .sidebar.mobile-open { display: block; order: 0; }
+  .sidebar.is-empty { display: none !important; }
+  .welcome { order: 1; padding: 28px 16px; }
+  .mobile-list-toggle { display: inline-flex; }
+  .toolbar-actions { flex-wrap: wrap; }
   .action-grid { grid-template-columns: 1fr; }
 }
 </style>
