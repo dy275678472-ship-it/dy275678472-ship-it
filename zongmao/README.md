@@ -50,3 +50,20 @@ sudo systemctl restart zongmao.service
 2. `/performance` 战绩 KPI SSR + Dataset Schema（GEO 可引用）
 3. `/llms.txt` AI 爬虫指引文件
 4. 百度推送策略：改推 news/price/signal/信任页（不再推 cards/asset）
+
+## SEO/GEO P1
+
+```bash
+sudo python3 /opt/zongmao/scripts/p1-seo-patch.py
+sudo systemctl restart zongmao.service
+```
+
+### SEO P1 包含项
+
+1. BreadcrumbList Schema：品种页、资讯页、信号页、品类页
+2. Organization Schema 增强（首页含 contactPoint）
+3. 34 品种独立 OG SVG 图（`/static/images/og/{symbol}.svg`）
+4. 资讯作者统一为「宗贸网研究院」（DB + Schema）
+5. Article Schema 增强：publisher logo、articleSection、dateModified
+6. 全站 footer 内链：方法论 / 对比 / 教程
+7. 品种页走势图 `aria-label` 无障碍
