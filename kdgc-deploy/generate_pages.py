@@ -128,17 +128,15 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="/products/kd0100-02s-to.html">KD0100-02S-TO 插针</a>
 <a href="/products/mask-o2-sensor.html">面罩用氧传感器</a></div>
 <div><h4>公司</h4><a href="/products/">产品中心</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">行业案例</a><a href="/about/">关于中科国瓷</a></div>
-<div><h4>联系</h4><a href="mailto:{EMAIL}">{EMAIL}</a><br>
+<div><h4><a href="/contact/" style="color:inherit;font-size:inherit;font-weight:inherit;display:inline;margin:0">联系我们</a></h4><a href="mailto:{EMAIL}">{EMAIL}</a><br>
 <a href="tel:{PHONE}">{PHONE_DISPLAY}</a>
-<p style="font-size:13px;margin-top:8px">{ADDRESS}</p>
-<a href="/contact/">联系我们</a>
-<a href="/privacy.html">隐私政策</a></div>
+<p style="font-size:13px;margin-top:8px">{ADDRESS}</p></div>
 </div>
 <div class="footer-bottom"><div class="footer-meta">
 <span>© 2026 安徽中科国瓷新型元器件有限公司</span><span class="sep">·</span>
 <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{BEIAN_ICP}</a><span class="sep">·</span>
 <a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="" width="14" height="14">{BEIAN_GA}</a><span class="sep">·</span>
-<a href="/en/">English</a><span class="sep">|</span><a href="/">中文</a>
+<a href="/en/">English</a><span class="sep">|</span><a href="/">中文</a><span class="sep">·</span><a href="/privacy.html">隐私政策</a>
 </div></div></footer>
 {SERVICE_WIDGET_ZH}
 <script src="/assets/js/main.js"></script>"""
@@ -190,17 +188,15 @@ FOOTER_EN = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="/en/knowledge.html">Knowledge</a>
 <a href="/en/cases.html">Industry Cases</a>
 <a href="/en/about.html">About</a></div>
-<div><h4>Contact</h4><a href="mailto:{EMAIL}">{EMAIL}</a><br>
+<div><h4><a href="/en/contact.html" style="color:inherit;font-size:inherit;font-weight:inherit;display:inline;margin:0">Contact Us</a></h4><a href="mailto:{EMAIL}">{EMAIL}</a><br>
 <a href="tel:{PHONE}">{PHONE_DISPLAY}</a>
-<p style="font-size:13px;margin-top:8px">{ADDRESS_EN}</p>
-<a href="/en/contact.html">Contact</a>
-<a href="/privacy.html">Privacy</a></div>
+<p style="font-size:13px;margin-top:8px">{ADDRESS_EN}</p></div>
 </div>
 <div class="footer-bottom"><div class="footer-meta">
 <span>© 2026 Anhui ZK Guoci New Components Co., Ltd.</span><span class="sep">·</span>
 <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{BEIAN_ICP}</a><span class="sep">·</span>
 <a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="" width="14" height="14">{BEIAN_GA}</a><span class="sep">·</span>
-<a href="/en/">English</a><span class="sep">|</span><a href="/">中文</a>
+<a href="/en/">English</a><span class="sep">|</span><a href="/">中文</a><span class="sep">·</span><a href="/privacy.html">Privacy</a>
 </div></div></footer>
 {SERVICE_WIDGET_EN}
 <script src="/assets/js/main.js"></script>"""
@@ -1104,9 +1100,72 @@ def main():
 
     pages["privacy.html"] = page(
         "隐私政策 — 中科国瓷",
-        "隐私政策",
-        """<section class="page-hero"><div class="container"><h1>隐私政策</h1></div></section>
-<section><div class="container content-block"><p>我们仅将您通过表单提交的信息用于商务沟通与技术方案回复，不会出售给第三方。</p></div></section>""",
+        "中科国瓷官网隐私政策：信息收集范围、使用目的、Cookie 说明、数据安全措施与用户权利。",
+        f"""<section class="page-hero"><div class="container"><h1>隐私政策</h1><p>生效日期：2026 年 7 月 · 适用范围：kdgc.cc 及其子页面</p></div></section>
+<section><div class="container" style="max-width:860px">
+<div class="content-block">
+<p>安徽中科国瓷新型元器件有限公司（下称「我们」）尊重并保护您的个人信息。本政策说明我们在您访问本网站（kdgc.cc）时如何收集、使用、存储和保护您的信息。使用本网站即表示您同意本政策。</p>
+
+<h2>一、我们收集的信息</h2>
+<h3>1. 您主动提供的信息</h3>
+<ul>
+<li><strong>咨询表单</strong>：公司名称、联系人姓名、手机号、邮箱、感兴趣的产品与需求描述；</li>
+<li><strong>在线客服</strong>：您在会话中填写的称呼、联系方式，以及会话消息内容；</li>
+<li><strong>邮件与电话</strong>：您通过 {EMAIL} 或 {PHONE_DISPLAY} 与我们沟通时提供的信息。</li>
+</ul>
+<h3>2. 自动收集的信息</h3>
+<ul>
+<li>访问日志：IP 地址、访问时间、浏览页面、浏览器类型与操作系统（用于安全防护与访问统计）；</li>
+<li>本地存储：用于记住您的在线客服会话，避免刷新页面后会话丢失。</li>
+</ul>
+
+<h2>二、信息的使用目的</h2>
+<ul>
+<li>响应您的产品咨询、样品申请与规格书索取，并由工程师与您对接；</li>
+<li>履行合同与售后服务（包括质保期内的技术支持）；</li>
+<li>改进网站内容与用户体验（基于匿名化的访问统计）；</li>
+<li>防范网络攻击、恶意提交与滥用行为（如提交频率限制）。</li>
+</ul>
+
+<h2>三、信息的共享与披露</h2>
+<p>我们<strong>不会出售</strong>您的个人信息。仅在以下情形共享必要信息：</p>
+<ul>
+<li>经您明确同意；</li>
+<li>为完成您的委托事项（如物流寄送样品）而向必要的合作方提供最小范围信息；</li>
+<li>依据法律法规、监管要求或司法程序必须提供。</li>
+</ul>
+
+<h2>四、Cookie 与本地存储</h2>
+<p>本网站不使用第三方广告 Cookie。我们使用浏览器本地存储（localStorage）保存您的客服会话标识，仅用于恢复会话连续性；您可随时通过浏览器设置清除。</p>
+
+<h2>五、数据安全</h2>
+<ul>
+<li>网站数据传输采用 HTTPS 加密；</li>
+<li>咨询与会话数据存储于境内服务器，访问受管理凭证控制；</li>
+<li>对提交接口实施频率限制与反垃圾校验，防止恶意采集。</li>
+</ul>
+
+<h2>六、信息保存期限</h2>
+<p>咨询与会话信息在达成商务目的所需期间内保存；法律法规另有规定的，按规定期限执行。超过期限后我们将删除或匿名化处理。</p>
+
+<h2>七、您的权利</h2>
+<p>您有权查询、更正或要求删除我们持有的您的个人信息，也可要求我们停止向您发送商务信息。请通过以下方式联系我们行使上述权利：</p>
+<ul>
+<li>邮箱：<a href="mailto:{EMAIL}">{EMAIL}</a></li>
+<li>电话：<a href="tel:{PHONE}">{PHONE_DISPLAY}</a></li>
+<li>地址：{ADDRESS}</li>
+</ul>
+<p>我们将在收到请求后 15 个工作日内予以答复。</p>
+
+<h2>八、未成年人保护</h2>
+<p>本网站面向企业用户（B2B），不面向未成年人提供服务，也不会有意收集未成年人的个人信息。</p>
+
+<h2>九、政策更新</h2>
+<p>我们可能根据业务与法规变化更新本政策，更新后将在本页面发布并标注生效日期。重大变更时，我们会在网站显著位置提示。</p>
+
+<p style="margin-top:28px"><a href="/contact/" class="btn btn-primary">有疑问？联系我们</a></p>
+</div>
+</div></section>""",
         "/privacy.html",
     )
     pages["404.html"] = page(
