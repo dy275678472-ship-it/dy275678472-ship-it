@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
-"""Generate showcase excerpt .txt files from showcase_catalog.json (P2: 40 cases)."""
+"""Generate showcase excerpt .txt files from showcase_catalog.json."""
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CATALOG = SCRIPT_DIR / "seed_data" / "showcase_catalog.json"
 OUT_DIR = SCRIPT_DIR / "seed_data" / "showcase_excerpts"
+
+# 手写高质量节选，生成器不覆盖
+HANDCRAFTED_SUFFIXES = ("_01",)
 
 GENRE_OPENINGS = {
     "urban": """第一章 {hook}
@@ -396,7 +400,7 @@ GENRE_OPENINGS = {
 
 {name}低头喝茶，没有反驳。妻子周晴夜里道歉，他只说：「没事，快了。」
 
-第三章？不，他还不想亮牌。赘婿三年，忍的不是窝囊，是时机。
+他心里有数：赘婿三年，忍的不是窝囊，是时机。
 
 第二章 身份
 
@@ -406,7 +410,7 @@ GENRE_OPENINGS = {
 
 岳母颤抖着问：「你……到底是谁？」
 
-{name}站起身：「周氏集团最大股东，周衍。」
+{name}站起身：「周氏集团最大股东，{name}。」
 
 第三章 飞龙在天
 
@@ -475,21 +479,38 @@ GENRE_OPENINGS = {
 （节选完，共三章）""",
 }
 
+# 按题材追加段落，用于不足 2000 字时自然扩写（非重复提示语）
+GENRE_EXTRA = {
+    "urban": "他合上手机，江城夜景在脚下铺展。真正的较量，才刚刚开始。",
+    "warrior": "风从巷口吹来，带着硝烟与旧日的誓言。",
+    "default": "故事还在继续，更多精彩章节等待续写。",
+}
 
-def pad_excerpt(text: str, title: str, min_chars: int = 2000) -> str:
-    """Ensure excerpt meets minimum length for reading area."""
-    if len(text) >= min_chars:
-        return text
-    filler = (
-        f"\n\n【阅读提示】本文为 LyRead AI 精选案例《{title}》节选。"
-        "完整作品含更多章节与伏笔回收，适合作为长篇连载创作参考。"
-        "平台支持大纲、章纲与按章续写，可按题材学习开篇钩子与爽点布局。\n"
+
+def _strip_boilerplate(text: str) -> str:
+    if "【阅读提示】" in text:
+        text = text.split("【阅读提示】")[0]
+    if "【节选说明】" in text:
+        text = text.split("【节选说明】")[0]
+    return text.rstrip()
+
+
+def pad_excerpt(text: str, title: str, genre: str, min_chars: int = 2000) -> str:
+    """不足最低字数时扩写剧情段落，避免重复「阅读提示」堆砌。"""
+    text = _strip_boilerplate(text)
+    if "（节选完" in text:
+        base, _ = text.split("（节选完", 1)
+        text = base.rstrip()
+    extra_line = GENRE_EXTRA.get(genre, GENRE_EXTRA["default"])
+    appendix = (
+        f"\n\n——\n\n{extra_line}\n"
+        f"窗外天色渐暗，{title}的故事才刚刚拉开序幕。"
+        f"若你喜欢这个开篇，可在 LyRead 创作台用同题材继续大纲与续写。\n\n"
+        f"（节选完，共三章）"
     )
-    while len(text) < min_chars:
-        text += filler
-    if "（节选完" not in text:
-        text += "\n\n（节选完，共三章）"
-    return text
+    while len(text) + len(appendix) < min_chars:
+        text += f"\n\n{extra_line}"
+    return text + appendix
 
 
 def generate_excerpt(case: dict) -> str:
@@ -501,7 +522,7 @@ def generate_excerpt(case: dict) -> str:
         title=case["title"],
         name=name,
     )
-    return pad_excerpt(body, case["title"])
+    return pad_excerpt(body, case["title"], genre)
 
 
 def main() -> None:
@@ -510,6 +531,13 @@ def main() -> None:
     for case in cases:
         cid = case["content_id"]
         path = OUT_DIR / f"{cid}.txt"
+        if any(cid.endswith(s) for s in HANDCRAFTED_SUFFIXES) and path.is_file():
+            cleaned = _strip_boilerplate(path.read_text(encoding="utf-8"))
+            if "（节选完" not in cleaned:
+                cleaned += "\n\n（节选完，共三章）"
+            path.write_text(cleaned, encoding="utf-8")
+            print(f"kept handcrafted {path.name} ({len(cleaned)} chars)")
+            continue
         text = generate_excerpt(case)
         path.write_text(text, encoding="utf-8")
         print(f"wrote {path.name} ({len(text)} chars)")

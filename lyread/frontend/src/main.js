@@ -63,7 +63,7 @@ router.afterEach((to) => {
   setOg('og:description', desc)
   setOg('og:url', `https://lyread.cn${to.path === '/' ? '/' : to.path}`)
   const ogImage = document.querySelector('meta[property="og:image"]')
-  if (ogImage) ogImage.content = 'https://lyread.cn/images/og-share.png'
+  if (ogImage) ogImage.content = 'https://lyread.cn/images/og-share.webp'
   trackPageView(to.fullPath, title)
 })
 

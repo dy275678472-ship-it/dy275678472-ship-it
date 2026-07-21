@@ -103,7 +103,7 @@
           class="hot-card hot-card-link"
           @click="trackCaseClick(c)"
         >
-          <img :src="coverForCase(c, i)" :alt="`${c.title} 封面`" class="hot-cover" loading="lazy" />
+          <CaseCover :item="c" :index="i" :alt="`${c.title} 封面`" height="140px" />
           <div class="hot-body">
             <div class="hot-type">{{ c.category || '都市' }}</div>
             <h3>{{ c.title }}</h3>
@@ -235,7 +235,8 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { IMAGES, coverForCase } from '../assets/images'
+import { IMAGES } from '../assets/images'
+import CaseCover from '../components/CaseCover.vue'
 import SectionHeading from '../components/SectionHeading.vue'
 import { statsApi, casesApi } from '../api'
 import { formatCount, formatWords } from '../utils/format'
@@ -607,11 +608,8 @@ const startTrial = async (append = false) => {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px var(--lyread-shadow-medium);
 }
-.hot-cover {
-  width: 100%;
+.hot-card-link :deep(.case-cover-wrap) {
   height: 140px;
-  object-fit: cover;
-  display: block;
 }
 .hot-body { padding: 16px 20px 20px; }
 .hot-type {

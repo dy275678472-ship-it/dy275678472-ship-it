@@ -33,7 +33,7 @@
     />
     <div v-else class="case-grid">
       <router-link v-for="(c, i) in cases" :key="c.id" :to="`/case/${c.id}`" class="case-card">
-        <img :src="coverForCase(c, i)" :alt="`${c.title} 封面`" class="case-cover" loading="lazy" />
+        <CaseCover :item="c" :index="i" :alt="`${c.title} 封面`" />
         <div class="case-body">
           <span class="cat">{{ c.category || '都市' }}</span>
           <h3>{{ c.title }}</h3>
@@ -55,8 +55,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { casesApi } from '../api'
-import { coverForCase, IMAGES } from '../assets/images'
+import { IMAGES } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
+import CaseCover from '../components/CaseCover.vue'
 
 const images = IMAGES
 
@@ -128,14 +129,9 @@ onMounted(async () => {
   display: block; text-decoration: none; background: #fff; border-radius: 14px;
   overflow: hidden; border: 1px solid #e8f0fa; transition: all 0.2s;
 }
-.case-cover {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-  display: block;
-}
 .case-body { padding: 16px 20px 20px; }
 .case-card:hover { box-shadow: 0 8px 24px rgba(77,161,255,0.12); transform: translateY(-2px); border-color: #bfdbfe; }
+.case-card :deep(.case-cover-wrap) { height: 120px; }
 .cat { display: inline-block; padding: 3px 10px; background: rgba(77,161,255,0.12); color: #2563eb; border-radius: 999px; font-size: 12px; margin-bottom: 10px; }
 .case-card h3 { font-size: 16px; color: #1e2a3a; margin-bottom: 8px; line-height: 1.4; }
 .excerpt { font-size: 12px; color: #64748b; line-height: 1.5; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
