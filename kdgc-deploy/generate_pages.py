@@ -123,11 +123,11 @@ SERVICE_WIDGET_EN = SERVICE_WIDGET_ZH.replace("在线服务", "Online service").
 FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <div><h4>中科国瓷</h4><p style="font-size:14px;margin-top:8px">变频氧传感器与氮氧传感技术 · 中科大技术转化</p>
 <p style="font-size:13px;margin-top:8px;opacity:.8">恪守诚信为本，产品承诺质保 5 年</p></div>
-<div><h4>产品</h4>
+<div><h4>产品中心</h4>
 <a href="/products/kd0100-02s-t1.html">KD0100-02S-T1 探头</a>
 <a href="/products/kd0100-02s-to.html">KD0100-02S-TO 插针</a>
 <a href="/products/mask-o2-sensor.html">面罩用氧传感器</a></div>
-<div><h4>公司</h4><a href="/products/">产品中心</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">行业案例</a><a href="/about/">关于中科国瓷</a></div>
+<div><h4>网站栏目</h4><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">行业案例</a><a href="/about/">关于中科国瓷</a></div>
 <div><h4><a href="/contact/" style="color:inherit;font-size:inherit;font-weight:inherit;display:inline;margin:0">联系我们</a></h4><a href="mailto:{EMAIL}">{EMAIL}</a>
 <a href="tel:{PHONE}">{PHONE_DISPLAY}</a>
 <p style="font-size:13px;margin-top:8px">{ADDRESS}</p></div>
@@ -178,12 +178,11 @@ NAV_EN = """<nav class="nav"><div class="nav-inner">
 FOOTER_EN = f"""<footer><div class="footer-grid container" style="padding:0">
 <div><h4>ZK Guoci</h4><p style="font-size:14px;margin-top:8px">Variable-frequency oxygen sensors · USTC tech transfer</p>
 <p style="font-size:13px;margin-top:8px;opacity:.8">Integrity first · 5-year product warranty</p></div>
-<div><h4>Products</h4>
+<div><h4>Product Center</h4>
 <a href="/en/products/kd0100-02s-t1.html">KD0100-02S-T1 Probe</a>
 <a href="/en/products/kd0100-02s-to.html">KD0100-02S-TO Pin</a>
 <a href="/en/products/mask-o2-sensor.html">Mask O₂ Sensor</a></div>
-<div><h4>Company</h4>
-<a href="/en/products.html">Products</a>
+<div><h4>Site Sections</h4>
 <a href="/en/news.html">News</a>
 <a href="/en/knowledge.html">Knowledge</a>
 <a href="/en/cases.html">Industry Cases</a>
