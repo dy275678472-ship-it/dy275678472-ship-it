@@ -76,3 +76,10 @@ export function coverForCase(item, index = 0) {
   if (/重生|穿越/.test(cat)) return IMAGES.covers[2]
   return IMAGES.covers[index % 3]
 }
+
+/** 绝对 URL OG 图：SVG 封面回退站点默认分享图（社交爬虫兼容）。 */
+export function ogImageForCase(item, index = 0) {
+  const path = coverForCase(item, index)
+  if (path.endsWith('.svg')) return `https://lyread.cn${IMAGES.ogShare}`
+  return `https://lyread.cn${path}`
+}

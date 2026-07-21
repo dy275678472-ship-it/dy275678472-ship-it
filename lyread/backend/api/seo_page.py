@@ -18,12 +18,59 @@ from services.seo_schema import breadcrumb, combine_json_ld, faq_graph, website_
 router = APIRouter()
 
 SITE_BASE = os.getenv("SITE_URL", "https://lyread.cn").rstrip("/")
+DEFAULT_OG_IMAGE = f"{SITE_BASE}/images/og-share.png"
+DEFAULT_OG_SIZE_TAGS = (
+    '    <meta property="og:image:width" content="1200">\n'
+    '    <meta property="og:image:height" content="630">'
+)
+
 
 def get_db():
     try:
         return mysql.connector.connect(**database_config())
     except Exception:
         return None
+
+
+def _cover_path_for_category(category: str) -> str:
+    """与前端 coverForCase 对齐的题材封面路径。"""
+    cat = str(category or "").lower()
+    if any(k in cat for k in ("仙侠", "玄幻", "修仙")):
+        return "/images/cover-xianxia.svg"
+    if any(k in cat for k in ("言情", "甜宠", "恋爱")):
+        return "/images/cover-romance.svg"
+    if any(k in cat for k in ("科幻", "脑洞", "末世")):
+        return "/images/cover-scifi.svg"
+    if any(k in cat for k in ("悬疑", "推理", "惊悚")):
+        return "/images/cover-suspense.svg"
+    if any(k in cat for k in ("历史", "架空", "宫廷")):
+        return "/images/cover-history.svg"
+    if any(k in cat for k in ("战神", "都市", "神豪")):
+        return "/images/cover-warrior.webp"
+    if any(k in cat for k in ("重生", "穿越")):
+        return "/images/cover-reborn.webp"
+    if any(k in cat for k in ("系统", "游戏", "竞技", "校园", "青春")):
+        return "/images/cover-urban.webp"
+    return "/images/cover-urban.webp"
+
+
+def _og_image_for_category(category: str) -> str:
+    """OG 分享图：优先题材封面；SVG 不被多数爬虫支持时回退默认图。"""
+    path = _cover_path_for_category(category)
+    if path.endswith(".svg"):
+        return DEFAULT_OG_IMAGE
+    return f"{SITE_BASE}{path}"
+
+
+def _seo_html(**kwargs) -> str:
+    """PAGE_TEMPLATE 填充，默认 OG 图为站点分享图。"""
+    kwargs.setdefault("site_base", SITE_BASE)
+    kwargs.setdefault("og_image", DEFAULT_OG_IMAGE)
+    if "og_image_size_tags" not in kwargs:
+        kwargs["og_image_size_tags"] = (
+            DEFAULT_OG_SIZE_TAGS if kwargs["og_image"] == DEFAULT_OG_IMAGE else ""
+        )
+    return PAGE_TEMPLATE.format(**kwargs)
 
 
 PAGE_TEMPLATE = """<!DOCTYPE html>
@@ -36,11 +83,12 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
     <meta name="keywords" content="{keywords}">
     <meta property="og:title" content="{title}">
     <meta property="og:description" content="{description}">
-    <meta property="og:image" content="{site_base}/images/og-share.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:image" content="{og_image}">
+    {og_image_size_tags}
     <meta property="og:type" content="article">
     <meta property="og:url" content="{site_base}{url}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="{og_image}">
     <meta name="robots" content="index,follow">
     <link rel="canonical" href="{site_base}{url}">
     <script type="application/ld+json">{json_ld}</script>
@@ -241,7 +289,14 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 </html>"""
 
 
-def _json_ld_article(title: str, description: str, url_path: str, genre: str = "", word_count: int = 0) -> str:
+def _json_ld_article(
+    title: str,
+    description: str,
+    url_path: str,
+    genre: str = "",
+    word_count: int = 0,
+    image: str = "",
+) -> str:
     import json
     data = {
         "@context": "https://schema.org",
@@ -261,6 +316,8 @@ def _json_ld_article(title: str, description: str, url_path: str, genre: str = "
         data["genre"] = genre
     if word_count:
         data["wordCount"] = word_count
+    if image:
+        data["image"] = [image]
     return json.dumps(data, ensure_ascii=False)
 
 
@@ -294,9 +351,10 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
     keywords = "AI写小说,网文创作,智能写作"
     body_html = '<p style="color: #7a8ba8; text-align: center; padding: 40px;">内容未找到</p>'
     meta_info = ""
+    og_image = DEFAULT_OG_IMAGE
     # 规范 URL 始终指向 /ep/，/case/ 仅作 SPA 阅读与 bot 入口别名
     canonical = f"/ep/{content_id}"
-    json_ld = _json_ld_article(title, description, canonical)
+    json_ld = _json_ld_article(title, description, canonical, image=og_image)
 
     try:
         db = get_db()
@@ -314,6 +372,7 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
                 safe_title = escape(str(row['title']))
                 safe_category = escape(str(row['category']))
                 preview = row.get("preview_body") or ""
+                og_image = _og_image_for_category(str(row.get("category") or ""))
                 title = f"{safe_title} - LyRead AI 小说作品"
                 description = escape(
                     _preview_og_description(
@@ -333,6 +392,7 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
                         canonical,
                         genre=safe_category,
                         word_count=int(row.get("word_count") or 0),
+                        image=og_image,
                     ),
                     breadcrumb([
                         ("首页", f"{SITE_BASE}/"),
@@ -340,12 +400,17 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
                         (safe_title, f"{SITE_BASE}{canonical}"),
                     ]),
                 )
+                cover_path = _cover_path_for_category(str(row.get("category") or ""))
                 body_html = f"""
-                <div class="info-grid">
-                    <div class="info-item"><strong>分类</strong><br>{safe_category}</div>
-                    <div class="info-item"><strong>字数</strong><br>{row['word_count']:,}</div>
-                    <div class="info-item"><strong>热度</strong><br>{row['heat']}</div>
-                    <div class="info-item"><strong>评分</strong><br>{row.get('score', 'N/A')}</div>
+                <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:8px">
+                    <img src="{SITE_BASE}{cover_path}" alt="{safe_title} 封面" width="96" height="128"
+                         style="width:96px;height:128px;object-fit:cover;border-radius:8px;background:#e8f0fa;flex-shrink:0" />
+                    <div class="info-grid" style="flex:1">
+                        <div class="info-item"><strong>分类</strong><br>{safe_category}</div>
+                        <div class="info-item"><strong>字数</strong><br>{row['word_count']:,}</div>
+                        <div class="info-item"><strong>热度</strong><br>{row['heat']}</div>
+                        <div class="info-item"><strong>评分</strong><br>{row.get('score', 'N/A')}</div>
+                    </div>
                 </div>"""
                 if preview:
                     safe_preview = escape(preview[:6000]).replace("\n", "<br>")
@@ -353,6 +418,16 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
                 <div style="margin-top:24px;line-height:1.9;color:#2a3a4e;white-space:normal">
                     <h2 style="font-size:18px;margin-bottom:12px;color:#1e2a3a">正文节选</h2>
                     <div style="background:#f8fafc;padding:20px;border-radius:12px;border:1px solid #e8f0fa">{safe_preview}</div>
+                </div>"""
+                else:
+                    body_html += f"""
+                <div style="margin-top:24px;padding:20px;border-radius:12px;background:#f8fafc;border:1px solid #e8f0fa;color:#64748b;font-size:14px;line-height:1.7">
+                    <p>该案例暂无正文节选。可先浏览同风格作品，或直接用这个题材开写。</p>
+                    <p style="margin-top:12px">
+                        <a href="{SITE_BASE}/trending">浏览更多案例 →</a>
+                        &nbsp;&nbsp;
+                        <a href="{SITE_BASE}/login?mode=register&amp;redirect=/workspace">注册开写 →</a>
+                    </p>
                 </div>"""
                 body_html += f"""
                 <div class="seo-cta">
@@ -364,15 +439,15 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
         print(f"[SEO Page] Error fetching content {content_id}: {e}")
 
     return HTMLResponse(
-        PAGE_TEMPLATE.format(
+        _seo_html(
             title=title,
             description=description,
             keywords=keywords,
             url=canonical,
-            site_base=SITE_BASE,
             meta_info=meta_info,
             body_html=body_html,
             json_ld=json_ld,
+            og_image=og_image,
         )
     )
 
@@ -597,7 +672,7 @@ async def seo_faq_page(request: Request):
         faq_graph(SITE_FAQS),
         breadcrumb([("首页", f"{SITE_BASE}/"), ("常见问题", f"{SITE_BASE}/faq")]),
     )
-    return PAGE_TEMPLATE.format(
+    return _seo_html(
         title=title, description=desc,
         keywords="LyRead常见问题,AI小说怎么收费,网文创作工具",
         url=url, site_base=SITE_BASE, meta_info="帮助中心",
@@ -648,7 +723,7 @@ async def seo_about_page(request: Request):
         about_ld,
         breadcrumb([("首页", f"{SITE_BASE}/"), ("关于我们", f"{SITE_BASE}/about")]),
     )
-    return PAGE_TEMPLATE.format(
+    return _seo_html(
         title=title, description=desc,
         keywords="LyRead,AI小说平台,关于我们,智能写作",
         url=url, site_base=SITE_BASE, meta_info="品牌与产品介绍",
@@ -696,7 +771,7 @@ async def seo_home_page(request: Request):
     """
     title = "LyRead AI - 智能小说创作平台"
     desc = "LyRead AI 智能小说创作平台，让 AI 陪你写完一部长篇小说。支持大纲、章节续写、人物伏笔记忆与按量点数计费。"
-    return PAGE_TEMPLATE.format(
+    return _seo_html(
         title=title,
         description=desc,
         keywords="AI写小说,智能小说创作,网文AI,大纲生成,章节续写,LyRead",
@@ -820,7 +895,7 @@ async def seo_pricing_page(request: Request):
     title = "价格与点数计费 - LyRead AI"
     desc = "LyRead 点数计费：注册送 30 点，每日免费 5 点，10 元 = 100 点。生成一章约 10 点，失败全额返还。"
     url = "/pricing"
-    return PAGE_TEMPLATE.format(
+    return _seo_html(
         title=title,
         description=desc,
         keywords="AI小说价格,点数计费,网文创作收费,LyRead充值",
@@ -859,7 +934,7 @@ async def seo_trending_page(request: Request):
     title = "案例阅读 - LyRead AI 智能小说创作"
     desc = "浏览 LyRead AI 平台公开案例，都市、仙侠、重生等题材 AI 生成小说作品。"
     url = "/trending"
-    return PAGE_TEMPLATE.format(
+    return _seo_html(
         title=title,
         description=desc,
         keywords="AI小说案例,网文作品,智能写作案例,LyRead",
@@ -1067,7 +1142,7 @@ async def seo_content_list(request: Request):
     list_title = "LyRead AI 小说作品列表 - 智能小说创作平台"
     list_desc = "浏览 LyRead AI 公开案例节选：都市神豪、战神归来、系统流等题材的 AI 生成开篇，点击进入全文阅读。"
     list_path = str(request.url.path)
-    return PAGE_TEMPLATE.format(
+    return _seo_html(
         title=list_title,
         description=list_desc,
         keywords="AI小说,网文列表,智能写作,小说推荐,案例节选",

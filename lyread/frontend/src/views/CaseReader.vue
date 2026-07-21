@@ -9,17 +9,24 @@
       <router-link to="/trending" class="btn-secondary">浏览案例</router-link>
     </EmptyState>
     <article v-else class="article">
-      <header>
-        <span class="cat">{{ caseData.category }}</span>
-        <h1>{{ caseData.title }}</h1>
-        <p class="meta">{{ caseData.word_count }} 字 · 热度 {{ caseData.heat }} · 评分 {{ caseData.score }}</p>
+      <header class="article-header">
+        <img :src="coverSrc" :alt="`${caseData.title} 封面`" class="article-cover" width="88" height="118" />
+        <div class="article-heading">
+          <span class="cat">{{ caseData.category }}</span>
+          <h1>{{ caseData.title }}</h1>
+          <p class="meta">{{ caseData.word_count }} 字 · 热度 {{ caseData.heat }} · 评分 {{ caseData.score }}</p>
+        </div>
       </header>
       <section v-if="body" class="body">
         <pre>{{ body }}</pre>
       </section>
       <section v-else class="body empty-body">
-        <p>该案例暂无正文节选，以下为平台生成作品展示。</p>
-        <a :href="sharePath" class="link">查看 SEO 页面 →</a>
+        <p>该案例暂无正文节选。可先浏览同风格作品，或直接用这个题材开写。</p>
+        <div class="empty-actions">
+          <router-link to="/trending" class="link">浏览更多案例 →</router-link>
+          <router-link :to="workspaceLink" class="link" @click="trackCta('empty_body')">用这个风格开写 →</router-link>
+          <a :href="sharePath" class="link subtle">SEO 预览</a>
+        </div>
       </section>
       <footer class="cta">
         <div class="share-row">
@@ -58,7 +65,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { casesApi } from '../api'
-import { coverForCase } from '../assets/images'
+import { coverForCase, ogImageForCase } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
 import { trackEvent } from '../utils/analytics'
 
@@ -72,6 +79,7 @@ const canNativeShare = ref(typeof navigator !== 'undefined' && typeof navigator.
 
 const sharePath = computed(() => `/ep/${caseData.value?.id || route.params.id}`)
 const shareUrl = computed(() => `https://lyread.cn${sharePath.value}`)
+const coverSrc = computed(() => coverForCase(caseData.value || {}, 0))
 
 const workspaceLink = computed(() => {
   const cat = caseData.value?.category || ''
@@ -81,6 +89,7 @@ const workspaceLink = computed(() => {
 function setCaseMeta(c) {
   const title = `${c.title} - LyRead AI 小说作品`
   const desc = (body.value || c.excerpt || `${c.title} - ${c.category || '小说'}类型，AI 智能创作案例`).slice(0, 160)
+  const image = ogImageForCase(c, 0)
   document.title = title
   const setMeta = (selector, attr, name, content) => {
     let el = document.querySelector(selector)
@@ -100,7 +109,9 @@ function setCaseMeta(c) {
   setMeta('meta[property="og:description"]', 'property', 'og:description', desc)
   setMeta('meta[property="og:url"]', 'property', 'og:url', shareUrl.value)
   setMeta('meta[property="og:type"]', 'property', 'og:type', 'article')
-  setMeta('meta[property="og:image"]', 'property', 'og:image', 'https://lyread.cn/images/og-share.png')
+  setMeta('meta[property="og:image"]', 'property', 'og:image', image)
+  setMeta('meta[name="twitter:card"]', 'name', 'twitter:card', 'summary_large_image')
+  setMeta('meta[name="twitter:image"]', 'name', 'twitter:image', image)
 }
 
 function trackCta(label) {
@@ -224,12 +235,34 @@ watch(
 .reader-page { max-width: 720px; margin: 0 auto; padding: 32px 20px 80px; }
 .loading { text-align: center; color: #94a3b8; padding: 60px; }
 .article { background: #fff; border-radius: 16px; padding: 28px; border: 1px solid #e8f0fa; }
+.article-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.article-cover {
+  width: 88px;
+  height: 118px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: #e2e8f0;
+}
+.article-heading { min-width: 0; flex: 1; }
 .cat { display: inline-block; padding: 4px 10px; background: #eff6ff; color: #2563eb; border-radius: 999px; font-size: 12px; }
 h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
-.meta { color: #94a3b8; font-size: 13px; margin-bottom: 24px; }
+.meta { color: #94a3b8; font-size: 13px; margin-bottom: 16px; }
 .body pre { white-space: pre-wrap; line-height: 1.9; font-size: 16px; color: #1e2a3a; font-family: inherit; }
-.empty-body { color: #64748b; font-size: 14px; }
-.link { color: #2563eb; }
+.empty-body { color: #64748b; font-size: 14px; line-height: 1.7; }
+.empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-top: 12px;
+}
+.link { color: #2563eb; font-weight: 600; text-decoration: none; }
+.link.subtle { color: #64748b; font-weight: 500; }
 .cta { text-align: center; margin-top: 32px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .share-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .btn-share {
@@ -329,6 +362,8 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
 @media (max-width: 640px) {
   .reader-page { padding: 20px 14px 88px; }
   .article { padding: 20px 16px; border-radius: 12px; }
+  .article-header { gap: 12px; }
+  .article-cover { width: 72px; height: 96px; }
   h1 { font-size: 20px; }
   .body pre { font-size: 15px; line-height: 1.85; }
   .related { margin-top: 28px; padding-top: 20px; }
