@@ -39,6 +39,8 @@ export const authApi = {
   reset(token, password) {
     return request('/api/auth/reset', { method: 'POST', body: JSON.stringify({ token, password }) })
   },
+  oauthStatus() { return request('/api/auth/oauth/status') },
+  wechatLogin() { window.location.href = '/api/auth/wechat/login' },
 }
 
 export const creditsApi = {
@@ -70,7 +72,12 @@ export const storyApi = {
 }
 
 export const casesApi = {
-  list(limit = 20) { return request(`/api/cases?limit=${limit}`) },
+  list(limit = 20, category = '') {
+    const q = new URLSearchParams({ limit: String(limit) })
+    if (category) q.set('category', category)
+    return request(`/api/cases?${q}`)
+  },
+  categories() { return request('/api/cases/categories/list') },
   get(id) { return request(`/api/cases/${id}`) },
 }
 

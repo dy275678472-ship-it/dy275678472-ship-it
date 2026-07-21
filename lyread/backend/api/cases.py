@@ -21,7 +21,7 @@ def list_cases(limit: int = 20, category: str = None):
     conn = _db()
     try:
         cursor = conn.cursor(dictionary=True)
-        lim = max(1, min(limit, 50))
+        lim = max(1, min(limit, 100))
         if category:
             cursor.execute(
                 f"SELECT id, content_id, title, category, word_count, heat, score, preview_body, created_at "
@@ -56,6 +56,29 @@ def list_cases(limit: int = 20, category: str = None):
                 for r in rows
             ],
             "total": len(rows),
+        }
+    finally:
+        if conn.is_connected():
+            conn.close()
+
+
+@router.get("/categories/list")
+def list_categories():
+    """公开案例题材分类（供筛选）。"""
+    conn = _db()
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            f"SELECT category, COUNT(*) AS count FROM contents WHERE {public_case_sql_clause()} "
+            "GROUP BY category ORDER BY count DESC, category ASC"
+        )
+        rows = cursor.fetchall()
+        return {
+            "success": True,
+            "categories": [
+                {"name": r["category"] or "其他", "count": int(r["count"] or 0)}
+                for r in rows
+            ],
         }
     finally:
         if conn.is_connected():

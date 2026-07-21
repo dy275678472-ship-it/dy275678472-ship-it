@@ -98,16 +98,17 @@
         <a href="#" @click.prevent="showForgot = false; showReset = false">返回登录</a>
       </div>
 
-      <div class="social-login" v-if="false && !showForgot && !showReset">
-        <p>第三方登录（即将上线）</p>
+      <div class="social-login" v-if="!showForgot && !showReset">
+        <p>快捷登录</p>
         <div class="social-icons">
-          <button type="button" class="social-icon" disabled title="微信登录即将上线">
+          <button type="button" class="social-icon" @click="onWechatLogin" :title="oauth.wechat ? '微信登录' : '微信登录即将上线'">
             <img :src="images.ui.wechat" alt="微信" width="28" height="28" />
           </button>
           <button type="button" class="social-icon" disabled title="QQ 登录即将上线">
             <img :src="images.ui.qq" alt="QQ" width="28" height="28" />
           </button>
         </div>
+        <p v-if="!oauth.wechat" class="social-hint">微信登录即将上线，请先使用邮箱注册</p>
       </div>
       </div>
     </div>
@@ -133,6 +134,15 @@ const showRegister = ref(false)
 const showForgot = ref(false)
 const showReset = ref(false)
 const resetToken = ref('')
+const oauth = ref({ wechat: false, qq: false })
+
+const onWechatLogin = async () => {
+  if (oauth.value.wechat) {
+    authApi.wechatLogin()
+    return
+  }
+  error.value = '微信登录即将上线，请先使用邮箱注册/登录'
+}
 
 const form = reactive({
   username: '',
@@ -180,7 +190,7 @@ const handleReset = async () => {
   } finally { loading.value = false }
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (route.query.reset) {
     resetToken.value = route.query.reset
     showReset.value = true
@@ -188,6 +198,10 @@ onMounted(() => {
   if (route.query.mode === 'register') {
     showRegister.value = true
   }
+  try {
+    const res = await authApi.oauthStatus()
+    if (res?.success) oauth.value = { wechat: !!res.wechat, qq: !!res.qq }
+  } catch { /* ignore */ }
 })
 
 function safeRedirectPath() {
@@ -490,6 +504,12 @@ const handleRegister = async () => {
   color: var(--lyread-text-secondary);
   font-size: 14px;
   margin-bottom: 20px;
+}
+.social-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 12px;
+  margin-bottom: 0;
 }
 .social-icons {
   display: flex;

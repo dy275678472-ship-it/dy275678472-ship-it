@@ -874,6 +874,77 @@ async def seo_genre_page(slug: str):
     )
 
 
+@router.get("/creator/{user_id}", response_class=HTMLResponse)
+async def seo_creator_page(user_id: str):
+    """公开创作者主页 SSR（SEO）。"""
+    nickname = "创作者"
+    bio = ""
+    works_html = ""
+    try:
+        db = get_db()
+        if db:
+            cursor = db.cursor(dictionary=True)
+            cursor.execute("SELECT username FROM users WHERE id=%s LIMIT 1", (user_id,))
+            u = cursor.fetchone()
+            if not u:
+                raise HTTPException(status_code=404, detail="创作者不存在")
+            cursor.execute(
+                "SELECT nickname, bio FROM creator_profiles WHERE user_id=%s LIMIT 1", (user_id,)
+            )
+            prof = cursor.fetchone()
+            if prof:
+                nickname = prof.get("nickname") or u.get("username") or nickname
+                bio = prof.get("bio") or ""
+            else:
+                nickname = u.get("username") or nickname
+            cursor.execute(
+                f"SELECT id, title, category, word_count, heat FROM contents "
+                f"WHERE {public_case_sql_clause()} ORDER BY heat DESC LIMIT 8"
+            )
+            case_rows = cursor.fetchall()
+            if case_rows:
+                works_html = "<ul class='seo-list'>" + "".join(
+                    f"<li><a href=\"{SITE_BASE}/case/{r['id']}\">{escape(r.get('title') or '未命名')}</a> "
+                    f"— {escape(r.get('category') or '都市')} · {int(r.get('word_count') or 0)} 字</li>"
+                    for r in case_rows
+                ) + "</ul>"
+            cursor.close()
+            db.close()
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[SEO Page] creator {user_id}: {e}")
+
+    body_html = f"""
+    <p><strong>{escape(nickname)}</strong> 在 LyRead AI 的创作主页。</p>
+    {f'<p>{escape(bio)}</p>' if bio else ''}
+    <div class="info-grid">
+      <div class="info-item"><strong>平台</strong><br>LyRead AI 创作者</div>
+      <div class="info-item"><strong>主页</strong><br>公开作品与案例</div>
+    </div>
+    {f'<h2 style="font-size:18px;margin:20px 0 12px">相关案例</h2>{works_html}' if works_html else ''}
+    <div class="seo-cta">
+      <a href="{SITE_BASE}/trending">浏览全部案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/workspace">开始创作 →</a>
+    </div>
+    """
+    title = f"{nickname} - LyRead AI 创作者主页"
+    desc = f"查看 {nickname} 在 LyRead AI 的创作主页与公开案例。"
+    url = f"/creator/{user_id}"
+    json_ld = breadcrumb([
+        ("首页", f"{SITE_BASE}/"),
+        ("案例阅读", f"{SITE_BASE}/trending"),
+        (nickname, f"{SITE_BASE}{url}"),
+    ])
+    return PAGE_TEMPLATE.format(
+        title=title, description=desc,
+        keywords="LyRead创作者,AI小说作者",
+        url=url, site_base=SITE_BASE, meta_info="创作者主页",
+        body_html=body_html, json_ld=json_ld,
+    )
+
+
 # --- 营销页 SSR（供搜索引擎与无 JS 环境索引）---
 
 PRICE_ROWS = [

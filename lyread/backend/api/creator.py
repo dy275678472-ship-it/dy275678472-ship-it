@@ -127,3 +127,36 @@ def update_profile(req: UpdateProfileRequest, user: dict = Depends(get_current_u
             if conn.is_connected():
                 conn.close()
     return {"success": True, "profile": _profile_from_db(uid)}
+
+
+@router.get("/public/{user_id}")
+def public_profile(user_id: str):
+    """公开创作者主页（无需登录）。"""
+    conn = _db()
+    works = []
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute(
+                "SELECT id, title, genre, word_count, status, updated_at FROM stories "
+                "WHERE user_id=%s AND status IN ('published','active') ORDER BY updated_at DESC LIMIT 12",
+                (user_id,),
+            )
+            for r in cursor.fetchall():
+                works.append({
+                    "id": r["id"],
+                    "title": r.get("title") or "未命名",
+                    "genre": r.get("genre") or "都市",
+                    "word_count": int(r.get("word_count") or 0),
+                    "status": r.get("status"),
+                    "updated_at": str(r.get("updated_at") or ""),
+                })
+        except Exception as exc:
+            print(f"[Creator.public] {exc}")
+        finally:
+            if conn.is_connected():
+                conn.close()
+    profile = _profile_from_db(user_id)
+    if not profile.get("username") and not works:
+        return {"success": False, "detail": "创作者不存在"}
+    return {"success": True, "profile": profile, "works": works}

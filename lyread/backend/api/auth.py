@@ -296,3 +296,34 @@ async def reset_password(req: ResetPasswordRequest):
     finally:
         if conn.is_connected():
             conn.close()
+
+
+@router.get("/oauth/status")
+async def oauth_status():
+    """第三方登录可用状态（前端据此展示按钮）。"""
+    return {
+        "success": True,
+        "wechat": bool(os.getenv("WECHAT_APP_ID")),
+        "qq": bool(os.getenv("QQ_APP_ID")),
+    }
+
+
+@router.get("/wechat/login")
+async def wechat_login():
+    """微信 OAuth 登录入口（需配置 WECHAT_APP_ID）。"""
+    app_id = os.getenv("WECHAT_APP_ID", "")
+    if not app_id:
+        raise HTTPException(
+            status_code=503,
+            detail="微信登录即将上线，请先使用邮箱注册/登录",
+        )
+    site = os.getenv("SITE_URL", "https://lyread.cn").rstrip("/")
+    redirect_uri = os.getenv("WECHAT_REDIRECT_URI", f"{site}/api/auth/wechat/callback")
+    from urllib.parse import quote
+    from fastapi.responses import RedirectResponse
+    url = (
+        "https://open.weixin.qq.com/connect/qrconnect"
+        f"?appid={app_id}&redirect_uri={quote(redirect_uri, safe='')}"
+        "&response_type=code&scope=snsapi_login&state=lyread#wechat_redirect"
+    )
+    return RedirectResponse(url)
