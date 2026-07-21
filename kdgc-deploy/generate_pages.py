@@ -121,7 +121,7 @@ SERVICE_WIDGET_ZH = """<div class="service-rail" aria-label="在线服务">
 SERVICE_WIDGET_EN = SERVICE_WIDGET_ZH.replace("在线服务", "Online service").replace("在线客服", "Online support").replace("企业微信", "WeCom").replace("中科国瓷Online support", "ZK Guoci Support").replace("工程师在线 · 通常很快回复", "Engineer support · Fast response").replace("您好，请问您想咨询产品选型、规格参数还是样品申请？", "Hello. How can we help with product selection, specifications, or samples?").replace("称呼（选填）", "Name (optional)").replace("手机/邮箱（选填）", "Phone/email (optional)").replace("请输入您的问题…", "Type your question…").replace("发送", "Send").replace("消息将由客服后台接收", "Your message will be received by our support team").replace("二维码即将上线<br>您也可以先使用Online support沟通", "QR code coming soon<br>Please use online support for now").replace("关闭", "Close")
 
 FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
-<div><h4>中科国瓷</h4><p style="font-size:14px;margin-top:8px">变频氧传感器与氮氧传感技术 · 中科大技术转化</p>
+<div><h4><a href="/" style="color:inherit;font-size:inherit;font-weight:inherit;display:inline;margin:0">中科国瓷</a></h4><p style="font-size:14px;margin-top:8px">变频氧传感器与氮氧传感技术 · 中科大技术转化</p>
 <p style="font-size:13px;margin-top:8px;opacity:.8">恪守诚信为本，产品承诺质保 5 年</p></div>
 <div><h4>产品中心</h4>
 <a href="/products/kd0100-02s-t1.html">KD0100-02S-T1 探头</a>
@@ -176,7 +176,7 @@ NAV_EN = """<nav class="nav"><div class="nav-inner">
 </div></nav>"""
 
 FOOTER_EN = f"""<footer><div class="footer-grid container" style="padding:0">
-<div><h4>ZK Guoci</h4><p style="font-size:14px;margin-top:8px">Variable-frequency oxygen sensors · USTC tech transfer</p>
+<div><h4><a href="/en/" style="color:inherit;font-size:inherit;font-weight:inherit;display:inline;margin:0">ZK Guoci</a></h4><p style="font-size:14px;margin-top:8px">Variable-frequency oxygen sensors · USTC tech transfer</p>
 <p style="font-size:13px;margin-top:8px;opacity:.8">Integrity first · 5-year product warranty</p></div>
 <div><h4>Product Center</h4>
 <a href="/en/products/kd0100-02s-t1.html">KD0100-02S-T1 Probe</a>
