@@ -22,7 +22,14 @@
         <div class="article-heading">
           <span class="cat">{{ caseData.category }}</span>
           <h1>{{ caseData.title }}</h1>
-          <p class="meta">{{ caseData.word_count }} 字 · 热度 {{ caseData.heat }} · 评分 {{ caseData.score }}</p>
+          <p class="meta">
+            <span v-if="excerptMeta">节选 {{ excerptMeta }}</span>
+            <span v-if="excerptMeta && caseData.word_count"> · </span>
+            <span v-if="caseData.word_count">全书约 {{ caseData.word_count }} 字</span>
+            <span> · 热度 {{ caseData.heat }}</span>
+            <span v-if="caseData.score != null"> · 评分 {{ caseData.score }}</span>
+          </p>
+          <p class="excerpt-note">以下为平台精选开篇节选，非完整连载。喜欢此风格可一键带入创作台。</p>
         </div>
       </header>
       <section v-if="body" class="body">
@@ -40,6 +47,7 @@
                 @click="trackCta('mid_read_register')"
               >免费注册开写 →</router-link>
             </aside>
+            <h2 v-else-if="block.type === 'chapter'" class="chapter-title">{{ block.text }}</h2>
             <p v-else class="body-para">{{ block.text }}</p>
           </template>
         </div>
@@ -128,16 +136,41 @@ const shareUrl = computed(() => `https://lyread.cn${sharePath.value}`)
 const coverSrc = computed(() => coverForCase(caseData.value || {}, 0))
 const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
 
-/** 按空行拆段；长文中部插入游客软 CTA，减少读完才转化的流失 */
+/** 识别「第X章 …」标题行，便于分章阅读（不改动正文内容） */
+const CHAPTER_RE = /^(第[零〇一二三四五六七八九十百千万两\d]+章(?:\s*[·\-—:：]?\s*.*)?)$/
+
+function isChapterTitle(text) {
+  const line = String(text || '').trim()
+  if (!line || line.length > 40) return false
+  if (/^——+$/.test(line) || line === '——') return false
+  return CHAPTER_RE.test(line)
+}
+
+/** 按空行拆段；章题升为 h2；长文中部插入游客软 CTA */
 const bodyBlocks = computed(() => {
   const raw = String(body.value || '').replace(/\r\n/g, '\n').trim()
   if (!raw) return []
-  const paras = raw.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
-  const blocks = paras.map((text) => ({ type: 'para', text }))
+  const paras = raw
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter((p) => p && p !== '——' && !/^——+$/.test(p))
+  const blocks = paras.map((text) => ({
+    type: isChapterTitle(text) ? 'chapter' : 'para',
+    text,
+  }))
   if (isLoggedIn.value || raw.length < 900 || blocks.length < 4) return blocks
   const insertAt = Math.max(2, Math.floor(blocks.length / 2))
   blocks.splice(insertAt, 0, { type: 'mid_cta', text: '' })
   return blocks
+})
+
+const excerptMeta = computed(() => {
+  const chapters = bodyBlocks.value.filter((b) => b.type === 'chapter').length
+  const chars = String(body.value || '').replace(/\s/g, '').length
+  const parts = []
+  if (chapters > 0) parts.push(`${chapters} 章`)
+  if (chars > 0) parts.push(`约 ${chars} 字`)
+  return parts.join(' · ')
 })
 
 const workspaceLink = computed(() => {
@@ -326,13 +359,28 @@ watch(
 .article-heading { min-width: 0; flex: 1; }
 .cat { display: inline-block; padding: 4px 10px; background: #eff6ff; color: #2563eb; border-radius: 999px; font-size: 12px; }
 h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
-.meta { color: #94a3b8; font-size: 13px; margin-bottom: 16px; }
+.meta { color: #94a3b8; font-size: 13px; margin-bottom: 8px; }
+.excerpt-note {
+  margin: 0 0 18px;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.55;
+}
 .body-text {
-  font-size: 16px;
+  font-size: 16.5px;
   line-height: 1.95;
   color: #1e2a3a;
   letter-spacing: 0.01em;
 }
+.chapter-title {
+  margin: 1.6em 0 0.75em;
+  font-size: 1.15em;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+.chapter-title:first-child { margin-top: 0.25em; }
 .body-para {
   margin: 0 0 1.05em;
   white-space: pre-wrap;

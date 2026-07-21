@@ -42,6 +42,34 @@
     <p class="pay-hint" v-if="payHint">{{ payHint }}</p>
     <p v-if="claimMsg" class="claim-msg" :class="{ ok: claimOk }">{{ claimMsg }}</p>
 
+    <section v-if="balance" class="next-steps" aria-label="下一步">
+      <p v-if="justClaimed" class="next-hint ok">
+        今日免费点已到账 · 失败不扣点，可直接去创作台开写
+      </p>
+      <p v-else-if="balance.claimed_today" class="next-hint">
+        今日免费点已领完 · 明天再来；现在可去创作台用现有点数开写
+      </p>
+      <p v-else-if="(balance.total ?? 0) < 10" class="next-hint warn">
+        可用点数偏低（{{ balance.total }} 点）· 先领每日免费，或充值后续写
+      </p>
+      <p v-else class="next-hint">
+        点数就绪 · 去创作台开写第一章；生成失败自动返还
+      </p>
+      <div class="next-actions">
+        <router-link
+          to="/workspace?mode=new"
+          class="btn-create"
+          @click="trackEvent('wallet_create_click', { category: 'conversion', label: justClaimed ? 'after_claim' : 'wallet' })"
+        >去创作台开写 →</router-link>
+        <router-link
+          v-if="(balance.total ?? 0) < 10 || balance.claimed_today"
+          to="/pricing"
+          class="btn-next-pricing"
+          @click="trackRecharge"
+        >查看充值套餐</router-link>
+      </div>
+    </section>
+
     <section class="transactions">
       <h2>消费记录</h2>
       <div v-if="loading" class="empty">加载中...</div>
@@ -86,6 +114,7 @@ const claiming = ref(false)
 const claimMsg = ref('')
 const claimOk = ref(false)
 const payHint = ref('')
+const justClaimed = ref(false)
 
 function trackRecharge() {
   trackEvent('wallet_recharge_click', { category: 'monetization', label: 'wallet' })
@@ -150,6 +179,7 @@ async function claimDaily() {
     if (res?.success) {
       claimOk.value = !!res.claimed
       claimMsg.value = res.message || (res.claimed ? '领取成功' : '今日已领取')
+      justClaimed.value = !!res.claimed
       trackEvent('wallet_claim_result', {
         category: 'monetization',
         label: res.claimed ? 'claimed' : 'already',
@@ -218,11 +248,56 @@ onMounted(() => {
 .btn-recharge {
   background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
 }
-.claim-msg { font-size: 13px; margin-bottom: 24px; color: #ef4444; }
+.claim-msg { font-size: 13px; margin-bottom: 16px; color: #ef4444; }
 .claim-msg.ok { color: #16a34a; }
 .pay-hint {
-  font-size: 13px; color: #5a6a7a; line-height: 1.55; margin: 0 0 20px;
+  font-size: 13px; color: #5a6a7a; line-height: 1.55; margin: 0 0 16px;
   padding: 10px 12px; border-radius: 10px; background: #f8fafc; border: 1px solid #e8f0fa;
+}
+.next-steps {
+  margin: 0 0 28px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f0f9ff, #fff);
+  border: 1px solid #dbeafe;
+}
+.next-hint {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.55;
+}
+.next-hint.ok { color: #166534; }
+.next-hint.warn { color: #9a3412; }
+.next-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.btn-create {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 18px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0d9488, #0f766e);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+}
+.btn-next-pricing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  border: 1px solid #bfdbfe;
 }
 
 .transactions h2 { font-size: 20px; margin-bottom: 16px; color: #1e2a3a; }
@@ -247,5 +322,7 @@ onMounted(() => {
   .balance-cards { grid-template-columns: 1fr; }
   .actions { flex-direction: column; }
   .btn-claim, .btn-recharge { width: 100%; }
+  .next-actions { flex-direction: column; }
+  .btn-create, .btn-next-pricing { width: 100%; text-align: center; }
 }
 </style>
