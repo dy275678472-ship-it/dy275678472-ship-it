@@ -24,7 +24,7 @@ KNOWLEDGE = [
         "title_en": "Variable-Frequency vs Traditional Oxygen Sensors",
         "summary": "从工作原理、输出特性到系统配套，说明变频氧传感与开关型/传统宽域氧传感的差异，以及选型时需关注的工程边界。",
         "summary_en": "Principles, output behavior, and system pairing differences between VF oxygen sensors and conventional switch/wideband types.",
-        "cover": "news/understand-o2-sensor.jpg",
+        "cover": "knowledge/cover-vf-vs-traditional.jpg",
         "related_products": ["kd0100-02s-t1", "kd0100-02s-to", "mask-o2-sensor"],
         "body": """
 <h2>一、传统氧传感器在做什么</h2>
@@ -58,7 +58,7 @@ KNOWLEDGE = [
         "title_en": "How to Choose KD0100-02S-T1 vs TO",
         "summary": "从连接方式、重量、安装空间与产线装配角度，给出探头型与插针型的选型对照，避免只看量程忽视结构约束。",
         "summary_en": "Probe vs pin selection by interconnect, weight, envelope, and assembly constraints.",
-        "cover": "products/kd0100-02s-t1.png",
+        "cover": "knowledge/cover-t1-vs-to.jpg",
         "related_products": ["kd0100-02s-t1", "kd0100-02s-to"],
         "body": """
 <h2>共同点（先对齐）</h2>
@@ -90,7 +90,7 @@ KNOWLEDGE = [
         "title_en": "What 0.5–101 kPa O₂ Partial Pressure Range Means",
         "summary": "解释氧分压量程与体积分数、总压的关系，并说明精度分档如何影响验收指标设计。",
         "summary_en": "Partial pressure vs mole fraction, and how accuracy bands affect acceptance tests.",
-        "cover": "scenes/industrial-gas.jpg",
+        "cover": "knowledge/cover-pressure-range.jpg",
         "related_products": ["kd0100-02s-t1", "kd0100-02s-to", "mask-o2-sensor"],
         "body": """
 <h2>氧分压与“氧浓度百分比”不是同一个数</h2>
@@ -124,7 +124,7 @@ KNOWLEDGE = [
         "title_en": "KD0100-03 Wiring and Heater Voltage Notes",
         "summary": "梳理探头电气定义、加热电压可选档位与操作红线，降低误接线与错误加热导致的失效风险。",
         "summary_en": "Pin definitions, heater options, and hard operational limits for KD0100-03.",
-        "cover": "products/controller-kd0100-03.webp",
+        "cover": "knowledge/cover-controller-wiring.jpg",
         "related_products": ["kd0100-02s-t1", "kd0100-02s-to"],
         "body": """
 <h2>为什么必须“传感器 + 控制器”一起谈</h2>
@@ -163,7 +163,7 @@ KNOWLEDGE = [
         "title_en": "Role of Automotive NOx Sensors in SCR / OBD",
         "summary": "从国Ⅵ排放与后处理闭环角度，说明氮氧/氧相关传感在 SCR 控制与 OBD 诊断中的位置，以及与氧分压测量能力的关系。",
         "summary_en": "How NOx/O₂ sensing supports SCR control and OBD under China VI constraints.",
-        "cover": "scenes/automotive.jpg",
+        "cover": "knowledge/cover-scr-obd.jpg",
         "related_products": ["kd0100-02s-t1", "kd0100-02s-to"],
         "body": """
 <h2>排放法规推动后处理传感升级</h2>
@@ -188,7 +188,7 @@ KNOWLEDGE = [
         "title_en": "Key Metrics for Aviation Mask Low-Temperature O₂ Sensors",
         "summary": "围绕飞行员面罩供氧监测，梳理低温型变频氧传感器应关注的量程、环境与集成指标，并指向已试制成功的产品方向。",
         "summary_en": "Range, environment, and integration metrics for low-temperature mask O₂ sensing.",
-        "cover": "scenes/aviation-mask.jpg",
+        "cover": "knowledge/cover-aviation-metrics.jpg",
         "related_products": ["mask-o2-sensor"],
         "body": """
 <h2>应用场景特征</h2>
@@ -214,7 +214,7 @@ KNOWLEDGE = [
         "title_en": "Reading Accuracy Bands (1–100 kPa)",
         "summary": "按公开精度分档解释如何设计抽检点与判定准则，避免用单点误差否定全量程能力。",
         "summary_en": "How to design sampling points and pass/fail rules from published accuracy bands.",
-        "cover": "products/exploded.webp",
+        "cover": "knowledge/cover-accuracy-curve.jpg",
         "related_products": ["kd0100-02s-t1", "kd0100-02s-to"],
         "body": """
 <h2>精度是“分档”而不是一条直线</h2>
@@ -239,7 +239,7 @@ KNOWLEDGE = [
         "title_en": "Avoiding Probe Burns and Permanent Damage",
         "summary": "汇总安装、操作与维护中的高风险动作，形成可执行的作业检查单。",
         "summary_en": "A practical checklist to avoid tip burns and irreversible sensor damage.",
-        "cover": "scenes/industrial-steam.webp",
+        "cover": "knowledge/cover-safety-maintenance.jpg",
         "related_products": ["kd0100-02s-t1", "kd0100-02s-to", "mask-o2-sensor"],
         "body": """
 <h2>两类风险</h2>
@@ -268,7 +268,7 @@ KNOWLEDGE = [
         "title_en": "Complete Selection Guide: T1, TO, or Mask Oxygen Sensor?",
         "summary": "从气体环境、安装约束、量程、精度与控制器匹配四个维度系统梳理三款 KD0100 系列传感器的适用场景与差异，帮助工程师快速缩小选型范围。",
         "summary_en": "A systematic four-dimension framework—gas environment, mounting, range, accuracy, and controller matching—to narrow down T1, TO, or mask-type selections.",
-        "cover": "products/kd0100-02s-t1.png",
+        "cover": "knowledge/cover-t1-vs-to.jpg",
         "related_products": ["kd0100-02s-t1", "kd0100-02s-to", "mask-o2-sensor"],
         "body": """
 <h2>一、选型前必须明确的四个问题</h2>
@@ -326,7 +326,7 @@ KNOWLEDGE = [
         "title_en": "China VI Emission Standards: Requirements and Impact on Oxygen Sensors",
         "summary": "梳理国六（GB18352.6-2016 / 重型 GB17691-2018）对排放后处理系统中氧传感器及氮氧传感器的具体要求，分析其对传感器选型和系统集成的影响。",
         "summary_en": "How China VI light- and heavy-duty emission standards drive oxygen and NOx sensor requirements in aftertreatment systems.",
-        "cover": "news/nox-sensor-market.jpg",
+        "cover": "knowledge/cover-scr-obd.jpg",
         "related_products": ["kd0100-02s-t1", "kd0100-02s-to"],
         "body": """
 <h2>一、国六标准背景</h2>
@@ -374,7 +374,7 @@ KNOWLEDGE = [
         "title_en": "Working Principle of Zirconia (ZrO₂) Solid-Electrolyte Oxygen Sensors",
         "summary": "从能斯特方程与混合电位机制出发，系统说明氧化锆固体电解质的离子导电特性、传统开关型与宽域型氧传感器的工作差异，以及变频氧传感对传统路线的改进之处。",
         "summary_en": "From Nernst equation to mixed-potential mechanisms—how ZrO₂ ionic conductors power both conventional and variable-frequency oxygen sensors.",
-        "cover": "products/exploded.webp",
+        "cover": "knowledge/cover-vf-vs-traditional.jpg",
         "related_products": ["kd0100-02s-t1", "kd0100-02s-to"],
         "body": """
 <h2>一、固体电解质的离子导电性</h2>
@@ -417,7 +417,7 @@ KNOWLEDGE = [
         "title_en": "Oxygen Sensor Fault Diagnosis: Common Issues and Troubleshooting",
         "summary": "梳理 KD0100 系列氧传感器常见故障现象（读数偏高/偏低/无响应/漂移），结合硬件检查、气路排查与控制器自检，给出系统性排查流程。",
         "summary_en": "Systematic troubleshooting for KD0100-series issues: high/low readings, no response, and drift—hardware check, gas-path inspection, and controller self-test.",
-        "cover": "products/probe-alt.png",
+        "cover": "knowledge/cover-safety-maintenance.jpg",
         "related_products": ["kd0100-02s-t1", "kd0100-02s-to"],
         "body": """
 <h2>一、排查前提：先确认这三件事</h2>
@@ -468,7 +468,7 @@ KNOWLEDGE = [
         "title_en": "Domestic Variable-Frequency vs Imported Oxygen Sensors: A Comparative Analysis",
         "summary": "从技术路线、指标可比性、供应链安全、价格与技术支持五个维度，客观分析国产变频氧传感器与传统进口宽域氧传感器的差异，供工程师选型参考。",
         "summary_en": "A five-dimension comparison—technology, specs, supply chain, pricing, and support—between domestic VF and imported wideband oxygen sensors.",
-        "cover": "news/nox-sensor-market.jpg",
+        "cover": "knowledge/cover-scr-obd.jpg",
         "related_products": ["kd0100-02s-t1", "kd0100-02s-to"],
         "body": """
 <h2>一、前提说明</h2>
@@ -522,7 +522,7 @@ CASES = [
         "title_en": "Pilot Mask O₂ Monitoring — Low-Temperature Sensor Prototyping",
         "summary": "面向面罩气路的低温氧分压监测需求，完成低温型变频氧传感器试制与联调，验证量程与集成可行性。",
         "summary_en": "Low-temperature VF O₂ sensor prototyping for mask gas-path monitoring.",
-        "cover": "scenes/aviation-mask.jpg",
+        "cover": "cases/case-aviation-mask.jpg",
         "product_slugs": ["mask-o2-sensor"],
         "challenge": "客户需在飞行员面罩供氧链路中增加氧相关监测能力：工作环境偏低温、安装空间受限，且必须与面罩/软管结构协同，不能简单套用汽车排气氧传感器方案。测量目标以氧分压表征，期望覆盖任务剖面相关范围。",
         "solution": "采用公司面罩用低温型变频式氧传感器试制件，围绕 0.5 ~ 101 kPa 氧分压能力与面罩气路接口进行结构适配；电气上按生命保障设备方提供的连接规范联调，形成“传感器样件 + 测试记录 + 问题闭环清单”的交付包。",
@@ -550,7 +550,7 @@ CASES = [
         "title_en": "Process Line O₂ Partial-Pressure Monitoring — Probe Integration",
         "summary": "在不锈钢工艺管路上集成 KD0100-02S-T1 探头与 KD0100-03，建立可验收的氧分压在线监测点。",
         "summary_en": "KD0100-02S-T1 + KD0100-03 integration for online O₂ partial-pressure points.",
-        "cover": "scenes/industrial-gas.jpg",
+        "cover": "cases/case-industrial-monitoring.jpg",
         "product_slugs": ["kd0100-02s-t1"],
         "challenge": "集成商需要为客户工艺气体管路增加氧分压在线监测：介质可能为空气/氮氧混合，总压与组分变化导致“百分比显示”易误导；现场希望线束探头便于法兰/管接头改造，并能量化验收。",
         "solution": "选用 KD0100-02S-T1（线束探头）+ KD0100-03 控制器：以氧分压 0.5–101 kPa 为设计量程；安装点控制气流速率与气体温度处于公开允许范围；按白/蓝/红/灰/绿电气定义完成柜内接线，并按精度分档设计抽检点。",
@@ -578,7 +578,7 @@ CASES = [
         "title_en": "Compact Instrument Embedding — Pin-Type O₂ Module",
         "summary": "在重量与空间受限的仪器内部，采用 KD0100-02S-TO 插针方案完成板级化连接与样机验证。",
         "summary_en": "KD0100-02S-TO pin module for weight/space-constrained instrument OEM.",
-        "cover": "products/kd0100-02s-to.png",
+        "cover": "cases/case-pin-integration.jpg",
         "product_slugs": ["kd0100-02s-to"],
         "challenge": "OEM 仪器内部空间紧张，传统线束探头增加装配工时与重量；希望探头重量显著下降，并以插针方式对接内部转接板，同时保持与 T1 相同的氧分压量程与控制器生态。",
         "solution": "采用 KD0100-02S-TO（插针型，探头重量 ≦5 g）+ KD0100-03：在样机中验证插针定位、尺寸公差（≦0.5 mm）与抗振安装；电气上按控制器手册完成对接，避免加热/信号误插。",
@@ -606,7 +606,7 @@ CASES = [
         "title_en": "Diesel SCR / OBD Gas Sensing Evaluation (In Progress)",
         "summary": "围绕国Ⅵ后处理与 OBD 需求，开展氧/氮氧相关传感路线评估与台架方案设计，尚未进入车规量产认定。",
         "summary_en": "Evaluation of O₂/NOx-related sensing for China VI SCR/OBD — not yet series-production certified.",
-        "cover": "scenes/automotive.jpg",
+        "cover": "cases/case-scr-obd.jpg",
         "product_slugs": ["kd0100-02s-t1", "kd0100-02s-to"],
         "challenge": "配套商需评估排气侧气体传感在 SCR 闭环与 OBD 监控中的补充/替代路径：关注响应、耐久、抗污染与法规符合性，同时希望先用可量化的氧分压测量能力做台架方法验证。",
         "solution": "以 KD0100 系列氧分压测量能力作为台架方法验证工具之一，结合客户台架工况设计采样点；同步梳理车规级氮氧传感量产所需的认证、耐久与供应链条件，输出《可行性与缺口清单》。",

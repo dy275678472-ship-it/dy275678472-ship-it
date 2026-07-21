@@ -57,6 +57,28 @@ MAP = {
     "07-03-icon-response": "contact/icon-response",
     "07-04-icon-24h": "contact/icon-24h",
     "07-05-icon-location": "contact/icon-location",
+    # knowledge covers + banner
+    "cover-vf-vs-traditional": "knowledge/cover-vf-vs-traditional",
+    "cover-t1-vs-to": "knowledge/cover-t1-vs-to",
+    "cover-pressure-range": "knowledge/cover-pressure-range",
+    "cover-controller-wiring": "knowledge/cover-controller-wiring",
+    "cover-scr-obd": "knowledge/cover-scr-obd",
+    "cover-aviation-metrics": "knowledge/cover-aviation-metrics",
+    "cover-accuracy-curve": "knowledge/cover-accuracy-curve",
+    "cover-safety-maintenance": "knowledge/cover-safety-maintenance",
+    "knowledge-banner": "knowledge/banner",
+    # industry cases
+    "case-aviation-mask": "cases/case-aviation-mask",
+    "case-aviation-mask-process": "cases/case-aviation-mask-process",
+    "case-industrial-monitoring": "cases/case-industrial-monitoring",
+    "case-industrial-monitoring-process": "cases/case-industrial-monitoring-process",
+    "case-pin-integration": "cases/case-pin-integration",
+    "case-pin-integration-process": "cases/case-pin-integration-process",
+    "case-scr-obd": "cases/case-scr-obd",
+    "cases-banner": "cases/banner",
+    # EN / decorative
+    "hero-en": "home/hero-en",
+    "footer-texture": "footer-texture",
 }
 
 
@@ -64,30 +86,54 @@ def find_cwebp() -> str | None:
     return shutil.which("cwebp") or shutil.which("magick")
 
 
+def _open_resized(src: Path, max_w: int = 1600):
+    from PIL import Image
+
+    im = Image.open(src)
+    if src.suffix.lower() == ".png" and "icon" in src.stem.lower():
+        im = im.convert("RGBA")
+    else:
+        im = im.convert("RGB")
+    if im.width > max_w:
+        h = int(im.height * (max_w / im.width))
+        im = im.resize((max_w, h), Image.Resampling.LANCZOS)
+    return im
+
+
 def to_webp(src: Path, dst: Path, quality: int = 82) -> bool:
     dst.parent.mkdir(parents=True, exist_ok=True)
-    cwebp = shutil.which("cwebp")
-    if cwebp:
-        r = subprocess.run(
-            [cwebp, "-q", str(quality), str(src), "-o", str(dst)],
-            capture_output=True,
-        )
-        return r.returncode == 0 and dst.exists()
-    # Pillow fallback
+    max_w = 1920 if "banner" in src.stem.lower() or "hero" in src.stem.lower() else 1600
     try:
-        from PIL import Image
-
-        im = Image.open(src).convert("RGBA" if src.suffix.lower() == ".png" else "RGB")
-        if dst.suffix == ".webp":
-            if im.mode == "RGBA":
-                im.save(dst, "WEBP", quality=quality, method=6)
-            else:
-                im.save(dst, "WEBP", quality=quality, method=6)
+        im = _open_resized(src, max_w=max_w)
+        im.save(dst, "WEBP", quality=quality, method=6)
         return dst.exists()
     except Exception as e:
         print("webp fail", src.name, e)
-        # copy original as fallback with preferred name + original ext
+        cwebp = shutil.which("cwebp")
+        if cwebp:
+            r = subprocess.run(
+                [cwebp, "-q", str(quality), str(src), "-o", str(dst)],
+                capture_output=True,
+            )
+            return r.returncode == 0 and dst.exists()
         return False
+
+
+def write_compressed_orig(src: Path, dst: Path) -> None:
+    """Write a resized JPEG/PNG sibling so dist stays lean."""
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    suffix = src.suffix.lower().replace("jpeg", "jpg")
+    max_w = 1920 if "banner" in src.stem.lower() or "hero" in src.stem.lower() else 1600
+    try:
+        im = _open_resized(src, max_w=max_w)
+        if suffix == ".png" and im.mode == "RGBA":
+            im.save(dst, "PNG", optimize=True)
+        else:
+            if dst.suffix.lower() != ".jpg":
+                dst = dst.with_suffix(".jpg")
+            im.convert("RGB").save(dst, "JPEG", quality=85, optimize=True)
+    except Exception:
+        shutil.copy2(src, dst)
 
 
 def normalize_stem(name: str) -> str:
@@ -132,12 +178,12 @@ def main():
             print("SKIP unknown name:", src.name, "→ stem", key)
             continue
 
-        # also copy original as .jpg/.png for <picture> fallback
+        # also copy compressed original as .jpg/.png for <picture> fallback
         out_orig = DIST_IMG / f"{rel}{src.suffix.lower().replace('jpeg', 'jpg')}"
-        out_orig.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src, out_orig)
+        write_compressed_orig(src, out_orig)
         # QR codes stay PNG for scan reliability
         if "wechat" in rel or "qr" in rel:
+            shutil.copy2(src, out_orig)
             print("COPIED (png keep)", src.name, "→", rel)
             done += 1
             continue

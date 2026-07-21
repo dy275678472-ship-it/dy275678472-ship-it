@@ -660,6 +660,9 @@ def main():
     hero_bg = ""
     if has_asset("home/hero-oxygen-sensor.jpg") or has_asset("home/hero-oxygen-sensor.webp"):
         hero_bg = f'style="background-image:linear-gradient(100deg,rgba(7,20,38,.88) 0%,rgba(7,20,38,.55) 45%,rgba(7,20,38,.35) 100%),url(\'{asset_url("home/hero-oxygen-sensor.jpg")}\');background-size:cover;background-position:center right"'
+    hero_bg_en = hero_bg
+    if has_asset("home/hero-en.jpg") or has_asset("home/hero-en.webp"):
+        hero_bg_en = f'style="background-image:linear-gradient(100deg,rgba(7,20,38,.88) 0%,rgba(7,20,38,.55) 45%,rgba(7,20,38,.35) 100%),url(\'{asset_url("home/hero-en.jpg")}\');background-size:cover;background-position:center right"'
 
     pages["index.html"] = page(
         "中科国瓷 — 变频氧传感器与氮氧传感技术",
@@ -1001,7 +1004,7 @@ def main():
     pages["knowledge/index.html"] = page(
         "知识库 — 中科国瓷",
         "变频氧传感器与氮氧传感知识库：原理、选型、应用与维护",
-        f"""{page_hero("知识库", "严谨技术内容 · 对齐公开产品规格 · 服务选型决策", "news/banner.jpg")}
+        f"""{page_hero("知识库", "严谨技术内容 · 对齐公开产品规格 · 服务选型决策", "knowledge/banner.jpg")}
 <section class="kb-section"><div class="container">
 <p class="kb-lead">以下文章参数均对齐公司公开规格（氧分压 0.5–101 kPa、KD0100-03 配套等），不编造未公开指标。文末提供相关产品与咨询入口。</p>
 <nav class="kb-cats">{cat_nav}</nav>
@@ -1056,7 +1059,7 @@ def main():
     pages["cases/index.html"] = page(
         "行业案例 — 中科国瓷",
         "中科国瓷行业案例：航空生命保障、工业气体监测、仪器 OEM、后处理评估（客户名脱敏）",
-        f"""{page_hero("行业案例", "基于真实行业需求编写 · 客户名称均以代名词脱敏", "products/banner.jpg")}
+        f"""{page_hero("行业案例", "基于真实行业需求编写 · 客户名称均以代名词脱敏", "cases/banner.jpg")}
 <section class="cases-section"><div class="container">
 <p class="kb-lead">案例结构包含挑战、方案、实施节点与可核对结果。涉及客户主体一律使用代名词；量化结论限于公开规格与可披露的项目口径。</p>
 <div class="case-grid">{case_cards}</div>
@@ -1069,6 +1072,12 @@ def main():
         prod_links = " ".join(
             f'<a href="/products/{s}.html" class="tag">{product_name(s)}</a>' for s in c["product_slugs"]
         )
+        process = c.get("process")
+        process_html = (
+            f'<figure class="article-cover article-cover--process"><img src="{asset_url(process)}" alt="{c["title"]} · 过程"></figure>'
+            if process and has_asset(process)
+            else ""
+        )
         pages[f"cases/{c['slug']}.html"] = page(
             f"{c['title']} — 中科国瓷",
             c["summary"],
@@ -1080,6 +1089,7 @@ def main():
 </div></section>
 <section class="article-section"><div class="container article-layout">
 <figure class="article-cover"><img src="{asset_url(c['cover'])}" alt="{c['title']}"></figure>
+{process_html}
 <div class="article-body content-block">
 <div class="case-panel"><h2>挑战</h2><p>{c['challenge']}</p></div>
 <div class="case-panel"><h2>方案</h2><p>{c['solution']}</p></div>
@@ -1194,7 +1204,7 @@ def main():
     pages["en/index.html"] = page(
         "ZK Guoci — Variable-Frequency Oxygen Sensors",
         "Anhui ZK Guoci New Components Co., Ltd. — variable-frequency oxygen sensors and NOx sensing technology. USTC tech transfer.",
-        f"""<section class="hero"><div class="hero-bg" {hero_bg}></div><div class="hero-content">
+        f"""<section class="hero"><div class="hero-bg" {hero_bg_en}></div><div class="hero-content">
 <div class="hero-badge">USTC Tech Transfer · Sensing the Future</div>
 <h1>Anhui ZK Guoci<br><em>Variable-Frequency Oxygen Sensors</em></h1>
 <p>0.5–101 kPa · Automotive / Aviation mask / Industrial gas · 5-year warranty</p>
@@ -1384,7 +1394,7 @@ def main():
     pages["en/knowledge.html"] = page(
         "Knowledge Base — ZK Guoci",
         "Technical knowledge base for variable-frequency oxygen sensors: principles, selection, applications, maintenance",
-        f"""{page_hero("Knowledge Base", "Rigorous articles aligned to published specs · Chinese full text", "news/banner.jpg")}
+        f"""{page_hero("Knowledge Base", "Rigorous articles aligned to published specs · Chinese full text", "knowledge/banner.jpg")}
 <section class="kb-section"><div class="container">
 <p class="kb-lead">English pages provide abstracts. Full technical articles are maintained in Chinese to keep parameters consistent with product datasheets.</p>
 <div class="kb-list">{en_kb}</div>
@@ -1407,7 +1417,7 @@ def main():
     pages["en/cases.html"] = page(
         "Industry Cases — ZK Guoci",
         "Industry cases with anonymized customers: aviation life support, industrial gas monitoring, OEM, aftertreatment evaluation",
-        f"""{page_hero("Industry Cases", "Based on real industry needs · Customer names anonymized", "products/banner.jpg")}
+        f"""{page_hero("Industry Cases", "Based on real industry needs · Customer names anonymized", "cases/banner.jpg")}
 <section class="cases-section"><div class="container">
 <p class="kb-lead">Challenge / Solution / Results are summarized in English titles; full write-ups are in Chinese with anonymized customers.</p>
 <div class="case-grid">{en_cases}</div>
