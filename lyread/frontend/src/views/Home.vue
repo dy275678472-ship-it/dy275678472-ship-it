@@ -90,6 +90,12 @@
           </div>
         </router-link>
       </div>
+      <div v-if="!casesLoading && hotCases.length && !isLoggedIn" class="hot-guest-cta">
+        <p>喜欢这些风格？注册送 30 点，用同题材开写</p>
+        <button type="button" class="btn-hot-register" @click="goRegisterContinue('home_hot_cases')">
+          免费注册开写 →
+        </button>
+      </div>
     </section>
 
     <!-- 用户评价 -->
@@ -243,7 +249,10 @@ function goWorkspaceContinue() {
 
 function goRegisterContinue(label = 'continue_after_title') {
   const eventLabel = typeof label === 'string' ? label : 'continue_after_title'
-  const redirect = `/workspace?${new URLSearchParams(workspaceQuery()).toString()}`
+  const redirect =
+    eventLabel === 'home_hot_cases'
+      ? '/workspace?mode=new'
+      : `/workspace?${new URLSearchParams(workspaceQuery()).toString()}`
   router.push({ path: '/login', query: { redirect, mode: 'register' } })
   showTrialModal.value = false
   trackEvent('trial_register_cta', { category: 'funnel', label: eventLabel })
@@ -517,6 +526,32 @@ const startTrial = async (append = false) => {
 
 .hot-section { padding: 40px 24px; max-width: 1200px; margin: 0 auto; }
 .hot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.hot-guest-cta {
+  margin-top: 28px;
+  text-align: center;
+  padding: 20px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(77, 161, 255, 0.08), rgba(37, 99, 235, 0.06));
+  border: 1px solid rgba(147, 197, 253, 0.45);
+}
+.hot-guest-cta p {
+  margin: 0 0 12px;
+  color: #5a6a7a;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.btn-hot-register {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px 22px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #4da1ff, #2563eb);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+}
+.btn-hot-register:hover { filter: brightness(1.05); }
 .hot-card {
   background: var(--lyread-card-bg);
   border-radius: 16px;

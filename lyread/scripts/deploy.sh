@@ -2,7 +2,7 @@
 # LyRead 一键部署（在服务器 ~/lyread-deploy 目录执行）
 set -euo pipefail
 
-BRANCH="${BRANCH:-cursor/lyread-a016}"
+BRANCH="${BRANCH:-cursor/lyread-eac8}"
 REPO_DIR="${REPO_DIR:-$HOME/lyread-deploy}"
 ENV_FILE="${ENV_FILE:-/tmp/lyread.env}"
 NETWORK="${DOCKER_NETWORK:-lyread-net}"
@@ -47,9 +47,12 @@ bash "$REPO_DIR/lyread/scripts/seed_showcase_cases.sh" || true
 
 echo "=== frontend build ==="
 cd lyread/frontend
-if [ -f "${FRONTEND_ENV_FILE:-/tmp/lyread-frontend.env}" ]; then
-  cp "${FRONTEND_ENV_FILE:-/tmp/lyread-frontend.env}" .env.production
-  echo "Using frontend analytics env from ${FRONTEND_ENV_FILE:-/tmp/lyread-frontend.env}"
+FRONTEND_ENV_PATH="${FRONTEND_ENV_FILE:-/tmp/lyread-frontend.env}"
+if [ -f "$FRONTEND_ENV_PATH" ]; then
+  cp "$FRONTEND_ENV_PATH" .env.production
+  echo "Using frontend analytics env from $FRONTEND_ENV_PATH"
+else
+  echo "WARN: no $FRONTEND_ENV_PATH — Baidu/GA4 IDs will be empty unless set in shell"
 fi
 npm install --silent
 npm run build

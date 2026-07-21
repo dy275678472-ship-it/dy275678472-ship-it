@@ -3,7 +3,13 @@
     <header class="hero">
       <img :src="images.features.novel" alt="案例阅读" class="hero-icon" width="40" height="40" />
       <h1>案例阅读</h1>
-      <p>平台真实生成案例，点击阅读全文，或用这个风格开始创作</p>
+      <p>{{ heroSubtitle }}</p>
+      <router-link
+        v-if="!isLoggedIn"
+        class="hero-register"
+        :to="{ path: '/login', query: { mode: 'register', redirect: '/workspace?mode=new' } }"
+        @click="trackHeroRegister"
+      >免费注册，送 30 点 →</router-link>
     </header>
 
     <div v-if="categories.length" class="chip-row" role="tablist" aria-label="案例分类">
@@ -91,6 +97,13 @@ const loading = ref(true)
 const activeCategory = ref('')
 const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
 
+/** 游客首屏强调注册赠点，缩短案例浏览 → 注册路径 */
+const heroSubtitle = computed(() =>
+  isLoggedIn.value
+    ? '平台真实生成案例，点击阅读全文，或用这个风格开始创作'
+    : '平台真实生成案例。注册送 30 点，约可 AI 续写 3 章；读完即可用同风格开写',
+)
+
 const categories = computed(() => {
   const seen = new Set()
   const list = []
@@ -156,6 +169,10 @@ function trackFooterCta() {
   })
 }
 
+function trackHeroRegister() {
+  trackEvent('trending_hero_register', { category: 'conversion', label: 'guest' })
+}
+
 function onCaseClick(c) {
   trackEvent('case_click', {
     category: 'funnel',
@@ -179,7 +196,19 @@ onMounted(async () => {
 .hero { text-align: center; margin-bottom: 28px; }
 .hero-icon { display: block; margin: 0 auto 12px; }
 .hero h1 { font-size: 28px; color: #1e2a3a; margin-bottom: 8px; }
-.hero p { color: #5a6a7a; }
+.hero p { color: #5a6a7a; max-width: 36em; margin: 0 auto; line-height: 1.55; }
+.hero-register {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #4da1ff, #2563eb);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+}
+.hero-register:hover { filter: brightness(1.05); }
 .chip-row {
   display: flex;
   flex-wrap: wrap;

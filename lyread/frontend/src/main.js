@@ -19,7 +19,7 @@ const routes = [
   { path: '/reader', component: () => import('./views/Workspace.vue'), meta: { title: '长篇小说 - LyRead AI', desc: '开始你的长篇小说创作。' }},
   { path: '/story', component: () => import('./views/ShortStory.vue'), meta: { title: '短故事一键生成 - LyRead AI', desc: '预览题材与灵感模板，注册后一键生成约 3000 字完整短篇；注册送 30 点。' }},
   { path: '/case/:id', component: () => import('./views/CaseReader.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '阅读平台 AI 生成案例。' }},
-  { path: '/trending', component: () => import('./views/Trending.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '浏览平台生成案例。' }},
+  { path: '/trending', component: () => import('./views/Trending.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '浏览 LyRead 真实 AI 生成小说案例；注册送 30 点，可用同风格开写长篇或短故事。' }},
   { path: '/admin', component: () => import('./views/Admin.vue'), meta: { title: '运营后台 - LyRead AI', desc: '管理员控制台。' }},
 ]
 
