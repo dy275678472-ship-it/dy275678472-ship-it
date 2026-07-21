@@ -127,7 +127,7 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="/products/kd0100-02s-t1.html">KD0100-02S-T1 探头</a>
 <a href="/products/kd0100-02s-to.html">KD0100-02S-TO 插针</a>
 <a href="/products/mask-o2-sensor.html">面罩用氧传感器</a></div>
-<div><h4>公司</h4><a href="/">首页</a><a href="/products/">产品中心</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">行业案例</a><a href="/about/">关于中科国瓷</a></div>
+<div><h4>公司</h4><a href="/products/">产品中心</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">行业案例</a><a href="/about/">关于中科国瓷</a></div>
 <div><h4>联系</h4><a href="mailto:{EMAIL}">{EMAIL}</a><br>
 <a href="tel:{PHONE}">{PHONE_DISPLAY}</a>
 <p style="font-size:13px;margin-top:8px">{ADDRESS}</p>
@@ -185,7 +185,6 @@ FOOTER_EN = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="/en/products/kd0100-02s-to.html">KD0100-02S-TO Pin</a>
 <a href="/en/products/mask-o2-sensor.html">Mask O₂ Sensor</a></div>
 <div><h4>Company</h4>
-<a href="/en/">Home</a>
 <a href="/en/products.html">Products</a>
 <a href="/en/news.html">News</a>
 <a href="/en/knowledge.html">Knowledge</a>
