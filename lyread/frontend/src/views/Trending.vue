@@ -44,9 +44,9 @@
         >查看全部案例</button>
         <router-link
           class="btn-cta-sm"
-          :to="emptyWorkspaceLink"
+          :to="emptyCtaLink"
           @click="trackEmptyWrite"
-        >{{ activeCategory ? '用这个风格开写' : '开始创作' }} →</router-link>
+        >{{ emptyCtaLabel }}</router-link>
       </div>
     </EmptyState>
     <div v-else class="case-grid">
@@ -71,7 +71,8 @@
     </div>
 
     <div class="cta">
-      <router-link :to="{ path: '/workspace', query: { mode: 'new' } }" class="btn-cta">用这个风格开始创作 →</router-link>
+      <p v-if="!isLoggedIn" class="guest-cta-hint">注册送 30 点，约可 AI 续写 3 章</p>
+      <router-link :to="footerCtaLink" class="btn-cta" @click="trackFooterCta">{{ footerCtaLabel }}</router-link>
     </div>
   </div>
 </template>
@@ -88,6 +89,7 @@ const images = IMAGES
 const cases = ref([])
 const loading = ref(true)
 const activeCategory = ref('')
+const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
 
 const categories = computed(() => {
   const seen = new Set()
@@ -115,6 +117,26 @@ const emptyWorkspaceLink = computed(() => {
   }
 })
 
+/** 游客直达注册并带回创作台意图，与 CaseReader 漏斗对齐 */
+function withRegisterRedirect(ws) {
+  if (isLoggedIn.value) return ws
+  const q = new URLSearchParams(ws.query || {}).toString()
+  const redirect = q ? `${ws.path}?${q}` : ws.path
+  return { path: '/login', query: { mode: 'register', redirect } }
+}
+
+const emptyCtaLink = computed(() => withRegisterRedirect(emptyWorkspaceLink.value))
+const emptyCtaLabel = computed(() => {
+  if (isLoggedIn.value) return activeCategory.value ? '用这个风格开写 →' : '开始创作 →'
+  return activeCategory.value ? '注册送 30 点，开写 →' : '免费注册，开始创作（送 30 点）→'
+})
+
+const footerWorkspaceLink = computed(() => ({ path: '/workspace', query: { mode: 'new' } }))
+const footerCtaLink = computed(() => withRegisterRedirect(footerWorkspaceLink.value))
+const footerCtaLabel = computed(() =>
+  isLoggedIn.value ? '用这个风格开始创作 →' : '免费注册，用这个风格开写（送 30 点）→',
+)
+
 function selectCategory(cat) {
   activeCategory.value = cat
   trackEvent('trending_filter', { category: 'funnel', label: cat || 'all' })
@@ -123,7 +145,14 @@ function selectCategory(cat) {
 function trackEmptyWrite() {
   trackEvent('trending_empty_cta', {
     category: 'conversion',
-    label: activeCategory.value || 'all',
+    label: `${isLoggedIn.value ? 'user' : 'guest'}:${activeCategory.value || 'all'}`,
+  })
+}
+
+function trackFooterCta() {
+  trackEvent('trending_footer_cta', {
+    category: 'conversion',
+    label: isLoggedIn.value ? 'user' : 'guest',
   })
 }
 
@@ -225,6 +254,12 @@ onMounted(async () => {
 .excerpt { font-size: 12px; color: #64748b; line-height: 1.5; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .meta { display: flex; gap: 12px; font-size: 12px; color: #94a3b8; }
 .cta { text-align: center; }
+.guest-cta-hint {
+  margin: 0 0 10px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
 .btn-cta {
   display: inline-block; padding: 14px 28px; border-radius: 12px;
   background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
