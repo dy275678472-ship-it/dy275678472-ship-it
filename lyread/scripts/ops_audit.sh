@@ -124,6 +124,16 @@ echo "[4] Creation APIs"
 if curl -sf "$BASE_URL/api/credits/prices" | grep -q signup_bonus; then ok "credits/prices"; else bad "credits/prices"; fi
 if curl -sf "$BASE_URL/api/cases" | grep -q '"success":true'; then ok "public cases"; else bad "public cases"; fi
 
+# 题材 OG / 封面光栅资源（社交爬虫不吃 SVG）
+echo ""
+echo "[4b] Genre OG assets"
+OG_OK=0
+for f in og-genre-xianxia.webp og-genre-romance.webp og-genre-scifi.webp og-genre-suspense.webp og-genre-history.webp cover-xianxia.webp cover-romance.webp; do
+  code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/images/$f")
+  if [[ "$code" == "200" ]]; then OG_OK=$((OG_OK + 1)); fi
+done
+if [[ "$OG_OK" -ge 7 ]]; then ok "genre OG/cover webp assets ($OG_OK/7)"; else bad "genre OG/cover webp assets ($OG_OK/7)"; fi
+
 # --- 5. 安全 ---
 echo ""
 echo "[5] Security"

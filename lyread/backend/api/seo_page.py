@@ -32,44 +32,48 @@ def get_db():
         return None
 
 
-def _cover_path_for_category(category: str) -> str:
-    """与前端 coverForCase 对齐的题材封面路径。"""
+def _genre_key_for_category(category: str) -> str:
+    """与前端 genreKeyForCase 对齐的题材键。"""
     cat = str(category or "").lower()
     if any(k in cat for k in ("仙侠", "玄幻", "修仙")):
-        return "/images/cover-xianxia.svg"
+        return "xianxia"
     if any(k in cat for k in ("言情", "甜宠", "恋爱")):
-        return "/images/cover-romance.svg"
+        return "romance"
     if any(k in cat for k in ("科幻", "脑洞", "末世")):
-        return "/images/cover-scifi.svg"
+        return "scifi"
     if any(k in cat for k in ("悬疑", "推理", "惊悚")):
-        return "/images/cover-suspense.svg"
+        return "suspense"
     if any(k in cat for k in ("历史", "架空", "宫廷")):
-        return "/images/cover-history.svg"
+        return "history"
     if any(k in cat for k in ("战神", "都市", "神豪")):
-        return "/images/cover-warrior.webp"
+        return "warrior"
     if any(k in cat for k in ("重生", "穿越")):
-        return "/images/cover-reborn.webp"
+        return "reborn"
     if any(k in cat for k in ("系统", "游戏", "竞技", "校园", "青春")):
-        return "/images/cover-urban.webp"
-    return "/images/cover-urban.webp"
+        return "urban"
+    return "urban"
+
+
+def _cover_path_for_category(category: str) -> str:
+    """与前端 coverForCase 对齐的题材封面路径（webp，OG/列表共用）。"""
+    key = _genre_key_for_category(category)
+    return f"/images/cover-{key}.webp"
 
 
 def _og_image_for_category(category: str) -> str:
-    """OG 分享图：优先题材封面；SVG 不被多数爬虫支持时回退默认图。"""
-    path = _cover_path_for_category(category)
-    if path.endswith(".svg"):
-        return DEFAULT_OG_IMAGE
+    """OG 分享图：题材 1200×630 webp（社交爬虫兼容），缺省回退默认图。"""
+    key = _genre_key_for_category(category)
+    path = f"/images/og-genre-{key}.webp"
     return f"{SITE_BASE}{path}"
 
 
 def _seo_html(**kwargs) -> str:
-    """PAGE_TEMPLATE 填充，默认 OG 图为站点分享图。"""
+    """PAGE_TEMPLATE 填充，默认 OG 图为站点分享图；题材 OG 均为 1200×630。"""
     kwargs.setdefault("site_base", SITE_BASE)
     kwargs.setdefault("og_image", DEFAULT_OG_IMAGE)
     if "og_image_size_tags" not in kwargs:
-        kwargs["og_image_size_tags"] = (
-            DEFAULT_OG_SIZE_TAGS if kwargs["og_image"] == DEFAULT_OG_IMAGE else ""
-        )
+        # 默认图与 og-genre-* 均为 1200×630
+        kwargs["og_image_size_tags"] = DEFAULT_OG_SIZE_TAGS
     return PAGE_TEMPLATE.format(**kwargs)
 
 
