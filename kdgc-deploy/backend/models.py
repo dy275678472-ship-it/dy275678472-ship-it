@@ -40,6 +40,55 @@ class Lead(Base):
     requirement: Mapped[str | None] = mapped_column(Text)
     source: Mapped[str] = mapped_column(String(50), default="website")
     status: Mapped[str] = mapped_column(String(30), default="new")
+    assignee: Mapped[str | None] = mapped_column(String(80))
+    notes: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), onupdate=func.now())
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    actor: Mapped[str] = mapped_column(String(80), nullable=False)
+    role: Mapped[str] = mapped_column(String(30), nullable=False)
+    action: Mapped[str] = mapped_column(String(80), nullable=False)
+    target: Mapped[str | None] = mapped_column(String(120))
+    detail: Mapped[str | None] = mapped_column(Text)
+    ip: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Ticket(Base):
+    __tablename__ = "tickets"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    public_id: Mapped[str] = mapped_column(String(36), unique=True, nullable=False, index=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    category: Mapped[str] = mapped_column(String(40), default="support")  # support|sales|tech
+    status: Mapped[str] = mapped_column(String(30), default="open", index=True)  # open|progress|done
+    priority: Mapped[str] = mapped_column(String(20), default="normal")  # low|normal|high
+    requester_name: Mapped[str | None] = mapped_column(String(100))
+    requester_contact: Mapped[str | None] = mapped_column(String(120))
+    body: Mapped[str | None] = mapped_column(Text)
+    assignee: Mapped[str | None] = mapped_column(String(80))
+    chat_session_id: Mapped[int | None] = mapped_column(Integer, index=True)
+    lead_id: Mapped[int | None] = mapped_column(Integer, index=True)
+    created_by: Mapped[str | None] = mapped_column(String(80))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), onupdate=func.now())
+
+
+class PageEvent(Base):
+    """Lightweight first-party analytics event (PV / CTA)."""
+
+    __tablename__ = "page_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    event_type: Mapped[str] = mapped_column(String(40), default="pageview", index=True)
+    path: Mapped[str] = mapped_column(String(300), nullable=False, index=True)
+    referrer: Mapped[str | None] = mapped_column(String(500))
+    ua: Mapped[str | None] = mapped_column(String(300))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

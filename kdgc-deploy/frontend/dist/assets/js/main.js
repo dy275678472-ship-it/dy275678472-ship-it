@@ -220,6 +220,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Lightweight first-party pageview beacon
+  try {
+    const payload = {
+      event_type: 'pageview',
+      path: location.pathname + location.search,
+      referrer: document.referrer || '',
+    };
+    navigator.sendBeacon?.(
+      '/api/events',
+      new Blob([JSON.stringify(payload)], { type: 'application/json' })
+    ) || fetch('/api/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    }).catch(() => {});
+  } catch (_) {}
+
   // Light hero carousel
   const slides = [...document.querySelectorAll('.hero-slide')];
   const dots = [...document.querySelectorAll('.hero-dots button')];

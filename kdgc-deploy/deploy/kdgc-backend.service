@@ -9,6 +9,8 @@ WorkingDirectory=/opt/kdgc-growth/backend
 Environment=DATABASE_URL=postgresql+asyncpg://kdgc:kdgc_secure_2026@127.0.0.1:5432/kdgc
 Environment=ALLOWED_ORIGINS=https://kdgc.cc,http://kdgc.cc,http://150.158.42.39,http://127.0.0.1
 Environment=ADMIN_TOKEN=kdgc-admin-2026-change-me
+Environment=EDITOR_TOKEN=kdgc-editor-2026
+Environment=OPS_TOKEN=kdgc-ops-2026
 Environment=FEISHU_WEBHOOK=
 ExecStart=/opt/kdgc-growth/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
 Restart=always

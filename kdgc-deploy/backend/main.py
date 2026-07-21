@@ -14,15 +14,28 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import engine, get_db
-from models import Base, Case, ChatMessage, ChatSession, Knowledge, Lead, News, Product
+from auth import require_perm, resolve_admin
+from models import (
+    AuditLog,
+    Base,
+    Case,
+    ChatMessage,
+    ChatSession,
+    Knowledge,
+    Lead,
+    News,
+    PageEvent,
+    Product,
+    Ticket,
+)
 
-app = FastAPI(title="KDGC API", version="2.1.0")
+app = FastAPI(title="KDGC API", version="2.2.0")
 
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS", "https://kdgc.cc,http://kdgc.cc,http://150.158.42.39,http://127.0.0.1"
 ).split(",")
 FEISHU_WEBHOOK = os.getenv("FEISHU_WEBHOOK", "")
-ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "kdgc-admin-change-me")
+# Tokens / roles: see auth.py (ADMIN_TOKEN, EDITOR_TOKEN, OPS_TOKEN, ADMIN_USERS)
 
 app.add_middleware(
     CORSMiddleware,
@@ -44,9 +57,8 @@ def check_rate(ip: str, limit: int = 5, window: int = 3600):
 
 
 def require_admin(request: Request):
-    token = request.headers.get("X-Admin-Token") or ""
-    if token != ADMIN_TOKEN:
-        raise HTTPException(401, "未授权：请提供正确的 Admin Token")
+    """Backward-compatible full-access check (maps to admin role via resolve)."""
+    return resolve_admin(request)
 
 
 class LeadIn(BaseModel):
@@ -60,7 +72,34 @@ class LeadIn(BaseModel):
 
 
 class LeadStatusIn(BaseModel):
-    status: str = Field(min_length=2, max_length=30)
+    status: Optional[str] = Field(default=None, min_length=2, max_length=30)
+    assignee: Optional[str] = Field(default=None, max_length=80)
+    notes: Optional[str] = Field(default=None, max_length=2000)
+
+
+class TicketIn(BaseModel):
+    title: str = Field(min_length=2, max_length=200)
+    category: str = Field(default="support", max_length=40)
+    priority: str = Field(default="normal", max_length=20)
+    requester_name: Optional[str] = None
+    requester_contact: Optional[str] = None
+    body: Optional[str] = None
+    assignee: Optional[str] = None
+    chat_session_id: Optional[int] = None
+    lead_id: Optional[int] = None
+
+
+class TicketStatusIn(BaseModel):
+    status: Optional[str] = None
+    assignee: Optional[str] = None
+    priority: Optional[str] = None
+    body: Optional[str] = None
+
+
+class PageEventIn(BaseModel):
+    event_type: str = Field(default="pageview", max_length=40)
+    path: str = Field(min_length=1, max_length=300)
+    referrer: Optional[str] = Field(default=None, max_length=500)
 
 
 class AIChatIn(BaseModel):
@@ -139,6 +178,9 @@ async def startup():
         # lightweight migrations for existing DBs
         for stmt in (
             "ALTER TABLE cases ADD COLUMN IF NOT EXISTS customer_alias VARCHAR(120)",
+            "ALTER TABLE leads_v2 ADD COLUMN IF NOT EXISTS assignee VARCHAR(80)",
+            "ALTER TABLE leads_v2 ADD COLUMN IF NOT EXISTS notes TEXT",
+            "ALTER TABLE leads_v2 ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ",
         ):
             try:
                 await conn.execute(__import__("sqlalchemy").text(stmt))
@@ -153,12 +195,24 @@ async def health(db: AsyncSession = Depends(get_db)):
         db_status = "connected"
     except Exception:
         db_status = "error"
-    return {"status": "ok", "db": db_status, "version": "2.1.0"}
+    return {"status": "ok", "db": db_status, "version": "2.2.0"}
 
 
 @app.post("/api/leads")
 async def create_lead(data: LeadIn, request: Request, db: AsyncSession = Depends(get_db)):
     if data.website:
+        return {"success": True, "message": "我们将在24小时内联系您"}
+    # spam heuristics
+    blob = " ".join(
+        [
+            data.company or "",
+            data.contact_name or "",
+            data.requirement or "",
+            data.product_interest or "",
+        ]
+    ).lower()
+    spam_words = ("viagra", "casino", "crypto pump", "seo backlink", "http://", "https://")
+    if any(w in blob for w in spam_words) or len(re.findall(r"https?://", blob)) >= 2:
         return {"success": True, "message": "我们将在24小时内联系您"}
     if not re.match(r"^1[3-9]\d{9}$", data.phone) and "@" not in data.phone:
         if not data.email:
@@ -263,6 +317,29 @@ async def public_send_chat_message(
     db.add(message)
     await db.commit()
     await db.refresh(message)
+
+    # AI / FAQ bot first-response for high-frequency questions
+    bot_reply = None
+    q = message.body
+    for k, v in {
+        "探头": "KD0100-02S-T1 探头型，氧分压 0.5–101 kPa，配套 KD0100-03。需要规格书可在产品页下载。",
+        "插针": "KD0100-02S-TO 插针型，探头重量≦5g，适合紧凑 OEM。",
+        "面罩": "面罩用低温型已试制成功，面向航空生命保障供氧监测。",
+        "样品": "请留下公司与工况，或前往 /contact/ 提交表单，工程师将跟进样品。",
+        "质保": "产品承诺质保 5 年（以合同与说明书为准）。",
+        "价格": "价格与交期视批量与定制接口而定，请留下联系方式由销售回复。",
+    }.items():
+        if k in q:
+            bot_reply = v + " 如需人工，请稍候，客服会接入。"
+            break
+    bot_msg = None
+    if bot_reply:
+        bot_msg = ChatMessage(session_id=session.id, sender="agent", body=bot_reply)
+        session.last_message_at = datetime.now(timezone.utc)
+        db.add(bot_msg)
+        await db.commit()
+        await db.refresh(bot_msg)
+
     if FEISHU_WEBHOOK:
         text = (
             f"💬 官网在线客服新消息\n"
@@ -276,7 +353,10 @@ async def public_send_chat_message(
                 await client.post(FEISHU_WEBHOOK, json={"msg_type": "text", "content": {"text": text}})
         except Exception:
             pass
-    return chat_message_dict(message)
+    out = chat_message_dict(message)
+    if bot_msg:
+        out["bot_reply"] = chat_message_dict(bot_msg)
+    return out
 
 
 @app.get("/api/products")
@@ -405,15 +485,56 @@ async def get_knowledge(slug: str, db: AsyncSession = Depends(get_db)):
 
 
 # ---------- Admin ----------
+async def write_audit(
+    db: AsyncSession,
+    request: Request,
+    action: str,
+    target: str | None = None,
+    detail: str | None = None,
+):
+    try:
+        user = resolve_admin(request)
+    except HTTPException:
+        return
+    db.add(
+        AuditLog(
+            actor=user.name,
+            role=user.role,
+            action=action,
+            target=target,
+            detail=(detail or "")[:2000] or None,
+            ip=request.client.host if request.client else None,
+        )
+    )
+    await db.commit()
+
+
 @app.post("/api/admin/login")
-async def admin_login(request: Request):
-    require_admin(request)
-    return {"ok": True, "role": "admin"}
+async def admin_login(request: Request, db: AsyncSession = Depends(get_db)):
+    user = resolve_admin(request)
+    db.add(
+        AuditLog(
+            actor=user.name,
+            role=user.role,
+            action="login",
+            target="admin",
+            ip=request.client.host if request.client else None,
+        )
+    )
+    await db.commit()
+    from auth import ROLE_PERMS
+
+    return {
+        "ok": True,
+        "role": user.role,
+        "name": user.name,
+        "perms": sorted(ROLE_PERMS[user.role]),
+    }
 
 
 @app.get("/api/admin/stats")
 async def admin_stats(request: Request, db: AsyncSession = Depends(get_db)):
-    require_admin(request)
+    require_perm(request, "stats")
 
     async def count(model):
         r = await db.execute(select(func.count()).select_from(model))
@@ -423,6 +544,47 @@ async def admin_stats(request: Request, db: AsyncSession = Depends(get_db)):
     open_chats = await db.execute(
         select(func.count()).select_from(ChatSession).where(ChatSession.status == "open")
     )
+    open_tickets = await db.execute(
+        select(func.count()).select_from(Ticket).where(Ticket.status.in_(["open", "progress"]))
+    )
+
+    # last 7 days lead counts
+    from datetime import timedelta
+
+    day_rows = []
+    now = datetime.now(timezone.utc)
+    for i in range(6, -1, -1):
+        day = (now - timedelta(days=i)).date()
+        start = datetime(day.year, day.month, day.day, tzinfo=timezone.utc)
+        end = start + timedelta(days=1)
+        r = await db.execute(
+            select(func.count()).select_from(Lead).where(Lead.created_at >= start, Lead.created_at < end)
+        )
+        pv = await db.execute(
+            select(func.count())
+            .select_from(PageEvent)
+            .where(
+                PageEvent.event_type == "pageview",
+                PageEvent.created_at >= start,
+                PageEvent.created_at < end,
+            )
+        )
+        day_rows.append(
+            {
+                "date": day.isoformat(),
+                "leads": int(r.scalar() or 0),
+                "pageviews": int(pv.scalar() or 0),
+            }
+        )
+
+    top_pages = await db.execute(
+        select(PageEvent.path, func.count().label("c"))
+        .where(PageEvent.event_type == "pageview")
+        .group_by(PageEvent.path)
+        .order_by(func.count().desc())
+        .limit(8)
+    )
+
     return {
         "products": await count(Product),
         "news": await count(News),
@@ -431,13 +593,17 @@ async def admin_stats(request: Request, db: AsyncSession = Depends(get_db)):
         "leads": await count(Lead),
         "leads_new": int(new_leads.scalar() or 0),
         "chats_open": int(open_chats.scalar() or 0),
+        "tickets_open": int(open_tickets.scalar() or 0),
+        "pageviews": await count(PageEvent),
+        "series_7d": day_rows,
+        "top_pages": [{"path": p, "views": int(c)} for p, c in top_pages.all()],
     }
 
 
 @app.get("/api/admin/leads")
 @app.get("/api/leads")
 async def list_leads(request: Request, db: AsyncSession = Depends(get_db)):
-    require_admin(request)
+    require_perm(request, "leads_read")
     r = await db.execute(select(Lead).order_by(Lead.created_at.desc()).limit(200))
     return [
         {
@@ -449,6 +615,8 @@ async def list_leads(request: Request, db: AsyncSession = Depends(get_db)):
             "product_interest": l.product_interest,
             "requirement": l.requirement,
             "status": l.status,
+            "assignee": getattr(l, "assignee", None),
+            "notes": getattr(l, "notes", None),
             "source": l.source,
             "created_at": l.created_at.isoformat() if l.created_at else None,
         }
@@ -458,14 +626,36 @@ async def list_leads(request: Request, db: AsyncSession = Depends(get_db)):
 
 @app.patch("/api/admin/leads/{lead_id}")
 async def update_lead(lead_id: int, data: LeadStatusIn, request: Request, db: AsyncSession = Depends(get_db)):
-    require_admin(request)
+    user = require_perm(request, "leads_write")
     r = await db.execute(select(Lead).where(Lead.id == lead_id))
     lead = r.scalar_one_or_none()
     if not lead:
         raise HTTPException(404)
-    lead.status = data.status.strip()
+    if data.status is not None:
+        lead.status = data.status.strip()
+    if data.assignee is not None:
+        lead.assignee = data.assignee.strip() or None
+    if data.notes is not None:
+        lead.notes = data.notes.strip() or None
     await db.commit()
-    return {"ok": True, "id": lead.id, "status": lead.status}
+    db.add(
+        AuditLog(
+            actor=user.name,
+            role=user.role,
+            action="lead_update",
+            target=f"lead:{lead.id}",
+            detail=f"status={lead.status}; assignee={lead.assignee}",
+            ip=request.client.host if request.client else None,
+        )
+    )
+    await db.commit()
+    return {
+        "ok": True,
+        "id": lead.id,
+        "status": lead.status,
+        "assignee": lead.assignee,
+        "notes": lead.notes,
+    }
 
 
 @app.get("/api/admin/chat/sessions")
@@ -763,7 +953,7 @@ async def admin_update_product(item_id: int, data: ProductIn, request: Request, 
 
 
 @app.post("/api/ai/chat")
-async def ai_chat(data: AIChatIn):
+async def ai_chat(data: AIChatIn, db: AsyncSession = Depends(get_db)):
     faq = {
         "探头": "KD0100-02S-T1 为线束探头型，氧分压 0.5–101 kPa，配套控制器 KD0100-03，探头重量≦35g（不含线束）。",
         "插针": "KD0100-02S-TO 为插针型，氧分压 0.5–101 kPa，探头重量≦5g，适合紧凑设备集成。",
@@ -772,26 +962,44 @@ async def ai_chat(data: AIChatIn):
         "量程": "公开量程为氧分压 0.5–101 kPa，可覆盖空气、纯氧及氮氧混合气等评估场景。",
         "样品": "请通过官网「联系我们」提交咨询表单，技术团队将尽快回复。",
         "质保": "公司秉承诚信为本，产品承诺质保 5 年（以合同与说明书约定为准）。",
+        "工单": "复杂问题可由客服转为工单，进入技术支持/售后流程跟进。",
+        "规格书": "产品详情页可下载公开规格书 PDF；也可通过联系表单索取。",
     }
     answer = (
         "我是中科国瓷材料助手。可咨询探头/插针/面罩氧传感器选型、量程、加热电压与接线注意事项。"
-        "复杂工况请提交联系表单，由工程师跟进。"
+        "复杂工况请提交联系表单或转人工客服；需要时可生成工单交给销售/技术跟进。"
     )
+    source = "faq"
     q = data.question.lower()
     for k, v in faq.items():
-        if k.lower() in data.question or k in data.question:
+        if k.lower() in data.question or k in data.question or k.lower() in q:
             answer = v
             break
-        if k.lower() in q:
-            answer = v
-            break
-    return {"answer": answer, "source": "faq"}
+    else:
+        # knowledge base keyword match
+        r = await db.execute(
+            select(Knowledge).where(Knowledge.is_published.is_(True)).order_by(Knowledge.sort_order).limit(40)
+        )
+        best = None
+        for krow in r.scalars().all():
+            title = (krow.title or "").lower()
+            summary = (krow.summary or "").lower()
+            if any(tok in title or tok in summary for tok in re.findall(r"[\u4e00-\u9fff]{2,}|[a-z0-9-]{3,}", q)[:8]):
+                best = krow
+                break
+        if best:
+            answer = (
+                f"【知识库参考】{best.title}：{(best.summary or '')[:180]} "
+                f"详情：/knowledge/{best.slug}.html"
+            )
+            source = "knowledge"
+    return {"answer": answer, "source": source}
 
 
 @app.post("/api/admin/publish")
-async def admin_publish(request: Request):
+async def admin_publish(request: Request, db: AsyncSession = Depends(get_db)):
     """Regenerate static HTML from generate_pages.py into the live dist tree."""
-    require_admin(request)
+    user = require_perm(request, "publish")
     import subprocess
     from pathlib import Path
 
@@ -811,7 +1019,301 @@ async def admin_publish(request: Request):
     )
     if r.returncode != 0:
         raise HTTPException(500, detail=(r.stderr or r.stdout or "publish failed")[-2000:])
+    db.add(
+        AuditLog(
+            actor=user.name,
+            role=user.role,
+            action="publish",
+            target="frontend",
+            detail="generate_pages.py ok",
+            ip=request.client.host if request.client else None,
+        )
+    )
+    await db.commit()
     return {"ok": True, "message": "前台静态页已重新生成", "log": (r.stdout or "")[-1500:]}
+
+
+@app.get("/api/admin/leads/export")
+async def export_leads(request: Request, db: AsyncSession = Depends(get_db)):
+    require_perm(request, "leads_export")
+    from fastapi.responses import PlainTextResponse
+    import csv
+    import io
+
+    r = await db.execute(select(Lead).order_by(Lead.created_at.desc()).limit(2000))
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(
+        [
+            "id",
+            "created_at",
+            "company",
+            "contact_name",
+            "phone",
+            "email",
+            "product_interest",
+            "requirement",
+            "status",
+            "assignee",
+            "notes",
+            "source",
+        ]
+    )
+    for l in r.scalars().all():
+        w.writerow(
+            [
+                l.id,
+                l.created_at.isoformat() if l.created_at else "",
+                l.company,
+                l.contact_name,
+                l.phone,
+                l.email or "",
+                l.product_interest or "",
+                (l.requirement or "").replace("\n", " "),
+                l.status,
+                getattr(l, "assignee", None) or "",
+                (getattr(l, "notes", None) or "").replace("\n", " "),
+                l.source,
+            ]
+        )
+    return PlainTextResponse(
+        buf.getvalue(),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": "attachment; filename=kdgc-leads.csv"},
+    )
+
+
+@app.get("/api/admin/logs")
+async def list_audit_logs(request: Request, db: AsyncSession = Depends(get_db)):
+    require_perm(request, "logs")
+    r = await db.execute(select(AuditLog).order_by(AuditLog.id.desc()).limit(200))
+    return [
+        {
+            "id": x.id,
+            "actor": x.actor,
+            "role": x.role,
+            "action": x.action,
+            "target": x.target,
+            "detail": x.detail,
+            "ip": x.ip,
+            "created_at": x.created_at.isoformat() if x.created_at else None,
+        }
+        for x in r.scalars().all()
+    ]
+
+
+@app.post("/api/admin/backup")
+async def admin_backup(request: Request, db: AsyncSession = Depends(get_db)):
+    user = require_perm(request, "backup")
+    import json
+    from pathlib import Path
+
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    out_dir = Path("/opt/kdgc-growth/backups")
+    if not out_dir.exists():
+        out_dir = Path(__file__).resolve().parents[1] / "backups"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    async def dump(model, mapper):
+        r = await db.execute(select(model).limit(5000))
+        return [mapper(x) for x in r.scalars().all()]
+
+    payload = {
+        "created_at": stamp,
+        "leads": await dump(
+            Lead,
+            lambda l: {
+                "id": l.id,
+                "company": l.company,
+                "contact_name": l.contact_name,
+                "phone": l.phone,
+                "email": l.email,
+                "product_interest": l.product_interest,
+                "requirement": l.requirement,
+                "status": l.status,
+                "assignee": getattr(l, "assignee", None),
+                "notes": getattr(l, "notes", None),
+                "source": l.source,
+                "created_at": l.created_at.isoformat() if l.created_at else None,
+            },
+        ),
+        "tickets": await dump(
+            Ticket,
+            lambda t: {
+                "id": t.id,
+                "public_id": t.public_id,
+                "title": t.title,
+                "category": t.category,
+                "status": t.status,
+                "priority": t.priority,
+                "assignee": t.assignee,
+                "body": t.body,
+                "chat_session_id": t.chat_session_id,
+                "lead_id": t.lead_id,
+                "created_at": t.created_at.isoformat() if t.created_at else None,
+            },
+        ),
+        "chat_sessions": await dump(
+            ChatSession,
+            lambda s: {
+                "id": s.id,
+                "public_id": s.public_id,
+                "visitor_name": s.visitor_name,
+                "visitor_contact": s.visitor_contact,
+                "status": s.status,
+                "page_url": s.page_url,
+                "created_at": s.created_at.isoformat() if s.created_at else None,
+            },
+        ),
+    }
+    path = out_dir / f"kdgc-backup-{stamp}.json"
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    db.add(
+        AuditLog(
+            actor=user.name,
+            role=user.role,
+            action="backup",
+            target=str(path.name),
+            detail=f"leads={len(payload['leads'])} tickets={len(payload['tickets'])}",
+            ip=request.client.host if request.client else None,
+        )
+    )
+    await db.commit()
+    return {"ok": True, "file": str(path), "counts": {k: len(v) for k, v in payload.items() if isinstance(v, list)}}
+
+
+@app.get("/api/admin/tickets")
+async def list_tickets(request: Request, db: AsyncSession = Depends(get_db)):
+    require_perm(request, "tickets")
+    r = await db.execute(select(Ticket).order_by(Ticket.id.desc()).limit(200))
+    return [
+        {
+            "id": t.id,
+            "public_id": t.public_id,
+            "title": t.title,
+            "category": t.category,
+            "status": t.status,
+            "priority": t.priority,
+            "requester_name": t.requester_name,
+            "requester_contact": t.requester_contact,
+            "body": t.body,
+            "assignee": t.assignee,
+            "chat_session_id": t.chat_session_id,
+            "lead_id": t.lead_id,
+            "created_by": t.created_by,
+            "created_at": t.created_at.isoformat() if t.created_at else None,
+        }
+        for t in r.scalars().all()
+    ]
+
+
+@app.post("/api/admin/tickets")
+async def create_ticket(data: TicketIn, request: Request, db: AsyncSession = Depends(get_db)):
+    user = require_perm(request, "tickets")
+    ticket = Ticket(
+        public_id=str(uuid.uuid4()),
+        title=data.title.strip(),
+        category=(data.category or "support").strip(),
+        priority=(data.priority or "normal").strip(),
+        requester_name=data.requester_name,
+        requester_contact=data.requester_contact,
+        body=data.body,
+        assignee=data.assignee,
+        chat_session_id=data.chat_session_id,
+        lead_id=data.lead_id,
+        created_by=user.name,
+        status="open",
+    )
+    db.add(ticket)
+    await db.commit()
+    await db.refresh(ticket)
+    db.add(
+        AuditLog(
+            actor=user.name,
+            role=user.role,
+            action="ticket_create",
+            target=f"ticket:{ticket.id}",
+            detail=ticket.title,
+            ip=request.client.host if request.client else None,
+        )
+    )
+    await db.commit()
+    return {"ok": True, "id": ticket.id, "public_id": ticket.public_id}
+
+
+@app.post("/api/admin/chat/sessions/{session_id}/ticket")
+async def ticket_from_chat(session_id: int, request: Request, db: AsyncSession = Depends(get_db)):
+    user = require_perm(request, "tickets")
+    r = await db.execute(select(ChatSession).where(ChatSession.id == session_id))
+    session = r.scalar_one_or_none()
+    if not session:
+        raise HTTPException(404)
+    msgs = await db.execute(
+        select(ChatMessage).where(ChatMessage.session_id == session_id).order_by(ChatMessage.id.desc()).limit(12)
+    )
+    transcript = "\n".join(f"[{m.sender}] {m.body}" for m in reversed(list(msgs.scalars().all())))
+    ticket = Ticket(
+        public_id=str(uuid.uuid4()),
+        title=f"客服会话转工单 #{session.id}",
+        category="support",
+        priority="normal",
+        requester_name=session.visitor_name,
+        requester_contact=session.visitor_contact,
+        body=transcript or "（无消息）",
+        chat_session_id=session.id,
+        created_by=user.name,
+        status="open",
+    )
+    db.add(ticket)
+    await db.commit()
+    await db.refresh(ticket)
+    return {"ok": True, "id": ticket.id, "public_id": ticket.public_id}
+
+
+@app.patch("/api/admin/tickets/{ticket_id}")
+async def update_ticket(
+    ticket_id: int, data: TicketStatusIn, request: Request, db: AsyncSession = Depends(get_db)
+):
+    user = require_perm(request, "tickets")
+    r = await db.execute(select(Ticket).where(Ticket.id == ticket_id))
+    ticket = r.scalar_one_or_none()
+    if not ticket:
+        raise HTTPException(404)
+    if data.status is not None:
+        ticket.status = data.status.strip()
+    if data.assignee is not None:
+        ticket.assignee = data.assignee.strip() or None
+    if data.priority is not None:
+        ticket.priority = data.priority.strip()
+    if data.body is not None:
+        ticket.body = data.body
+    await db.commit()
+    db.add(
+        AuditLog(
+            actor=user.name,
+            role=user.role,
+            action="ticket_update",
+            target=f"ticket:{ticket.id}",
+            detail=f"status={ticket.status}",
+            ip=request.client.host if request.client else None,
+        )
+    )
+    await db.commit()
+    return {"ok": True, "id": ticket.id, "status": ticket.status}
+
+
+@app.post("/api/events")
+async def track_event(data: PageEventIn, request: Request, db: AsyncSession = Depends(get_db)):
+    check_rate(f"evt:{request.client.host if request.client else 'unknown'}", limit=120, window=3600)
+    evt = PageEvent(
+        event_type=(data.event_type or "pageview")[:40],
+        path=data.path[:300],
+        referrer=(data.referrer or "")[:500] or None,
+        ua=(request.headers.get("user-agent") or "")[:300] or None,
+    )
+    db.add(evt)
+    await db.commit()
+    return {"ok": True}
 
 
 @app.get("/health")

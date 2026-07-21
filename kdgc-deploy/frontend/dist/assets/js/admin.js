@@ -1,15 +1,18 @@
 const titles = {
-  dash: "概览",
+  dash: "数据看板",
   leads: "线索管理",
   chat: "在线客服",
+  tickets: "工单",
   knowledge: "知识库",
   cases: "行业案例",
   news: "新闻",
   products: "产品",
-  site: "站点信息",
+  logs: "操作日志",
+  site: "站点 / 备份",
 };
 
 let TOKEN = localStorage.getItem("kdgc_admin_token") || "";
+let ROLE = localStorage.getItem("kdgc_admin_role") || "";
 let activeChat = null;
 let chatPollTimer = null;
 const tokenInput = document.getElementById("token");
@@ -30,18 +33,22 @@ async function api(path, opts = {}) {
   return data;
 }
 
-function setAuth(ok) {
+function setAuth(ok, info) {
   document.getElementById("auth-state").textContent = ok ? "已登录" : "未登录";
+  const badge = document.getElementById("role-badge");
+  if (badge) badge.textContent = ok && info ? `${info.name || ""} · ${info.role || ROLE}` : "";
 }
 
 async function login() {
   TOKEN = tokenInput.value.trim();
   localStorage.setItem("kdgc_admin_token", TOKEN);
   try {
-    await api("/api/admin/login", { method: "POST" });
-    setAuth(true);
+    const info = await api("/api/admin/login", { method: "POST" });
+    ROLE = info.role || "";
+    localStorage.setItem("kdgc_admin_role", ROLE);
+    setAuth(true, info);
     await loadStats();
-    alert("登录成功");
+    alert(`登录成功：${info.name || ""}（${info.role}）`);
   } catch (e) {
     setAuth(false);
     alert("登录失败：" + e.message);
@@ -68,6 +75,24 @@ if (publishBtn) {
   };
 }
 
+const backupBtn = document.getElementById("btn-backup");
+if (backupBtn) {
+  backupBtn.onclick = async () => {
+    const log = document.getElementById("backup-log");
+    backupBtn.disabled = true;
+    log.textContent = "备份中…";
+    try {
+      const res = await api("/api/admin/backup", { method: "POST" });
+      log.textContent = JSON.stringify(res, null, 2);
+      alert("备份完成");
+    } catch (e) {
+      log.textContent = "失败：" + e.message;
+      alert("备份失败：" + e.message);
+    }
+    backupBtn.disabled = false;
+  };
+}
+
 document.querySelectorAll(".side nav button").forEach((btn) => {
   btn.onclick = () => {
     document.querySelectorAll(".side nav button").forEach((b) => b.classList.remove("active"));
@@ -79,10 +104,12 @@ document.querySelectorAll(".side nav button").forEach((btn) => {
     if (tab === "dash") loadStats();
     if (tab === "leads") loadLeads();
     if (tab === "chat") loadChats();
+    if (tab === "tickets") loadTickets();
     if (tab === "knowledge") loadKnowledge();
     if (tab === "cases") loadCases();
     if (tab === "news") loadNews();
     if (tab === "products") loadProducts();
+    if (tab === "logs") loadLogs();
     if (tab !== "chat") clearInterval(chatPollTimer);
   };
 });
@@ -94,12 +121,26 @@ async function loadStats() {
       ["线索", s.leads],
       ["新线索", s.leads_new],
       ["待接待会话", s.chats_open],
+      ["开放工单", s.tickets_open || 0],
+      ["页面浏览", s.pageviews || 0],
       ["知识库", s.knowledge],
       ["行业案例", s.cases],
       ["新闻", s.news],
       ["产品", s.products],
     ].map(([k, v]) => `<div class="stat"><span>${k}</span><b>${v}</b></div>`).join("");
-    setAuth(true);
+    const seriesBody = document.querySelector("#series-table tbody");
+    if (seriesBody) {
+      seriesBody.innerHTML = (s.series_7d || []).map((d) =>
+        `<tr><td>${esc(d.date)}</td><td>${d.leads}</td><td>${d.pageviews}</td></tr>`
+      ).join("") || `<tr><td colspan="3">暂无数据</td></tr>`;
+    }
+    const topBody = document.querySelector("#top-pages-table tbody");
+    if (topBody) {
+      topBody.innerHTML = (s.top_pages || []).map((d) =>
+        `<tr><td>${esc(d.path)}</td><td>${d.views}</td></tr>`
+      ).join("") || `<tr><td colspan="2">暂无数据</td></tr>`;
+    }
+    setAuth(true, { role: ROLE });
   } catch {
     document.getElementById("stats").innerHTML = `<div class="card">请先登录后台 Token</div>`;
   }
@@ -117,20 +158,49 @@ async function loadLeads() {
     <td>${esc(l.phone)}<br>${esc(l.email || "")}</td>
     <td>${esc(l.product_interest || "")}</td>
     <td>${esc(l.requirement || "")}</td>
+    <td>${esc(l.assignee || "-")}</td>
     <td>${esc(l.status)}</td>
     <td>
       <button class="btn" onclick="setLeadStatus(${l.id},'contacted')">已联系</button>
+      <button class="btn" onclick="assignLead(${l.id})">分配</button>
       <button class="btn" onclick="setLeadStatus(${l.id},'closed')">关闭</button>
-      <button class="btn" onclick="setLeadStatus(${l.id},'new')">重开</button>
     </td>
-  </tr>`).join("") || `<tr><td colspan="8">暂无线索</td></tr>`;
+  </tr>`).join("") || `<tr><td colspan="9">暂无线索</td></tr>`;
 }
 document.getElementById("lead-filter").onchange = loadLeads;
+
+const exportBtn = document.getElementById("btn-export-leads");
+if (exportBtn) {
+  exportBtn.onclick = async (e) => {
+    e.preventDefault();
+    try {
+      const r = await fetch("/api/admin/leads/export", { headers: headers(false) });
+      if (!r.ok) throw new Error(await r.text());
+      const blob = await r.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "kdgc-leads.csv";
+      a.click();
+    } catch (err) {
+      alert("导出失败：" + err.message);
+    }
+  };
+}
 
 async function setLeadStatus(id, status) {
   await api(`/api/admin/leads/${id}`, { method: "PATCH", body: JSON.stringify({ status }) });
   loadLeads();
   loadStats();
+}
+
+async function assignLead(id) {
+  const assignee = prompt("分配给（销售姓名/账号）");
+  if (assignee == null) return;
+  await api(`/api/admin/leads/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ assignee, status: "contacted" }),
+  });
+  loadLeads();
 }
 
 async function loadChats() {
@@ -165,8 +235,8 @@ async function loadChatMessages() {
   if (!activeChat) return;
   const rows = await api(`/api/admin/chat/sessions/${activeChat.id}/messages`);
   const box = document.getElementById("chat-admin-messages");
-  box.innerHTML = rows.map((message) => `<div class="chat-admin-message ${message.sender === "admin" ? "admin" : ""}">
-    ${esc(message.body)}<small>${message.sender === "admin" ? "客服" : "访客"} · ${esc((message.created_at || "").replace("T", " ").slice(0, 19))}</small>
+  box.innerHTML = rows.map((message) => `<div class="chat-admin-message ${message.sender !== "visitor" ? "admin" : ""}">
+    ${esc(message.body)}<small>${message.sender === "visitor" ? "访客" : (message.sender === "agent" ? "机器人" : "客服")} · ${esc((message.created_at || "").replace("T", " ").slice(0, 19))}</small>
   </div>`).join("") || `<div class="muted">会话暂无消息</div>`;
   box.scrollTop = box.scrollHeight;
 }
@@ -208,6 +278,77 @@ document.getElementById("chat-admin-input").onkeydown = (event) => {
 document.getElementById("chat-close-session").onclick = () => {
   if (activeChat) setChatStatus(activeChat.id, "closed");
 };
+
+const chatToTicket = document.getElementById("chat-to-ticket");
+if (chatToTicket) {
+  chatToTicket.onclick = async () => {
+    if (!activeChat) return;
+    try {
+      const res = await api(`/api/admin/chat/sessions/${activeChat.id}/ticket`, { method: "POST" });
+      alert(`已创建工单 #${res.id}`);
+      loadTickets();
+    } catch (e) {
+      alert("转工单失败：" + e.message);
+    }
+  };
+}
+
+async function loadTickets() {
+  const rows = await api("/api/admin/tickets");
+  document.querySelector("#tickets-table tbody").innerHTML = rows.map((t) => `<tr>
+    <td>${esc((t.created_at || "").replace("T", " ").slice(0, 19))}</td>
+    <td>${esc(t.title)}</td>
+    <td>${esc(t.category)}</td>
+    <td>${esc(t.priority)}</td>
+    <td>${esc(t.assignee || "-")}</td>
+    <td>${esc(t.status)}</td>
+    <td>
+      <button class="btn" onclick="setTicketStatus(${t.id},'progress')">处理中</button>
+      <button class="btn" onclick="assignTicket(${t.id})">分配</button>
+      <button class="btn" onclick="setTicketStatus(${t.id},'done')">完成</button>
+    </td>
+  </tr>`).join("") || `<tr><td colspan="7">暂无工单</td></tr>`;
+}
+
+async function createTicket() {
+  const title = prompt("工单标题");
+  if (!title) return;
+  const body = prompt("问题描述") || "";
+  await api("/api/admin/tickets", {
+    method: "POST",
+    body: JSON.stringify({ title, body, category: "support" }),
+  });
+  loadTickets();
+}
+
+async function setTicketStatus(id, status) {
+  await api(`/api/admin/tickets/${id}`, { method: "PATCH", body: JSON.stringify({ status }) });
+  loadTickets();
+  loadStats();
+}
+
+async function assignTicket(id) {
+  const assignee = prompt("分配给");
+  if (assignee == null) return;
+  await api(`/api/admin/tickets/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ assignee, status: "progress" }),
+  });
+  loadTickets();
+}
+
+async function loadLogs() {
+  const rows = await api("/api/admin/logs");
+  document.querySelector("#logs-table tbody").innerHTML = rows.map((x) => `<tr>
+    <td>${esc((x.created_at || "").replace("T", " ").slice(0, 19))}</td>
+    <td>${esc(x.actor)}</td>
+    <td>${esc(x.role)}</td>
+    <td>${esc(x.action)}</td>
+    <td>${esc(x.target || "")}</td>
+    <td>${esc(x.detail || "")}</td>
+    <td>${esc(x.ip || "")}</td>
+  </tr>`).join("") || `<tr><td colspan="7">暂无日志</td></tr>`;
+}
 
 function esc(s) {
   return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
