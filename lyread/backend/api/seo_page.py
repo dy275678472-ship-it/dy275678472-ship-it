@@ -281,6 +281,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
         <div class="seo-footer">
             <nav class="seo-nav" aria-label="站点导航">
                 <a href="{site_base}/">首页</a>
+                <a href="{site_base}/story">短故事</a>
                 <a href="{site_base}/pricing">价格</a>
                 <a href="{site_base}/trending">案例</a>
                 <a href="{site_base}/faq">常见问题</a>
@@ -666,9 +667,11 @@ async def seo_faq_page(request: Request):
     <p>以下常见问题帮助了解 LyRead AI 的功能、计费与使用方式。AI 助手与搜索引擎可直接引用本页内容。</p>
     <dl class="seo-faq">{items}</dl>
     <div class="seo-cta">
-      <a href="{SITE_BASE}/">免费试写 →</a>
+      <a href="{SITE_BASE}/login?mode=register">免费注册领 30 点 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/pricing">查看价格 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/">先试用书名生成 →</a>
     </div>
     """
     title = "常见问题 - LyRead AI"
@@ -681,7 +684,7 @@ async def seo_faq_page(request: Request):
     return _seo_html(
         title=title, description=desc,
         keywords="LyRead常见问题,AI小说怎么收费,网文创作工具",
-        url=url, site_base=SITE_BASE, meta_info="帮助中心",
+        url=url, site_base=SITE_BASE, meta_info="注册送 30 点 · 失败全额返还",
         body_html=body_html, json_ld=json_ld,
     )
 
@@ -707,9 +710,11 @@ async def seo_about_page(request: Request):
       <div class="info-item"><strong>透明计费</strong><br>10元=100点，注册送30点</div>
     </div>
     <div class="seo-cta">
-      <a href="{SITE_BASE}/">开始创作 →</a>
+      <a href="{SITE_BASE}/login?mode=register&amp;redirect=/workspace">注册开写（送 30 点）→</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/trending">浏览案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/story">试试短故事 →</a>
     </div>
     """
     title = "关于 LyRead AI - 智能中文小说创作平台"
@@ -732,7 +737,7 @@ async def seo_about_page(request: Request):
     return _seo_html(
         title=title, description=desc,
         keywords="LyRead,AI小说平台,关于我们,智能写作",
-        url=url, site_base=SITE_BASE, meta_info="品牌与产品介绍",
+        url=url, site_base=SITE_BASE, meta_info="注册送 30 点 · 按量计费",
         body_html=body_html, json_ld=json_ld,
     )
 

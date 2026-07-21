@@ -44,7 +44,7 @@ rm -f /tmp/lyread_cfg_$$.txt
 # --- 2. 前端页面 ---
 echo ""
 echo "[2] Frontend pages"
-for p in / /login /pricing /wallet /workspace /trending /story /admin; do
+for p in / /login /pricing /wallet /workspace /trending /story /admin /faq /about; do
   code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL$p")
   if [[ "$code" == "200" ]]; then ok "page $p"; else bad "page $p ($code)"; fi
 done
@@ -89,6 +89,28 @@ if echo "$SSR_HOME" | grep -q "注册领取" && ! echo "$SSR_HOME" | grep -q 'id
 else
   bad "ssr=1 homepage preview"
 fi
+
+# FAQ / About：始终 SSR，主 CTA 应对齐 register-first
+echo ""
+echo "[2c] FAQ/About conversion CTAs"
+assert_seo_register_cta() {
+  local path="$1"
+  local html ctype
+  # 用 GET 取头（部分路由对 HEAD 返回 405）
+  ctype=$(curl -sf -D - -o /tmp/lyread_seo_$$.html "$BASE_URL$path" | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}')
+  html=$(cat /tmp/lyread_seo_$$.html 2>/dev/null || true)
+  rm -f /tmp/lyread_seo_$$.html
+  if echo "$ctype" | grep -q 'text/html' \
+    && echo "$html" | grep -q 'login?mode=register' \
+    && echo "$html" | grep -q '30 点' \
+    && ! echo "$html" | grep -q 'id="app"'; then
+    ok "SSR register CTA $path"
+  else
+    bad "SSR register CTA $path (need HTML + login?mode=register + 30 点)"
+  fi
+}
+assert_seo_register_cta "/faq"
+assert_seo_register_cta "/about"
 
 # --- 3. 收款链（沙箱/正式）---
 echo ""
