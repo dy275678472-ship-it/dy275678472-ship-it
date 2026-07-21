@@ -2,7 +2,7 @@
 # LyRead 一键部署（在服务器 ~/lyread-deploy 目录执行）
 set -euo pipefail
 
-BRANCH="${BRANCH:-cursor/lyread-case-related-cta-bf92}"
+BRANCH="${BRANCH:-cursor/lyread-95ed}"
 REPO_DIR="${REPO_DIR:-$HOME/lyread-deploy}"
 ENV_FILE="${ENV_FILE:-/tmp/lyread.env}"
 NETWORK="${DOCKER_NETWORK:-lyread-net}"

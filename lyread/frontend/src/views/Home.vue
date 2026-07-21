@@ -58,7 +58,17 @@
     <section class="pricing-cta">
       <h2>透明计费，失败全额返还</h2>
       <p>生成一章约 2000 字 ≈ 10 点（约 1 元）· 10 元 = 100 点</p>
-      <router-link to="/pricing" class="btn-pricing">查看价格详情 →</router-link>
+      <div class="pricing-cta-actions">
+        <button
+          v-if="!isLoggedIn"
+          type="button"
+          class="btn-pricing-register"
+          @click="goRegisterContinue('home_pricing_cta')"
+        >
+          免费注册领 30 点 →
+        </button>
+        <router-link to="/pricing" class="btn-pricing">查看价格详情 →</router-link>
+      </div>
     </section>
 
     <section class="hot-section">
@@ -193,7 +203,14 @@
             <button class="btn-continue-trial" @click="goRegisterContinue('continue_after_title')">
               用这个名字继续写 → 注册领 30 点
             </button>
-            <p class="trial-cta-hint">注册即送 30 点，约可 AI 续写 3 章</p>
+            <button
+              type="button"
+              class="btn-trial-secondary"
+              @click="goRegisterContinue('continue_workspace')"
+            >
+              继续创作台（自动带入题材）→
+            </button>
+            <p class="trial-cta-hint">注册即送 30 点，约可 AI 续写 3 章 · 题材与书名将写入创作台</p>
           </div>
           <div v-else class="trial-cta-row">
             <button class="btn-continue-trial" @click="goWorkspaceContinue">进入创作台继续 →</button>
@@ -249,10 +266,12 @@ function goWorkspaceContinue() {
 
 function goRegisterContinue(label = 'continue_after_title') {
   const eventLabel = typeof label === 'string' ? label : 'continue_after_title'
-  const redirect =
-    eventLabel === 'home_hot_cases'
-      ? '/workspace?mode=new'
-      : `/workspace?${new URLSearchParams(workspaceQuery()).toString()}`
+  // 案例区/计费区：无试用上下文，进创作台新建
+  // 试用成功「继续创作台」：带题材+灵感+书名深链，注册后直接预填向导
+  const bareWorkspace = eventLabel === 'home_hot_cases' || eventLabel === 'home_pricing_cta'
+  const redirect = bareWorkspace
+    ? '/workspace?mode=new'
+    : `/workspace?${new URLSearchParams(workspaceQuery()).toString()}`
   router.push({ path: '/login', query: { redirect, mode: 'register' } })
   showTrialModal.value = false
   trackEvent('trial_register_cta', { category: 'funnel', label: eventLabel })
@@ -726,6 +745,15 @@ const startTrial = async (append = false) => {
 }
 .pricing-cta h2 { font-size: 22px; color: #ad6800; margin-bottom: 8px; }
 .pricing-cta p { color: #8c6d1f; margin-bottom: 16px; font-size: 14px; }
+.pricing-cta-actions {
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;
+}
+.btn-pricing-register {
+  display: inline-block; padding: 10px 22px; border-radius: 10px;
+  background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
+  font-weight: 700; border: none; cursor: pointer; font-size: 14px;
+}
+.btn-pricing-register:hover { filter: brightness(1.05); }
 .btn-pricing {
   display: inline-block; padding: 10px 22px; border-radius: 10px;
   background: #fff; color: #ad6800; font-weight: 600; text-decoration: none;
@@ -752,13 +780,19 @@ const startTrial = async (append = false) => {
 .btn-more-titles:hover { background: #eff6ff; }
 .result-title { font-weight: 700; color: #1e2a3a; margin-bottom: 6px; }
 .result-hook { font-size: 13px; color: #5a6a7a; }
-.trial-cta-row { margin-top: 16px; text-align: center; }
+.trial-cta-row { margin-top: 16px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
 .btn-continue-trial {
   width: 100%; padding: 14px 20px; border: none; border-radius: 12px;
   background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
   font-size: 16px; font-weight: 700; cursor: pointer;
 }
-.trial-cta-hint { margin-top: 8px; font-size: 12px; color: #64748b; }
+.btn-trial-secondary {
+  width: 100%; padding: 12px 16px; border-radius: 12px;
+  border: 1px solid #93c5fd; background: #fff; color: #2563eb;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.btn-trial-secondary:hover { background: #eff6ff; }
+.trial-cta-hint { margin-top: 0; font-size: 12px; color: #64748b; }
 .trial-error {
   margin-top: 12px; padding: 10px 12px; border-radius: 8px;
   background: #fef2f2; color: #dc2626; font-size: 13px; text-align: left;
