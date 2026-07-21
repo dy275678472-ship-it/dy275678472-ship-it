@@ -93,13 +93,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { storyApi, casesApi } from '../api'
 import { IMAGES } from '../assets/images'
 import { allTemplatesForGenre } from '../constants/creation'
 import { pickRandom, mergeStringOptions } from '../utils/optionPool'
 import { trackEvent } from '../utils/analytics'
 
+const route = useRoute()
 const router = useRouter()
 const images = IMAGES
 const genres = ref([])
@@ -120,7 +121,24 @@ const loggedIn = ref(!!localStorage.getItem('token'))
 
 const genreLabel = computed(() => genreCustom.value || genreName.value || '都市')
 const canGenerate = computed(() => (genreId.value || genreCustom.value?.trim()) && prompt.value?.trim())
-const registerTo = computed(() => ({ path: '/login', query: { mode: 'register', redirect: '/story' } }))
+
+/** Preserve guest draft across register so /story form is not blank after auth. */
+function storyDraftRedirect() {
+  const params = new URLSearchParams()
+  if (genreCustom.value?.trim()) params.set('genreCustom', genreCustom.value.trim().slice(0, 40))
+  else if (genreId.value) params.set('genre', String(genreId.value).slice(0, 40))
+  if (genreName.value) params.set('genreName', String(genreName.value).slice(0, 40))
+  if (prompt.value?.trim()) params.set('prompt', prompt.value.trim().slice(0, 500))
+  if (godfinger.value) params.set('godfinger', String(godfinger.value).slice(0, 40))
+  const qs = params.toString()
+  return qs ? `/story?${qs}` : '/story'
+}
+
+const registerTo = computed(() => ({
+  path: '/login',
+  query: { mode: 'register', redirect: storyDraftRedirect() },
+}))
+
 const generateLabel = computed(() => {
   if (!loggedIn.value) return '免费注册并生成短篇'
   if (busy.value) return '生成中...'
@@ -136,6 +154,21 @@ function formatWords(n) {
 function requireAuth(action) {
   trackEvent('story_gate_click', { category: 'conversion', label: action })
   router.push(registerTo.value)
+}
+
+function restoreDraftFromQuery() {
+  const q = route.query
+  const str = (v) => (typeof v === 'string' ? v : '')
+  if (str(q.prompt)) prompt.value = str(q.prompt).slice(0, 500)
+  if (str(q.godfinger)) godfinger.value = str(q.godfinger).slice(0, 40)
+  if (str(q.genreCustom)) {
+    genreCustom.value = str(q.genreCustom).slice(0, 40)
+    genreId.value = ''
+    genreName.value = ''
+  } else if (str(q.genre)) {
+    genreId.value = str(q.genre).slice(0, 40)
+    if (str(q.genreName)) genreName.value = str(q.genreName).slice(0, 40)
+  }
 }
 
 function refreshTemplates() {
@@ -223,6 +256,7 @@ async function saveToWorkspace() {
 
 onMounted(async () => {
   loggedIn.value = !!localStorage.getItem('token')
+  restoreDraftFromQuery()
   const [g, gf, casesRes] = await Promise.all([
     storyApi.suggestGenres(),
     storyApi.godfingers(),
@@ -232,7 +266,17 @@ onMounted(async () => {
   if (gf?.success) godfingers.value = gf.godfingers || []
   const list = casesRes?.cases || []
   samples.value = list.filter((c) => c.excerpt).slice(0, 3)
+  if (genreId.value && genres.value.length) {
+    const matched = genres.value.find((x) => x.id === genreId.value)
+    if (matched) {
+      genreName.value = matched.name
+      genreCustom.value = ''
+    }
+  }
   refreshTemplates()
+  if (route.query.prompt || route.query.genre || route.query.genreCustom) {
+    trackEvent('story_draft_restored', { category: 'conversion', label: loggedIn.value ? 'auth' : 'anon' })
+  }
   trackEvent('story_teaser_view', { category: 'growth', label: loggedIn.value ? 'auth' : 'anon' })
 })
 </script>

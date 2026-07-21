@@ -26,7 +26,12 @@
           </router-link>
           <router-link to="/login" class="nav-link btn-logout" @click="logout">退出</router-link>
         </template>
-        <router-link v-else to="/login" class="nav-link btn-login" @click="menuOpen = false">登录 / 注册</router-link>
+        <router-link
+          v-else
+          :to="{ path: '/login', query: { mode: 'register' } }"
+          class="nav-link btn-login"
+          @click="menuOpen = false"
+        >免费注册</router-link>
       </div>
     </nav>
     <router-view @credits-changed="fetchCredits" />
