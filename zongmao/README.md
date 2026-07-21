@@ -36,3 +36,17 @@ sudo nginx -t && sudo systemctl reload nginx
 5. 品类落地页 `/category/{能源|黑色|有色|化工|农产品}`
 6. Nginx 安全头：HSTS、Referrer-Policy、Permissions-Policy
 7. 百度统计配置：`/opt/zongmao/site_config.json` 设置 `baidu_hm_id`
+
+## SEO/GEO P0
+
+```bash
+sudo python3 /opt/zongmao/scripts/p0-seo-patch.py
+sudo systemctl restart zongmao.service
+```
+
+### SEO P0 包含项
+
+1. 域名统一：`www.zongmao.cn` → `zongmao.cn` 301；百度推送改用裸域
+2. `/performance` 战绩 KPI SSR + Dataset Schema（GEO 可引用）
+3. `/llms.txt` AI 爬虫指引文件
+4. 百度推送策略：改推 news/price/signal/信任页（不再推 cards/asset）
