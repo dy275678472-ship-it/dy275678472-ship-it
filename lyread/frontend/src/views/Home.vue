@@ -1,14 +1,16 @@
 <template>
   <div class="home">
     <section class="hero">
-      <img :src="images.hero" alt="" class="hero-bg" aria-hidden="true" />
+      <img :src="images.hero" alt="" class="hero-bg" aria-hidden="true" fetchpriority="high" loading="eager" decoding="async" width="1920" height="600" />
       <div class="hero-content">
-        <h1>让 AI 陪你写完一部长篇小说</h1>
-        <p class="subtitle">从人物、大纲到连续章节，自动记住剧情和伏笔；也支持快速生成完整短故事</p>
+        <p class="hero-tagline">按章约 1 元 · 失败全额返还 · 自带长篇记忆</p>
+        <h1>AI 写小说，陪你日更长篇连载</h1>
+        <p class="subtitle">从书名、大纲到章纲与正文续写，人物伏笔自动记忆，写到 50 章也不乱</p>
         <div class="hero-btns">
-          <button class="btn-primary" @click="openTrial">免费试写第一章</button>
+          <button class="btn-primary" @click="openTrial">免费生成 5 个爆款书名</button>
           <button class="btn-secondary" @click="$router.push('/trending')">查看真实案例</button>
         </div>
+        <p class="hero-hint">游客免费体验书名生成 · 注册送 30 点（约可续写 3 章）</p>
       </div>
     </section>
 
@@ -67,13 +69,11 @@
         <p>暂无公开案例，<router-link to="/workspace">开始创作</router-link> 并提交审核后将展示在这里</p>
       </div>
       <div v-else class="hot-grid">
-        <a
+        <router-link
           v-for="(c, i) in hotCases"
           :key="c.id"
-          :href="c.url"
+          :to="`/case/${c.id}`"
           class="hot-card hot-card-link"
-          target="_blank"
-          rel="noopener"
           @click="trackCaseClick(c)"
         >
           <img :src="coverForCase(c, i)" :alt="`${c.title} 封面`" class="hot-cover" loading="lazy" />
@@ -85,7 +85,7 @@
               <span>热度 {{ c.heat }}</span>
             </div>
           </div>
-        </a>
+        </router-link>
       </div>
     </section>
 
@@ -111,21 +111,21 @@
     <div class="modal-overlay" v-if="showTrialModal" @click.self="showTrialModal = false">
       <div class="modal-content">
         <button class="modal-close" @click="showTrialModal = false">×</button>
-        <SectionHeading tag="h3" :icon="images.logo" center>免费体验 AI 创作</SectionHeading>
-        <p class="trial-desc">3步生成你的第一本小说！</p>
+        <SectionHeading tag="h3" :icon="images.logo" center>免费体验 · AI 书名生成</SectionHeading>
+        <p class="trial-desc">选题材、写灵感，AI 一次生成 5 个爆款书名</p>
         
         <div class="trial-steps">
           <div class="trial-step">
             <span class="step-num">1</span>
-            <span>输入题材和想法</span>
+            <span>选题材 + 写灵感</span>
           </div>
           <div class="trial-step">
             <span class="step-num">2</span>
-            <span>AI生成大纲</span>
+            <span>AI 生成 5 个书名</span>
           </div>
           <div class="trial-step">
             <span class="step-num">3</span>
-            <span>开始写作</span>
+            <span>注册后进创作台写大纲与正文</span>
           </div>
         </div>
 
@@ -187,7 +187,7 @@
         <div v-if="trialError" class="trial-error">{{ trialError }}</div>
 
         <div class="trial-tips" v-if="!trialResult">
-          <span class="tip-badge"><img :src="images.pricing.gift" alt="免费试用" width="16" height="16" /> 游客可免费试用一次</span>
+          <span class="tip-badge"><img :src="images.pricing.gift" alt="免费试用" width="16" height="16" /> 游客可免费生成书名一次</span>
           <span class="tip-link" @click="goRegisterContinue">注册送 30 点 →</span>
         </div>
       </div>
@@ -380,7 +380,12 @@ const startTrial = async (append = false) => {
   pointer-events: none;
 }
 .hero-content { position: relative; z-index: 1; }
+.hero-tagline {
+  display: inline-block; margin-bottom: 12px; padding: 6px 14px; border-radius: 999px;
+  background: rgba(255,255,255,0.18); font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+}
 .hero h1 { font-size: 36px; margin-bottom: 16px; }
+.hero-hint { margin-top: 16px; font-size: 13px; opacity: 0.85; }
 .subtitle { font-size: 18px; opacity: 0.9; margin-bottom: 32px; }
 .hero-btns { display: flex; gap: 16px; justify-content: center; }
 .btn-primary, .btn-secondary, .btn-start-trial {

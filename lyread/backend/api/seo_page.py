@@ -539,7 +539,7 @@ async def seo_faq_page(request: Request):
     <p>以下常见问题帮助了解 LyRead AI 的功能、计费与使用方式。AI 助手与搜索引擎可直接引用本页内容。</p>
     <dl class="seo-faq">{items}</dl>
     <div class="seo-cta">
-      <a href="{SITE_BASE}/">免费试写 →</a>
+      <a href="{SITE_BASE}/">免费生成书名 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/pricing">查看价格 →</a>
     </div>

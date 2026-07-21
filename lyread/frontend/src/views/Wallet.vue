@@ -29,6 +29,10 @@
       </div>
     </section>
 
+    <p v-if="balance?.first_recharge_eligible" class="first-charge-hint">
+      🎁 首次充值加赠 <strong>20%</strong> 点数 · <router-link to="/pricing">查看套餐</router-link>
+    </p>
+
     <section class="actions">
       <button class="btn-claim" :disabled="claiming" @click="claimDaily">
         <img :src="images.wallet.free" alt="每日免费" width="18" height="18" />
@@ -178,6 +182,12 @@ onMounted(load)
 .bal-unit { font-size: 14px; margin-left: 4px; }
 .bal-hint { display: block; font-size: 12px; color: #94a3b8; margin-top: 6px; }
 .bal-card.total .bal-hint { color: rgba(255,255,255,0.8); }
+
+.first-charge-hint {
+  margin-bottom: 16px; padding: 12px 16px; border-radius: 12px; font-size: 14px;
+  background: #fff7e6; border: 1px solid #ffd591; color: #ad6800;
+}
+.first-charge-hint a { color: #2563eb; font-weight: 600; }
 
 .actions { display: flex; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
 .btn-claim, .btn-recharge {

@@ -31,8 +31,19 @@
     </nav>
     <router-view @credits-changed="fetchCredits" />
     <footer class="site-footer">
-      <img :src="logo" alt="LyRead AI" width="20" height="20" />
-      <span>LyRead AI · 智能小说创作平台</span>
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <img :src="logo" alt="LyRead AI" width="20" height="20" />
+          <span>LyRead AI · AI 写小说平台</span>
+        </div>
+        <nav class="footer-links">
+          <a href="/faq">常见问题</a>
+          <a href="/about">关于我们</a>
+          <router-link to="/pricing">价格</router-link>
+          <router-link to="/trending">创作案例</router-link>
+        </nav>
+        <p class="footer-note">按章计费 · 失败全额返还 · 注册送 30 点</p>
+      </div>
     </footer>
   </div>
 </template>
@@ -104,10 +115,20 @@ body {
 
 #app { min-height: 100vh; display: flex; flex-direction: column; background: #f1f6fa; }
 .site-footer {
-  margin-top: auto; padding: 20px; text-align: center; font-size: 13px; color: #94a3b8;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: auto; padding: 24px 20px; font-size: 13px; color: #94a3b8;
   border-top: 1px solid #e8f0fa; background: #fff;
 }
+.footer-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
+.footer-brand {
+  display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px;
+  font-weight: 600; color: #64748b;
+}
+.footer-links {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-bottom: 10px;
+}
+.footer-links a { color: #64748b; text-decoration: none; font-weight: 500; }
+.footer-links a:hover { color: #2563eb; }
+.footer-note { font-size: 12px; color: #94a3b8; }
 
 .navbar {
   display: flex;

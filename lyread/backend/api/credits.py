@@ -29,6 +29,7 @@ PRICES = {
     "chapter": 10,
     "continue": 10,
     "consistency": 2,
+    "short_story": 15,
 }
 
 
@@ -238,14 +239,40 @@ def refund(uid: str, job_id: int, error_code: str = "generation_failed") -> None
 
 # ==================== API ====================
 
+def _first_recharge_eligible(uid: str) -> bool:
+    conn = _db()
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT id FROM credit_transactions WHERE user_id=%s AND type='recharge' LIMIT 1",
+            (uid,),
+        )
+        return cursor.fetchone() is None
+    finally:
+        if conn.is_connected():
+            conn.close()
+
+
 @router.get("/balance")
 def balance(user: dict = Depends(get_current_user)):
-    return {"success": True, **get_balance(str(user["sub"]))}
+    uid = str(user["sub"])
+    return {
+        "success": True,
+        **get_balance(uid),
+        "first_recharge_eligible": _first_recharge_eligible(uid),
+        "first_recharge_bonus_percent": 20,
+    }
 
 
 @router.get("/prices")
 def prices():
-    return {"success": True, "prices": PRICES, "signup_bonus": SIGNUP_BONUS, "daily_free": DAILY_FREE}
+    return {
+        "success": True,
+        "prices": PRICES,
+        "signup_bonus": SIGNUP_BONUS,
+        "daily_free": DAILY_FREE,
+        "first_recharge_bonus_percent": 20,
+    }
 
 
 class EstimateRequest(BaseModel):

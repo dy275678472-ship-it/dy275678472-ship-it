@@ -19,6 +19,8 @@ PACKAGES = {
     "l": {"name": "连载包", "price_yuan": 98, "points": 1200},
 }
 
+FIRST_RECHARGE_BONUS_RATE = 0.20  # 首充加赠 20%
+
 
 def _db():
     try:
@@ -32,25 +34,40 @@ class CreateOrderRequest(BaseModel):
     idempotency_key: str = Field(min_length=8, max_length=80)
 
 
-def _credit_recharge(conn, uid: str, points: int, out_trade_no: str, trade_no: str):
+def _has_prior_recharge(cursor, uid: str) -> bool:
+    cursor.execute(
+        "SELECT id FROM credit_transactions WHERE user_id=%s AND type='recharge' LIMIT 1",
+        (uid,),
+    )
+    return cursor.fetchone() is not None
+
+
+def _credit_recharge(conn, uid: str, points: int, out_trade_no: str, trade_no: str) -> dict:
     cursor = conn.cursor(dictionary=True)
     cursor.execute(
         "SELECT id FROM credit_transactions WHERE user_id=%s AND ref_type='order' AND ref_id=%s LIMIT 1",
         (uid, out_trade_no),
     )
     if cursor.fetchone():
-        return
+        return {"points": points, "bonus": 0, "first_recharge": False}
+    is_first = not _has_prior_recharge(cursor, uid)
+    bonus = int(points * FIRST_RECHARGE_BONUS_RATE) if is_first else 0
+    total_points = points + bonus
     cursor.execute("INSERT IGNORE INTO credit_accounts (user_id) VALUES (%s)", (uid,))
     cursor.execute("SELECT paid_balance, free_balance FROM credit_accounts WHERE user_id=%s FOR UPDATE", (uid,))
     acc = cursor.fetchone() or {"paid_balance": 0, "free_balance": 0}
-    new_paid = int(acc["paid_balance"]) + points
+    new_paid = int(acc["paid_balance"]) + total_points
     cursor.execute("UPDATE credit_accounts SET paid_balance=%s WHERE user_id=%s", (new_paid, uid))
     bal_after = new_paid + int(acc["free_balance"])
+    note = f"充值到账 {points} 点"
+    if bonus:
+        note += f"（首充加赠 {bonus} 点）"
     cursor.execute(
         "INSERT INTO credit_transactions (user_id, type, amount, free_delta, paid_delta, balance_after, ref_type, ref_id, note) "
         "VALUES (%s,'recharge',%s,0,%s,%s,'order',%s,%s)",
-        (uid, points, points, bal_after, out_trade_no, f"充值到账 {points} 点"),
+        (uid, total_points, total_points, bal_after, out_trade_no, note),
     )
+    return {"points": points, "bonus": bonus, "first_recharge": is_first and bonus > 0}
 
 
 @router.get("/packages")
@@ -65,6 +82,7 @@ def packages():
         "alipay_ready": alipay_ready,
         "sandbox": sandbox,
         "payment_mode": "alipay" if alipay_ready else ("sandbox" if sandbox else "none"),
+        "first_recharge_bonus_percent": int(FIRST_RECHARGE_BONUS_RATE * 100),
     }
 
 
@@ -162,9 +180,12 @@ def sandbox_confirm(out_trade_no: str, user: dict = Depends(get_current_user)):
             "UPDATE orders SET status='paid', trade_no=%s, paid_amount_fen=%s, paid_at=NOW() WHERE out_trade_no=%s",
             (trade_no, order["amount_fen"], out_trade_no),
         )
-        _credit_recharge(conn, uid, int(order["points"]), out_trade_no, trade_no)
+        credit_info = _credit_recharge(conn, uid, int(order["points"]), out_trade_no, trade_no)
         conn.commit()
-        return {"success": True, "message": f"沙箱充值成功 +{order['points']} 点", "status": "paid"}
+        msg = f"沙箱充值成功 +{order['points']} 点"
+        if credit_info.get("bonus"):
+            msg += f"（首充加赠 {credit_info['bonus']} 点）"
+        return {"success": True, "message": msg, "status": "paid", "bonus": credit_info.get("bonus", 0)}
     except HTTPException:
         raise
     except Exception as exc:

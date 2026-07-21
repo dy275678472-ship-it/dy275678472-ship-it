@@ -3,8 +3,9 @@
     <img :src="images.pricingHero" alt="" class="pricing-hero-banner" aria-hidden="true" />
     <header class="page-hero">
       <img :src="images.pricing.gem" alt="点数计费图标" class="page-hero-icon" width="44" height="44" />
-      <h1>点数计费，用多少付多少</h1>
+      <h1>AI 写小说价格 · 按章约 1 元</h1>
       <p>无订阅、无终身无限套餐。生成前显示预计消耗，失败自动全额返还。</p>
+      <p v-if="firstRechargeEligible" class="first-recharge-banner">🎁 首充加赠 <strong>20%</strong> 点数（限时活动）</p>
     </header>
 
     <section class="highlights" v-if="info">
@@ -91,6 +92,8 @@ const info = ref(null)
 const sandboxMode = ref(false)
 const alipayReady = ref(false)
 const payError = ref('')
+const firstRechargeEligible = ref(false)
+const firstRechargeBonusPercent = ref(20)
 const images = IMAGES
 
 const LABELS = {
@@ -100,6 +103,7 @@ const LABELS = {
   chapter: ['生成一章正文', '约 2000 字'],
   continue: ['章节续写', '承接上文继续写'],
   consistency: ['一致性检查', '人物/伏笔冲突检测'],
+  short_story: ['短故事一键生成', '约 3000 字完整短篇'],
 }
 
 const priceRows = computed(() => {
@@ -121,7 +125,8 @@ const packages = [
 const faqs = [
   { q: '点数会过期吗？', a: '充值点数长期有效。每日免费额度仅当日有效，次日重置为 5 点，不累计。' },
   { q: '生成失败会扣点吗？', a: '不会。任务失败会自动全额返还已冻结的点数。' },
-  { q: '可以先免费试用吗？', a: '可以。首页支持匿名试用书名生成；注册后再领 30 点 + 每日 5 点。' },
+  { q: '可以先免费试用吗？', a: '可以。首页支持游客免费生成书名；注册后再领 30 点 + 每日 5 点，约可续写 3 章。' },
+  { q: '首充加赠怎么算？', a: '首次充值任意套餐，额外赠送套餐点数的 20%。例如体验包 100 点，首充实得 120 点。' },
 ]
 
 const isLoggedIn = computed(() => !!localStorage.getItem('token'))
@@ -129,14 +134,22 @@ const isLoggedIn = computed(() => !!localStorage.getItem('token'))
 onMounted(async () => {
   trackEvent('pricing_view', { category: 'funnel', label: 'page_load' })
   try {
-    const [prices, pkgs] = await Promise.all([
+    const [prices, pkgs, bal] = await Promise.all([
       creditsApi.prices(),
       ordersApi.packages().catch(() => null),
+      isLoggedIn.value ? creditsApi.balance().catch(() => null) : Promise.resolve(null),
     ])
     info.value = prices
+    if (prices?.first_recharge_bonus_percent) {
+      firstRechargeBonusPercent.value = prices.first_recharge_bonus_percent
+    }
+    if (bal?.first_recharge_eligible) firstRechargeEligible.value = true
     if (pkgs) {
       alipayReady.value = !!pkgs.alipay_ready
       sandboxMode.value = pkgs.payment_mode === 'sandbox'
+      if (pkgs.first_recharge_bonus_percent) {
+        firstRechargeBonusPercent.value = pkgs.first_recharge_bonus_percent
+      }
     }
   } catch (e) { /* 使用默认展示 */ }
 })
@@ -156,12 +169,15 @@ async function buy(pkg) {
     return
   }
   if (res.sandbox || !res.alipay_ready) {
-    const ok = confirm(`沙箱模式：模拟支付 ¥${pkg.price} 获得 ${pkg.credits} 点？`)
+    const bonusHint = firstRechargeEligible.value ? `（首充加赠 ${Math.floor(pkg.credits * firstRechargeBonusPercent.value / 100)} 点）` : ''
+    const ok = confirm(`沙箱模式：模拟支付 ¥${pkg.price} 获得 ${pkg.credits} 点${bonusHint}？`)
     if (!ok) return
     const paid = await ordersApi.sandboxConfirm(res.out_trade_no)
     if (paid?.success) {
+      trackEvent('recharge_complete', { category: 'funnel', label: pkg.id, value: pkg.price })
       window.dispatchEvent(new Event('credits-changed'))
       payError.value = ''
+      firstRechargeEligible.value = false
       alert(paid?.message || '充值完成，点数已到账')
     } else {
       payError.value = paid?.detail || '沙箱充值失败'
@@ -183,6 +199,10 @@ async function buy(pkg) {
 .page-hero-icon { display: block; margin: 0 auto 12px; }
 .page-hero h1 { font-size: 32px; color: #1e2a3a; margin-bottom: 12px; }
 .page-hero p { color: #5a6a7a; font-size: 16px; }
+.first-recharge-banner {
+  margin-top: 14px; display: inline-block; padding: 8px 16px; border-radius: 999px;
+  background: linear-gradient(135deg, #fff7e6, #ffe9c7); color: #ad6800; font-size: 14px;
+}
 
 .highlights { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 48px; }
 .highlight-card {

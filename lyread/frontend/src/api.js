@@ -1,3 +1,5 @@
+import { trackEvent } from './utils/analytics'
+
 async function request(path, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) }
   const token = localStorage.getItem('token')
@@ -5,6 +7,9 @@ async function request(path, options = {}) {
   const res = await fetch(path, { ...options, headers })
   const data = await res.json().catch(() => ({}))
   if (!res.ok) {
+    if (res.status === 402) {
+      trackEvent('insufficient_credits', { category: 'funnel', label: path })
+    }
     return {
       ...data,
       detail: data.detail || data.error || res.statusText,
