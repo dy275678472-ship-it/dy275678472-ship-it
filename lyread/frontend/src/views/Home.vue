@@ -615,12 +615,21 @@ const startTrial = async (append = false) => {
 .hot-excerpt {
   font-size: 12px;
   color: #64748b;
-  line-height: 1.5;
+  line-height: 1.55;
   margin: 0 0 10px;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  transition: color 0.15s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .hot-excerpt { -webkit-line-clamp: 2; }
+  .hot-card:hover .hot-excerpt,
+  .hot-card:focus-within .hot-excerpt {
+    -webkit-line-clamp: 6;
+    color: #475569;
+  }
 }
 .hot-tags span {
   display: inline-block;

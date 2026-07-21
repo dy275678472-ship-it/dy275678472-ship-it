@@ -280,7 +280,26 @@ onMounted(async () => {
 .case-card:hover { box-shadow: 0 8px 24px rgba(77,161,255,0.12); transform: translateY(-2px); border-color: #bfdbfe; }
 .cat { display: inline-block; padding: 3px 10px; background: rgba(77,161,255,0.12); color: #2563eb; border-radius: 999px; font-size: 12px; margin-bottom: 10px; }
 .case-card h3 { font-size: 16px; color: #1e2a3a; margin-bottom: 8px; line-height: 1.4; }
-.excerpt { font-size: 12px; color: #64748b; line-height: 1.5; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+/* tip 列表节选约 200 字：触控默认多露一行；桌面 hover/focus 展开到约满节选 */
+.excerpt {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.55;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.15s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .excerpt { -webkit-line-clamp: 2; }
+  .case-card:hover .excerpt,
+  .case-card:focus-within .excerpt {
+    -webkit-line-clamp: 6;
+    color: #475569;
+  }
+}
 .meta { display: flex; gap: 12px; font-size: 12px; color: #94a3b8; }
 .cta { text-align: center; }
 .guest-cta-hint {

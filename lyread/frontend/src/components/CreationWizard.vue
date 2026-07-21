@@ -3,7 +3,7 @@
     <div v-if="showHint" class="wizard-hint" role="status">
       <div>
         <strong>首次创作提示</strong>
-        <p>共 7 步：题材 → 灵感 → 书名 → 设定 → 大纲 → 章纲 → 正文。每步可点 AI 或手填；失败不扣点，点数不足会提示充值。</p>
+        <p>共 7 步：题材 → 灵感 → 书名 → 设定 → 大纲 → 章纲 → 正文。新用户注册送 30 点（约可 AI 续写 3 章）；每步可点 AI 或手填，失败不扣点，点数不足会提示充值。</p>
       </div>
       <button type="button" class="hint-dismiss" @click="dismissHint">知道了</button>
     </div>
