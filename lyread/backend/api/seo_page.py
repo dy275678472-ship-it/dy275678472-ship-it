@@ -5,6 +5,7 @@
 
 import os
 from html import escape
+from urllib.parse import quote
 import requests
 import mysql.connector
 from datetime import datetime
@@ -14,6 +15,12 @@ from settings import database_config
 from api.auth import get_current_user
 from services.case_quality import public_case_sql_clause
 from services.seo_schema import breadcrumb, combine_json_ld, faq_graph
+from services.seo_content import (
+    COMPARE_PAGES,
+    GUIDE_PAGES,
+    GENRE_PAGES,
+    all_static_seo_paths,
+)
 
 router = APIRouter()
 
@@ -359,6 +366,8 @@ async def sitemap_xml():
         (f"{SITE_BASE}/reader", "weekly", "0.7", today),
         (f"{SITE_BASE}/ep", "weekly", "0.7", today),
     ]
+    for path, freq, priority in all_static_seo_paths():
+        urls.append((f"{SITE_BASE}{path}", freq, priority, today))
 
     try:
         db = get_db()
@@ -371,6 +380,7 @@ async def sitemap_xml():
             for row in cursor.fetchall():
                 updated = row['updated_at'].strftime('%Y-%m-%d') if row.get('updated_at') else today
                 urls.append((f"{SITE_BASE}/ep/{row['id']}", "weekly", "0.6", updated))
+                urls.append((f"{SITE_BASE}/case/{row['id']}", "weekly", "0.55", updated))
             cursor.close()
             db.close()
     except Exception as e:
@@ -452,6 +462,8 @@ async def llms_txt():
 - 创作案例：https://lyread.cn/trending
 - 常见问题：https://lyread.cn/faq
 - 关于我们：https://lyread.cn/about
+- 工具对比：https://lyread.cn/compare
+- 创作教程：https://lyread.cn/guide
 - 案例索引：https://lyread.cn/ep
 - 站点地图：https://lyread.cn/sitemap.xml
 
@@ -607,6 +619,172 @@ async def seo_about_page(request: Request):
         keywords="LyRead,AI小说平台,关于我们,智能写作",
         url=url, site_base=SITE_BASE, meta_info="品牌与产品介绍",
         body_html=body_html, json_ld=json_ld,
+    )
+
+
+def _sections_html(sections: list) -> str:
+    parts = []
+    for title, body in sections:
+        if isinstance(body, str) and body.strip().startswith("<"):
+            inner = body
+        else:
+            inner = f"<p>{escape(str(body))}</p>"
+        parts.append(
+            f'<h2 style="font-size:18px;margin:24px 0 12px;color:#1e2a3a">{escape(title)}</h2>{inner}'
+        )
+    return "".join(parts)
+
+
+def _render_article_page(meta: dict, url: str, crumbs: list[tuple[str, str]]) -> str:
+    h1 = meta.get("h1") or meta["title"]
+    body_html = f"<h2 style='font-size:20px;margin-bottom:16px'>{escape(h1)}</h2>"
+    body_html += _sections_html(meta["sections"])
+    if meta.get("faqs"):
+        body_html += '<h2 style="font-size:18px;margin:24px 0 12px">常见问题</h2><dl class="seo-faq">'
+        for q, a in meta["faqs"]:
+            body_html += f"<dt>{escape(q)}</dt><dd>{escape(a)}</dd>"
+        body_html += "</dl>"
+    body_html += f"""
+    <div class="seo-cta">
+      <a href="{SITE_BASE}/">免费生成书名 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/pricing">查看价格 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">浏览案例 →</a>
+    </div>
+    """
+    json_ld_parts = [breadcrumb(crumbs)]
+    if meta.get("faqs"):
+        json_ld_parts.append(faq_graph(meta["faqs"]))
+    return PAGE_TEMPLATE.format(
+        title=meta["title"],
+        description=meta["description"],
+        keywords=meta.get("keywords", "AI写小说,LyRead"),
+        url=url,
+        site_base=SITE_BASE,
+        meta_info="LyRead AI 创作指南",
+        body_html=body_html,
+        json_ld=combine_json_ld(*json_ld_parts),
+    )
+
+
+@router.get("/compare", response_class=HTMLResponse)
+async def seo_compare_index():
+    items = "".join(
+        f'<li><a href="{SITE_BASE}/compare/{slug}">{escape(p["title"])}</a></li>'
+        for slug, p in COMPARE_PAGES.items()
+    )
+    body = f"""
+    <p>客观对比 LyRead 与主流 AI 写小说工具，帮你按创作场景选型。</p>
+    <ul class="seo-list">{items}</ul>
+    <div class="seo-cta"><a href="{SITE_BASE}/">免费试用 LyRead →</a></div>
+    """
+    return PAGE_TEMPLATE.format(
+        title="AI写小说工具对比 - LyRead AI",
+        description="LyRead 与笔灵、蛙趣拼文、ChatGPT 等工具对比：长篇记忆、计费、工作流与适用人群。",
+        keywords="AI写小说对比,笔灵,蛙蛙写作,ChatGPT写小说",
+        url="/compare", site_base=SITE_BASE, meta_info="工具对比",
+        body_html=body,
+        json_ld=breadcrumb([("首页", f"{SITE_BASE}/"), ("工具对比", f"{SITE_BASE}/compare")]),
+    )
+
+
+@router.get("/compare/{slug}", response_class=HTMLResponse)
+async def seo_compare_page(slug: str):
+    meta = COMPARE_PAGES.get(slug)
+    if not meta:
+        raise HTTPException(status_code=404, detail="页面不存在")
+    return _render_article_page(
+        meta,
+        f"/compare/{slug}",
+        [("首页", f"{SITE_BASE}/"), ("工具对比", f"{SITE_BASE}/compare"), (meta["h1"], f"{SITE_BASE}/compare/{slug}")],
+    )
+
+
+@router.get("/guide", response_class=HTMLResponse)
+async def seo_guide_index():
+    items = "".join(
+        f'<li><a href="{SITE_BASE}/guide/{slug}">{escape(p["title"])}</a></li>'
+        for slug, p in GUIDE_PAGES.items()
+    )
+    body = f"""
+    <p>AI 写小说教程：从入门、大纲章纲到日更续写实操。</p>
+    <ul class="seo-list">{items}</ul>
+    <div class="seo-cta"><a href="{SITE_BASE}/workspace">进入创作台 →</a></div>
+    """
+    return PAGE_TEMPLATE.format(
+        title="AI写小说教程 - LyRead AI 创作指南",
+        description="AI 小说创作教程：入门开书、大纲章纲、日更续写技巧与点数成本估算。",
+        keywords="AI写小说教程,网文创作,章纲,日更",
+        url="/guide", site_base=SITE_BASE, meta_info="创作教程",
+        body_html=body,
+        json_ld=breadcrumb([("首页", f"{SITE_BASE}/"), ("创作教程", f"{SITE_BASE}/guide")]),
+    )
+
+
+@router.get("/guide/{slug}", response_class=HTMLResponse)
+async def seo_guide_page(slug: str):
+    meta = GUIDE_PAGES.get(slug)
+    if not meta:
+        raise HTTPException(status_code=404, detail="页面不存在")
+    return _render_article_page(
+        meta,
+        f"/guide/{slug}",
+        [("首页", f"{SITE_BASE}/"), ("创作教程", f"{SITE_BASE}/guide"), (meta["h1"], f"{SITE_BASE}/guide/{slug}")],
+    )
+
+
+@router.get("/genre/{slug}", response_class=HTMLResponse)
+async def seo_genre_page(slug: str):
+    genre = GENRE_PAGES.get(slug)
+    if not genre:
+        raise HTTPException(status_code=404, detail="题材不存在")
+    cases = []
+    try:
+        db = get_db()
+        if db:
+            cursor = db.cursor(dictionary=True)
+            cursor.execute(
+                f"SELECT id, title, word_count, heat FROM contents WHERE {public_case_sql_clause()} "
+                "AND category=%s ORDER BY heat DESC LIMIT 20",
+                (genre["category"],),
+            )
+            cases = cursor.fetchall()
+            cursor.close()
+            db.close()
+    except Exception as e:
+        print(f"[SEO Page] genre cases: {e}")
+
+    items = "".join(
+        f'<li><a href="{SITE_BASE}/ep/{int(c["id"])}">{escape(str(c.get("title") or "作品"))}</a>'
+        f'<span class="stat">{c.get("word_count", 0)}字 · 热度{c.get("heat", 0)}</span></li>'
+        for c in cases
+    ) or '<li style="color:#7a8ba8">暂无该题材公开案例，欢迎创作并提交审核。</li>'
+
+    body_html = f"""
+    <p>{escape(genre["intro"])}</p>
+    <h2 style="font-size:18px;margin:20px 0 12px">相关案例</h2>
+    <ul class="seo-list">{items}</ul>
+    <div class="seo-cta">
+      <a href="{SITE_BASE}/workspace?type={quote(genre['category'])}">用此题材开始创作 →</a>
+    </div>
+    """
+    title = genre["title"]
+    desc = genre["description"]
+    url = f"/genre/{slug}"
+    return PAGE_TEMPLATE.format(
+        title=title,
+        description=desc,
+        keywords=f"{genre['category']},AI写小说,网文案例,LyRead",
+        url=url,
+        site_base=SITE_BASE,
+        meta_info=genre["category"],
+        body_html=body_html,
+        json_ld=breadcrumb([
+            ("首页", f"{SITE_BASE}/"),
+            ("案例阅读", f"{SITE_BASE}/trending"),
+            (genre["category"], f"{SITE_BASE}{url}"),
+        ]),
     )
 
 
@@ -883,6 +1061,9 @@ async def ping_baidu(urls: list[str] = None, _user: dict = Depends(get_current_u
 
     if not urls:
         urls = [f"{SITE_BASE}/sitemap.xml"]
+        for path, _freq, _pri in all_static_seo_paths():
+            urls.append(f"{SITE_BASE}{path}")
+        urls = urls[:20]
 
     try:
         resp = requests.post(

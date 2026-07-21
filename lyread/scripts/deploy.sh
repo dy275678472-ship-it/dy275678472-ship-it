@@ -70,4 +70,7 @@ echo "=== cron (backup + monitor) ==="
 echo "=== smoke ==="
 BASE_URL=https://lyread.cn bash "$REPO_DIR/lyread/scripts/smoke_test.sh" || true
 
+echo "=== seo push ==="
+BASE_URL=https://lyread.cn bash "$REPO_DIR/lyread/scripts/seo_push.sh" || true
+
 echo "=== done ==="
