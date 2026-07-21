@@ -10,8 +10,13 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 CATALOG = SCRIPT_DIR / "seed_data" / "showcase_catalog.json"
 OUT_DIR = SCRIPT_DIR / "seed_data" / "showcase_excerpts"
 
-# 手写高质量节选，生成器不覆盖
-HANDCRAFTED_SUFFIXES = ("_01",)
+# 手写高质量节选，生成器不覆盖（仅最初 12 部）
+HANDCRAFTED_IDS = {
+    "showcase_urban_01", "showcase_warrior_01", "showcase_reborn_01",
+    "showcase_xianxia_01", "showcase_romance_01", "showcase_scifi_01",
+    "showcase_suspense_01", "showcase_history_01", "showcase_system_01",
+    "showcase_apocalypse_01", "showcase_campus_01", "showcase_game_01",
+}
 
 GENRE_OPENINGS = {
     "urban": """第一章 {hook}
@@ -531,7 +536,7 @@ def main() -> None:
     for case in cases:
         cid = case["content_id"]
         path = OUT_DIR / f"{cid}.txt"
-        if any(cid.endswith(s) for s in HANDCRAFTED_SUFFIXES) and path.is_file():
+        if cid in HANDCRAFTED_IDS and path.is_file():
             cleaned = _strip_boilerplate(path.read_text(encoding="utf-8"))
             if "（节选完" not in cleaned:
                 cleaned += "\n\n（节选完，共三章）"
