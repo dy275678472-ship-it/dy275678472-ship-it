@@ -24,7 +24,7 @@
         <p>该案例暂无正文节选。可先浏览同风格作品，或直接用这个题材开写。</p>
         <div class="empty-actions">
           <router-link to="/trending" class="link">浏览更多案例 →</router-link>
-          <router-link :to="workspaceLink" class="link" @click="trackCta('empty_body')">用这个风格开写 →</router-link>
+          <router-link :to="creationLink" class="link" @click="trackCta('empty_body')">{{ ctaShortLabel }}</router-link>
           <a :href="sharePath" class="link subtle">SEO 预览</a>
         </div>
       </section>
@@ -33,7 +33,8 @@
           <button type="button" class="btn-share" @click="copyShareLink">{{ copyLabel }}</button>
           <button v-if="canNativeShare" type="button" class="btn-share" @click="nativeShare">分享</button>
         </div>
-        <router-link :to="workspaceLink" class="btn-cta" @click="trackCta('footer')">用这个风格开始创作 →</router-link>
+        <p v-if="!isLoggedIn" class="guest-cta-hint">注册送 30 点，约可 AI 续写 3 章</p>
+        <router-link :to="creationLink" class="btn-cta" @click="trackCta('footer')">{{ ctaLabel }}</router-link>
       </footer>
       <section v-if="related.length" class="related" aria-label="相关案例">
         <h2 class="related-title">同风格还可读</h2>
@@ -53,8 +54,9 @@
         <router-link to="/trending" class="related-more" @click="trackRelatedMore">查看全部案例 →</router-link>
       </section>
       <div class="sticky-cta" aria-hidden="false">
-        <router-link :to="workspaceLink" class="btn-cta sticky" @click="trackCta('sticky_mobile')">
-          用这个风格开始创作 →
+        <p v-if="!isLoggedIn" class="sticky-hint">注册送 30 点 · 用同风格开写</p>
+        <router-link :to="creationLink" class="btn-cta sticky" @click="trackCta('sticky_mobile')">
+          {{ ctaLabel }}
         </router-link>
       </div>
     </article>
@@ -80,11 +82,27 @@ const canNativeShare = ref(typeof navigator !== 'undefined' && typeof navigator.
 const sharePath = computed(() => `/ep/${caseData.value?.id || route.params.id}`)
 const shareUrl = computed(() => `https://lyread.cn${sharePath.value}`)
 const coverSrc = computed(() => coverForCase(caseData.value || {}, 0))
+const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
 
 const workspaceLink = computed(() => {
   const cat = caseData.value?.category || ''
   return { path: '/workspace', query: { type: cat, prompt: `参考《${caseData.value?.title}》的风格创作` } }
 })
+
+/** 游客直达注册表单并带回创作台意图，缩短案例→注册路径 */
+const creationLink = computed(() => {
+  const ws = workspaceLink.value
+  if (isLoggedIn.value) return ws
+  const q = new URLSearchParams(ws.query || {}).toString()
+  const redirect = q ? `${ws.path}?${q}` : ws.path
+  return { path: '/login', query: { mode: 'register', redirect } }
+})
+const ctaLabel = computed(() =>
+  isLoggedIn.value ? '用这个风格开始创作 →' : '免费注册，用这个风格开写（送 30 点）→',
+)
+const ctaShortLabel = computed(() =>
+  isLoggedIn.value ? '用这个风格开写 →' : '注册送 30 点，开写 →',
+)
 
 function setCaseMeta(c) {
   const title = `${c.title} - LyRead AI 小说作品`
@@ -358,7 +376,19 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
   color: #2563eb;
   text-decoration: none;
 }
+.guest-cta-hint {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #64748b;
+  text-align: center;
+}
 .sticky-cta { display: none; }
+.sticky-hint {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
+}
 @media (max-width: 640px) {
   .reader-page { padding: 20px 14px 88px; }
   .article { padding: 20px 16px; border-radius: 12px; }
@@ -386,5 +416,6 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
     padding: 13px 16px;
     box-sizing: border-box;
   }
+  .reader-page:has(.sticky-hint) { padding-bottom: 108px; }
 }
 </style>

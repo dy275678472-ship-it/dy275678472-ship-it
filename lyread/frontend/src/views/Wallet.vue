@@ -30,9 +30,9 @@
     </section>
 
     <section class="actions">
-      <button class="btn-claim" :disabled="claiming" @click="claimDaily">
+      <button class="btn-claim" :disabled="claiming || !!balance?.claimed_today" @click="claimDaily">
         <img :src="images.wallet.free" alt="每日免费" width="18" height="18" />
-        {{ claiming ? '领取中...' : '领取今日免费 5 点' }}
+        {{ claiming ? '领取中...' : (balance?.claimed_today ? '今日已领取' : '领取今日免费 5 点') }}
       </button>
       <router-link to="/pricing" class="btn-recharge" @click="trackRecharge">
         <img :src="images.pricing.gem" alt="充值" width="18" height="18" />

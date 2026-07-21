@@ -95,11 +95,17 @@ def get_balance(uid: str) -> dict:
             "SELECT free_balance, paid_balance, reserved FROM credit_accounts WHERE user_id=%s", (uid,)
         )
         row = cursor.fetchone() or {"free_balance": 0, "paid_balance": 0, "reserved": 0}
+        cursor.execute(
+            "SELECT 1 AS ok FROM daily_free_grants WHERE user_id=%s AND grant_date=%s LIMIT 1",
+            (uid, date.today()),
+        )
+        claimed_today = cursor.fetchone() is not None
         return {
             "free": int(row["free_balance"]),
             "paid": int(row["paid_balance"]),
             "reserved": int(row["reserved"]),
             "total": int(row["free_balance"]) + int(row["paid_balance"]),
+            "claimed_today": claimed_today,
         }
     finally:
         if conn.is_connected():
