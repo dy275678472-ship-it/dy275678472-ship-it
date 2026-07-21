@@ -309,15 +309,15 @@ Simple geometric app mark for an oxygen sensing company: abstract letterform sug
 
 ## 快速核对清单（生成后打勾）
 
-- [ ] 01 Home：6 张  
-- [ ] 02 About：8 张  
-- [ ] 03 Products：9 张  
-- [ ] 04 News：4 张  
-- [ ] 05 Knowledge：9 张  
-- [ ] 06 Cases：8 张  
-- [ ] 07 Contact：6 张  
-- [ ] 08 EN/通用：3 张  
-- **合计：53 张**
+- [x] 01 Home：6 张  
+- [x] 02 About：8 张  
+- [x] 03 Products：9 张  
+- [x] 04 News：4 张  
+- [x] 05 Knowledge：9 张  
+- [x] 06 Cases：8 张  
+- [x] 07 Contact：5 张（`wechat-placeholder` 按规范跳过，保留真实 `wechat-qr.png`）  
+- [x] 08 EN/通用：3 张（favicon 已有；`hero-en` + `footer-texture` 已上线）  
+- **合计计划 53 张 · 当前线上专用素材已齐（微信占位除外）**
 
 ---
 
