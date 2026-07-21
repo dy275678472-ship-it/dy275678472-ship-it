@@ -788,6 +788,32 @@ async def ai_chat(data: AIChatIn):
     return {"answer": answer, "source": "faq"}
 
 
+@app.post("/api/admin/publish")
+async def admin_publish(request: Request):
+    """Regenerate static HTML from generate_pages.py into the live dist tree."""
+    require_admin(request)
+    import subprocess
+    from pathlib import Path
+
+    candidates = [
+        Path("/opt/kdgc-growth/generate_pages.py"),
+        Path(__file__).resolve().parents[1] / "generate_pages.py",
+    ]
+    script = next((p for p in candidates if p.exists()), None)
+    if not script:
+        raise HTTPException(500, "generate_pages.py not found")
+    r = subprocess.run(
+        ["python3", str(script)],
+        cwd=str(script.parent),
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    if r.returncode != 0:
+        raise HTTPException(500, detail=(r.stderr or r.stdout or "publish failed")[-2000:])
+    return {"ok": True, "message": "前台静态页已重新生成", "log": (r.stdout or "")[-1500:]}
+
+
 @app.get("/health")
 async def health_legacy():
     return {"status": "ok"}

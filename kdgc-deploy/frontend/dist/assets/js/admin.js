@@ -50,6 +50,24 @@ async function login() {
 
 document.getElementById("btn-login").onclick = login;
 
+const publishBtn = document.getElementById("btn-publish");
+if (publishBtn) {
+  publishBtn.onclick = async () => {
+    const log = document.getElementById("publish-log");
+    publishBtn.disabled = true;
+    log.textContent = "发布中…";
+    try {
+      const res = await api("/api/admin/publish", { method: "POST" });
+      log.textContent = (res.message || "完成") + "\n" + (res.log || "");
+      alert(res.message || "发布成功");
+    } catch (e) {
+      log.textContent = "失败：" + e.message;
+      alert("发布失败：" + e.message);
+    }
+    publishBtn.disabled = false;
+  };
+}
+
 document.querySelectorAll(".side nav button").forEach((btn) => {
   btn.onclick = () => {
     document.querySelectorAll(".side nav button").forEach((b) => b.classList.remove("active"));

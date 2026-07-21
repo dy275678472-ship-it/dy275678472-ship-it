@@ -39,6 +39,49 @@ def has_asset(rel: str) -> bool:
     return (IMG / rel).exists() or (IMG / Path(rel).with_suffix(".webp")).exists()
 
 
+
+def img_tag(rel: str, alt: str, class_name: str = "", loading: str = "lazy", sizes: str = "(max-width:767px) 100vw, 50vw") -> str:
+    """Prefer WebP with responsive sizes hint (srcset uses same asset + width descriptors when -sm exists)."""
+    url = asset_url(rel)
+    cls = f' class="{class_name}"' if class_name else ""
+    sm = IMG / Path(rel).with_name(Path(rel).stem + "-sm.webp")
+    if sm.exists():
+        sm_url = f"/assets/images/{sm.relative_to(IMG).as_posix()}"
+        return (
+            f'<img src="{url}" srcset="{sm_url} 640w, {url} 1280w" sizes="{sizes}" '
+            f'alt="{alt}"{cls} loading="{loading}" decoding="async">'
+        )
+    return f'<img src="{url}" alt="{alt}"{cls} loading="{loading}" decoding="async" sizes="{sizes}">'
+
+
+def specs_table_and_cards(rows, headers=("项目", "说明")) -> str:
+    head = "".join(f"<th>{h}</th>" for h in headers)
+    body = "".join(f"<tr><th>{k}</th><td>{v}</td></tr>" for k, v in rows)
+    cards = "".join(f'<div class="table-card"><dl><dt>{k}</dt><dd>{v}</dd></dl></div>' for k, v in rows)
+    return (
+        f'<table class="spec-table"><tr>{head}</tr>{body}</table>'
+        f'<div class="table-cards" aria-label="规格卡片">{cards}</div>'
+    )
+
+
+FAQ_ITEMS = [
+    ("变频氧传感器和传统氧传感器有什么区别？", "变频方案强调氧分压连续量化，并通过配套控制器完成激励与解调；更适合模块化探头/插针集成。详见知识库《变频氧传感器与传统氧传感器有何不同》。"),
+    ("KD0100-02S-T1 和 TO 怎么选？", "T1 为线束探头（≦35g，管路安装灵活）；TO 为插针（≦5g，适合紧凑 OEM）。量程均为 0.5–101 kPa，配套控制器 KD0100-03。"),
+    ("是否提供规格书 PDF？", "可以。产品详情页提供公开规格书 PDF 下载；如需定制接口或更细标定曲线，请通过联系表单注明型号。"),
+    ("交期与样品如何申请？", "提交联系表单或使用在线客服，留下公司、应用工况与目标氧分压范围，工程师将在承诺时限内回复。"),
+    ("是否具备车规量产认证？", "官网公开规格不等同于某一车型的量产认可。SCR/OBD 等车规项目需单独评估认证、耐久与数据包要求。"),
+    ("质保多久？", "公司公开承诺产品质保 5 年；人为违规操作或超规格使用不在正常质量责任范围内，以合同与说明书为准。"),
+]
+
+
+def faq_schema() -> str:
+    entities = ",".join(
+        f'{{"@type":"Question","name":"{q}","acceptedAnswer":{{"@type":"Answer","text":"{a}"}}}}'
+        for q, a in FAQ_ITEMS
+    )
+    return f'{{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{entities}]}}'
+
+
 def page_hero(title: str, subtitle: str = "", banner: str | None = None) -> str:
     """Top banner; uses photo background when WebP/JPG asset exists."""
     cls = "page-hero"
@@ -133,10 +176,9 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <p style="font-size:13px;margin-top:8px">{ADDRESS}</p></div>
 </div>
 <div class="footer-bottom"><div class="footer-meta">
-<span>© 2026 安徽中科国瓷新型元器件有限公司</span><span class="sep">·</span>
-<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{BEIAN_ICP}</a><span class="sep">·</span>
-<a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="" width="14" height="14">{BEIAN_GA}</a><span class="sep">·</span>
-<a href="/en/">English</a><span class="sep">|</span><a href="/">中文</a><span class="sep">·</span><a href="/privacy.html">隐私政策</a>
+<div class="footer-meta-line"><span>© 2026 安徽中科国瓷新型元器件有限公司</span></div>
+<div class="footer-meta-line"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{BEIAN_ICP}</a><span class="sep">·</span><a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="" width="14" height="14" loading="lazy">{BEIAN_GA}</a></div>
+<div class="footer-meta-line"><a href="/en/">English</a><span class="sep">|</span><a href="/">中文</a><span class="sep">·</span><a href="/faq/">常见问题</a><span class="sep">·</span><a href="/privacy.html">隐私政策</a></div>
 </div></div></footer>
 {SERVICE_WIDGET_ZH}
 <script src="/assets/js/main.js"></script>"""
@@ -152,6 +194,7 @@ NAV = """<nav class="nav"><div class="nav-inner">
 <a href="/knowledge/">知识库</a>
 <a href="/cases/">行业案例</a>
 <a href="/about/">关于中科国瓷</a>
+<a href="/faq/">常见问题</a>
 <a href="/en/" style="opacity:.8">EN</a>
 <a href="/contact/" class="nav-cta">联系我们</a>
 </div>
@@ -169,6 +212,7 @@ NAV_EN = """<nav class="nav"><div class="nav-inner">
 <a href="/en/knowledge.html">Knowledge</a>
 <a href="/en/cases.html">Industry Cases</a>
 <a href="/en/about.html">About</a>
+<a href="/faq/">FAQ</a>
 <a href="/" style="opacity:.8">中文</a>
 <a href="/en/contact.html" class="nav-cta">Contact</a>
 </div>
@@ -192,10 +236,9 @@ FOOTER_EN = f"""<footer><div class="footer-grid container" style="padding:0">
 <p style="font-size:13px;margin-top:8px">{ADDRESS_EN}</p></div>
 </div>
 <div class="footer-bottom"><div class="footer-meta">
-<span>© 2026 Anhui ZK Guoci New Components Co., Ltd.</span><span class="sep">·</span>
-<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{BEIAN_ICP}</a><span class="sep">·</span>
-<a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="" width="14" height="14">{BEIAN_GA}</a><span class="sep">·</span>
-<a href="/en/">English</a><span class="sep">|</span><a href="/">中文</a><span class="sep">·</span><a href="/privacy.html">Privacy</a>
+<div class="footer-meta-line"><span>© 2026 Anhui ZK Guoci New Components Co., Ltd.</span></div>
+<div class="footer-meta-line"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{BEIAN_ICP}</a><span class="sep">·</span><a href="{BEIAN_GA_URL}" target="_blank" rel="noopener"><img src="/assets/images/ga_icon.png" alt="" width="14" height="14" loading="lazy">{BEIAN_GA}</a></div>
+<div class="footer-meta-line"><a href="/en/">English</a><span class="sep">|</span><a href="/">中文</a><span class="sep">·</span><a href="/faq/">FAQ</a><span class="sep">·</span><a href="/privacy.html">Privacy</a></div>
 </div></div></footer>
 {SERVICE_WIDGET_EN}
 <script src="/assets/js/main.js"></script>"""
@@ -249,7 +292,10 @@ def page(title, desc, body, canonical="", lang="zh", schema_extra=""):
 <html lang="{lang_attr}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title}</title><meta name="description" content="{desc}">
-{canon}<link rel="stylesheet" href="/assets/css/style.css">
+{canon}<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/style.css?v=20260721p0">
 <link rel="icon" href="/assets/images/favicon.ico?v=20260720e">
 {schema_tags}
 </head><body>{nav}<main>{body}</main>{footer}</body></html>"""
@@ -557,41 +603,46 @@ PARTNERS = [
 
 
 def product_detail_html(p):
-    specs_rows = "".join(f"<tr><th>{k}</th><td>{v}</td></tr>" for k, v in p["specs"])
-    acc_rows = "".join(f"<tr><td>{k}</td><td>{v}</td></tr>" for k, v in p["accuracy"])
+    specs_html = specs_table_and_cards(p["specs"])
+    acc_html = specs_table_and_cards(p["accuracy"], headers=("氧分压范围", "精度"))
     wiring = ""
     if p["wiring"]:
-        wiring = "<h3>电气连接</h3><table><tr><th>端口</th><th>说明</th></tr>" + "".join(
-            f"<tr><td>{a}</td><td>{b}</td></tr>" for a, b in p["wiring"]
-        ) + "</table>"
+        wiring = "<h3>电气连接</h3>" + specs_table_and_cards(p["wiring"], headers=("端口", "说明"))
     notes = ""
     if p["notes"]:
         notes = "<h3>注意事项</h3><ul>" + "".join(f"<li>{n}</li>" for n in p["notes"]) + "</ul>"
     adv = "".join(f"<li>{a}</li>" for a in p["advantages"])
-    img = asset_url(p["image"])
-    # Download button (PDF placeholder — engineers can replace with real file)
-    download_btn = (
-        f'<a href="/contact/?product={p["slug"]}&req=spec" class="btn btn-ghost" '
-        f'style="margin-left:8px;border-color:var(--blue);color:var(--blue)">'
-        f'📄 要规格书</a>'
-    )
+    img = img_tag(p["image"], p["name"], "product-hero-img", sizes="(max-width:767px) 100vw, 420px")
+    pdf_path = DIST / "assets" / "docs" / f"{p['slug']}-datasheet.pdf"
+    if pdf_path.exists():
+        download_btn = (
+            f'<a href="/assets/docs/{p["slug"]}-datasheet.pdf" class="btn btn-ghost datasheet-link" '
+            f'style="margin-left:8px;border-color:var(--blue);color:var(--blue)" download>'
+            f'下载规格书 PDF</a>'
+        )
+    else:
+        download_btn = (
+            f'<a href="/contact/?product={p["slug"]}&req=spec" class="btn btn-ghost datasheet-link" '
+            f'style="margin-left:8px;border-color:var(--blue);color:var(--blue)">'
+            f'索取规格书</a>'
+        )
     extras = []
     if has_asset("products/exploded.png") or has_asset("products/exploded.webp"):
         extras.append(
-            f'<figure class="product-extra"><img src="{asset_url("products/exploded.png")}" alt="结构示意" loading="lazy">'
+            f'<figure class="product-extra">{img_tag("products/exploded.png", "结构示意", sizes="(max-width:767px) 100vw, 280px")}'
             f"<figcaption>结构示意</figcaption></figure>"
         )
     if has_asset("products/controller-kd0100-03.png") or has_asset("products/controller-kd0100-03.webp"):
         extras.append(
-            f'<figure class="product-extra"><img src="{asset_url("products/controller-kd0100-03.png")}" alt="配套控制器 KD0100-03" loading="lazy">'
+            f'<figure class="product-extra">{img_tag("products/controller-kd0100-03.png", "配套控制器 KD0100-03", sizes="(max-width:767px) 100vw, 280px")}'
             f"<figcaption>配套控制器 KD0100-03</figcaption></figure>"
         )
     extras_html = (
         f'<div class="product-extras">{"".join(extras)}</div>' if extras else ""
     )
     return f"""{page_hero(p["name"], p["tagline"], "products/banner.jpg")}
-<section><div class="container" style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start">
-<div><img src="{img}" alt="{p['name']}" class="product-hero-img" loading="lazy">{extras_html}</div>
+<section><div class="container product-detail-grid">
+<div>{img}{extras_html}</div>
 <div class="content-block" style="margin:0">
 <p>{p['summary']}</p>
 <h3>产品优势</h3><ul>{adv}</ul>
@@ -601,14 +652,15 @@ def product_detail_html(p):
 </div></div>
 <div class="container" style="margin-top:32px">
 <div class="content-block"><h2>规格参数</h2>
-<p style="font-size:13px;color:var(--muted);margin-bottom:12px">如需完整规格书（PDF），请<a href="/contact/?product={p['slug']}&req=spec" style="color:var(--blue)">联系我们</a>索取。</p>
-<table>{specs_rows}</table>
+<p style="font-size:13px;color:var(--muted);margin-bottom:12px">公开规格摘要如下；完整 PDF 可直接下载或联系索取。</p>
+{specs_html}
 {wiring}
 <h3 style="margin-top:24px">测量精度（标准大气条件下）</h3>
-<table><tr><th>氧分压范围</th><th>精度</th></tr>{acc_rows}</table>
+{acc_html}
 {notes}
 </div></div></section>
-<style>@media(max-width:800px){{section .container[style*="grid-template"]{{display:block!important}}}}</style>"""
+<style>.product-detail-grid{{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}}
+@media(max-width:1023px){{.product-detail-grid{{display:block!important}}}}</style>"""
 
 
 
@@ -643,11 +695,18 @@ def main():
     pages = {}
 
     # Homepage
+    def product_category(p):
+        if "mask" in p["slug"]:
+            return "面罩型"
+        if "to" in p["slug"]:
+            return "插针型"
+        return "探头型"
+
     prod_cards = "".join(
-        f"""<a href="/products/{p['slug']}.html" class="card">
-<img src="{asset_url(p['image'])}" alt="{p['name']}" class="card-img card-img--product" loading="lazy">
+        f"""<a href="/products/{p['slug']}.html" class="card filter-item" data-filter="{product_category(p)}">
+{img_tag(p['image'], p['name'], 'card-img card-img--product', sizes='(max-width:767px) 100vw, 33vw')}
 <div class="card-body"><h3>{p['name']}</h3><p>{p['tagline']}</p>
-<span class="tag">氧传感器</span></div></a>"""
+<span class="tag">{product_category(p)}</span></div></a>"""
         for p in PRODUCTS
     )
     news_cards = "".join(
@@ -664,10 +723,26 @@ def main():
     if has_asset("home/hero-en.jpg") or has_asset("home/hero-en.webp"):
         hero_bg_en = f'style="background-image:linear-gradient(100deg,rgba(7,20,38,.88) 0%,rgba(7,20,38,.55) 45%,rgba(7,20,38,.35) 100%),url(\'{asset_url("home/hero-en.jpg")}\');background-size:cover;background-position:center right"'
 
+    slide_urls = []
+    for cand in ["home/hero-oxygen-sensor.jpg", "home/hero-oxygen-sensor-alt.jpg", "scenes/industrial-gas.jpg"]:
+        if has_asset(cand):
+            slide_urls.append(asset_url(cand))
+    if not slide_urls and hero_bg:
+        slide_urls = [asset_url("home/hero-oxygen-sensor.jpg")]
+    slides_html = "".join(
+        f'<div class="hero-slide{" is-active" if i==0 else ""}" style="background-image:linear-gradient(100deg,rgba(7,20,38,.88) 0%,rgba(7,20,38,.55) 45%,rgba(7,20,38,.35) 100%),url(\'{u}\')"></div>'
+        for i, u in enumerate(slide_urls[:3])
+    )
+    dots_html = "".join(
+        f'<button type="button" data-slide="{i}" class="{"is-active" if i==0 else ""}" aria-label="幻灯片 {i+1}"></button>'
+        for i in range(min(3, len(slide_urls)))
+    ) if len(slide_urls) > 1 else ""
+    hero_carousel = f'<div class="hero-slides">{slides_html}</div><div class="hero-dots">{dots_html}</div>' if slides_html else f'<div class="hero-bg" {hero_bg}></div>'
+
     pages["index.html"] = page(
         "中科国瓷 — 变频氧传感器与氮氧传感技术",
         "安徽中科国瓷新型元器件有限公司，专注变频氧传感器、氮氧传感器研发与生产。中科大技术转化，科技感知未来。",
-        f"""<section class="hero"><div class="hero-bg" {hero_bg}></div><div class="hero-content">
+        f"""<section class="hero hero-carousel">{hero_carousel}<div class="hero-content">
 <div class="hero-badge">中科大技术转化 · 科技感知未来</div>
 <h1>安徽中科国瓷<br><em>变频氧传感器</em>方案商</h1>
 <p>氧压范围 0.5–101 kPa · 车用 / 航空面罩 / 工业气体检测 · 产品承诺质保 5 年</p>
@@ -753,7 +828,15 @@ def main():
         "产品中心 — 中科国瓷",
         "KD0100 系列氧气传感器探头/插针、面罩用氧传感器",
         f"""{page_hero("产品中心", "KD0100 系列探头 / 插针 · 面罩用氧传感器", "products/banner.jpg")}
-<section><div class="container grid-3">{prod_cards}</div></section>""",
+<section><div class="container">
+<div class="filter-bar" data-filter-group="products">
+<button type="button" class="filter-chip is-active" data-filter="all">全部</button>
+<button type="button" class="filter-chip" data-filter="探头型">探头型</button>
+<button type="button" class="filter-chip" data-filter="插针型">插针型</button>
+<button type="button" class="filter-chip" data-filter="面罩型">面罩型</button>
+</div>
+<div class="grid-3">{prod_cards}</div>
+</div></section>""",
         "/products/",
     )
     for p in PRODUCTS:
@@ -829,6 +912,15 @@ def main():
 <div class="content-block">
 <p>安徽中科国瓷新型元器件有限公司聚焦变频氧传感器、氮氧传感器的研发与生产，统一社会信用代码 91340100MA8LLE5K9H。公司地址位于中国（安徽）自由贸易试验区合肥市高新区望江西路 5089 号嵌入式研发楼 103-C3。</p>
 <p>公司秉承以人为本、追求超越的经营理念；恪守诚信为本，产品承诺质保 5 年。通过坚持不懈地开拓创新、与时俱进，不断开创新局面、实现新跨越。</p>
+</div>
+<div class="content-block">
+<h2 style="margin-top:0">发展历程</h2>
+<div class="timeline">
+<div class="timeline-item"><time>2021</time><h3>公司设立与专利布局</h3><p>聚焦变频氧传感器技术转化；发明专利「变频氧传感器」进入授权流程。</p></div>
+<div class="timeline-item"><time>2022</time><h3>资质与深科技认定</h3><p>获 ISO 9001 体系认证；入选合肥高新区深科技企业；创新创业大赛获奖。</p></div>
+<div class="timeline-item"><time>2024</time><h3>航空面罩场景试制</h3><p>面罩用低温型变频氧传感器完成试制与联调验证。</p></div>
+<div class="timeline-item"><time>2025–2026</time><h3>工业与 OEM 集成深化</h3><p>推进管路在线监测与紧凑插针 OEM 集成；官网知识库与案例体系上线。</p></div>
+</div>
 </div>
 </div></section>
 {values_block}
@@ -1043,15 +1135,22 @@ def main():
         )
 
     # Industry cases
+    industries = []
+    for c in INDUSTRY_CASES:
+        if c["industry"] not in industries:
+            industries.append(c["industry"])
+    case_filter = "".join(
+        f'<button type="button" class="filter-chip" data-filter="{ind}">{ind}</button>' for ind in industries
+    )
     case_cards = "".join(
-        f"""<a href="/cases/{c['slug']}.html" class="case-card">
-<img src="{asset_url(c['cover'])}" alt="{c['title']}" class="case-cover" loading="lazy">
+        f"""<a href="/cases/{c['slug']}.html" class="case-card filter-item" data-filter="{c['industry']}">
+{img_tag(c['cover'], c['title'], 'case-cover', sizes='(max-width:767px) 100vw, 50vw')}
 <div class="case-body">
 <span class="tag">{c['industry']}</span>{'<span class="tag tag-wip">评估中</span>' if '进行中' in c['title'] or 'In Progress' in c.get('title_en', '') else ''}
 <h3>{c['title']}</h3>
 <p class="case-customer">{c['customer']}</p>
 <p>{c['summary']}</p>
-<ul class="case-metrics">{"".join(f"<li>{r}</li>" for r in c["results"][:2])}</ul>
+<ul class="case-metrics">{"".join(f"<li>{m}</li>" for m in (c.get("metrics") or c["results"])[:2])}</ul>
 <span class="news-read-more">查看案例 &rarr;</span>
 </div></a>"""
         for c in INDUSTRY_CASES
@@ -1062,6 +1161,10 @@ def main():
         f"""{page_hero("行业案例", "基于真实行业需求编写 · 客户名称均以代名词脱敏", "cases/banner.jpg")}
 <section class="cases-section"><div class="container">
 <p class="kb-lead">案例结构包含挑战、方案、实施节点与可核对结果。涉及客户主体一律使用代名词；量化结论限于公开规格与可披露的项目口径。</p>
+<div class="filter-bar" data-filter-group="cases">
+<button type="button" class="filter-chip is-active" data-filter="all">全部</button>
+{case_filter}
+</div>
 <div class="case-grid">{case_cards}</div>
 </div></section>""",
         "/cases/",
@@ -1072,6 +1175,14 @@ def main():
         prod_links = " ".join(
             f'<a href="/products/{s}.html" class="tag">{product_name(s)}</a>' for s in c["product_slugs"]
         )
+        metrics = c.get("metrics") or []
+        metrics_html = ""
+        if metrics:
+            cards = "".join(
+                f'<div class="case-metric"><strong>可核对指标 {i+1}</strong><span>{m}</span></div>'
+                for i, m in enumerate(metrics[:3])
+            )
+            metrics_html = f'<div class="case-metrics-box">{cards}</div>'
         process = c.get("process")
         process_html = (
             f'<figure class="article-cover article-cover--process"><img src="{asset_url(process)}" alt="{c["title"]} · 过程"></figure>'
@@ -1091,6 +1202,7 @@ def main():
 <figure class="article-cover"><img src="{asset_url(c['cover'])}" alt="{c['title']}"></figure>
 {process_html}
 <div class="article-body content-block">
+{metrics_html}
 <div class="case-panel"><h2>挑战</h2><p>{c['challenge']}</p></div>
 <div class="case-panel"><h2>方案</h2><p>{c['solution']}</p></div>
 <div class="case-panel"><h2>实施节点</h2><ol>{milestones}</ol></div>
@@ -1106,6 +1218,22 @@ def main():
                 ("首页","/"),("行业案例","/cases/"),(c["title"],f"/cases/{c['slug']}.html")
             ]),
         )
+
+
+    faq_html = "".join(
+        f'<details class="faq-item"><summary>{q}</summary><div class="faq-a"><p>{a}</p></div></details>'
+        for q, a in FAQ_ITEMS
+    )
+    pages["faq/index.html"] = page(
+        "常见问题 — 中科国瓷",
+        "中科国瓷变频氧传感器常见问题：选型、规格书、交期样品、车规边界与质保说明。",
+        f"""{page_hero("常见问题", "选型 · 规格 · 交付 · 质保")}
+<section><div class="container"><div class="faq-list">{faq_html}</div>
+<p style="text-align:center;margin-top:28px"><a href="/contact/" class="btn btn-primary">仍有疑问？联系工程师</a></p>
+</div></section>""",
+        "/faq/",
+        schema_extra=faq_schema(),
+    )
 
     pages["privacy.html"] = page(
         "隐私政策 — 中科国瓷",
@@ -1464,6 +1592,7 @@ def main():
         "/news/",
         "/knowledge/",
         "/cases/",
+        "/faq/",
         "/contact/",
         "/en/",
         "/en/products.html",

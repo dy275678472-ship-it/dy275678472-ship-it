@@ -219,4 +219,49 @@ document.addEventListener('DOMContentLoaded', () => {
       clearInterval(pollTimer);
     });
   });
+
+  // Light hero carousel
+  const slides = [...document.querySelectorAll('.hero-slide')];
+  const dots = [...document.querySelectorAll('.hero-dots button')];
+  if (slides.length > 1) {
+    let idx = 0;
+    const show = (n) => {
+      idx = (n + slides.length) % slides.length;
+      slides.forEach((s, i) => s.classList.toggle('is-active', i === idx));
+      dots.forEach((d, i) => d.classList.toggle('is-active', i === idx));
+    };
+    dots.forEach((d) => d.addEventListener('click', () => show(Number(d.dataset.slide || 0))));
+    setInterval(() => show(idx + 1), 6000);
+  }
+
+  // Category filters
+  document.querySelectorAll('.filter-bar').forEach((bar) => {
+    const items = bar.parentElement.querySelectorAll('.filter-item');
+    bar.querySelectorAll('.filter-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        bar.querySelectorAll('.filter-chip').forEach((c) => c.classList.remove('is-active'));
+        chip.classList.add('is-active');
+        const key = chip.dataset.filter;
+        items.forEach((item) => {
+          const show = key === 'all' || item.dataset.filter === key;
+          item.style.display = show ? '' : 'none';
+        });
+      });
+    });
+  });
+
+  // Scroll reveal (lightweight)
+  const reveals = document.querySelectorAll('.card, .case-card, .kb-item, .values-card, .content-block, .faq-item');
+  if ('IntersectionObserver' in window && reveals.length) {
+    reveals.forEach((el) => el.classList.add('reveal'));
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    reveals.forEach((el) => io.observe(el));
+  }
 });
