@@ -233,6 +233,8 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
                 <a href="{site_base}/trending">案例</a>
                 <a href="{site_base}/faq">常见问题</a>
                 <a href="{site_base}/about">关于我们</a>
+                <a href="{site_base}/privacy">隐私政策</a>
+                <a href="{site_base}/terms">用户协议</a>
             </nav>
             <p>© LyRead AI 智能小说创作平台</p>
         </div>
@@ -361,6 +363,8 @@ async def sitemap_xml():
         (f"{SITE_BASE}/trending", "weekly", "0.8", today),
         (f"{SITE_BASE}/faq", "monthly", "0.8", today),
         (f"{SITE_BASE}/about", "monthly", "0.7", today),
+        (f"{SITE_BASE}/privacy", "yearly", "0.4", today),
+        (f"{SITE_BASE}/terms", "yearly", "0.4", today),
         (f"{SITE_BASE}/login", "monthly", "0.5", today),
         (f"{SITE_BASE}/story", "weekly", "0.7", today),
         (f"{SITE_BASE}/reader", "weekly", "0.7", today),
@@ -618,6 +622,88 @@ async def seo_about_page(request: Request):
         title=title, description=desc,
         keywords="LyRead,AI小说平台,关于我们,智能写作",
         url=url, site_base=SITE_BASE, meta_info="品牌与产品介绍",
+        body_html=body_html, json_ld=json_ld,
+    )
+
+
+@router.get("/privacy", response_class=HTMLResponse)
+async def seo_privacy_page(request: Request):
+    """隐私政策 SSR"""
+    body_html = f"""
+    <p>更新日期：2026-07-21。LyRead AI（https://lyread.cn）重视用户隐私保护。使用本平台即表示您同意本政策。</p>
+    <h2 style="font-size:18px;margin:20px 0 12px">我们收集的信息</h2>
+    <ul style="line-height:1.8;color:#3a4a5e;padding-left:20px">
+      <li><strong>账号信息：</strong>注册邮箱、昵称（您主动提供）</li>
+      <li><strong>创作内容：</strong>您输入的题材、大纲、章节正文等，用于提供 AI 生成服务</li>
+      <li><strong>交易信息：</strong>充值订单、点数变动记录（支付由支付宝等第三方处理，我们不存储完整支付密码）</li>
+      <li><strong>技术日志：</strong>IP、浏览器类型、访问时间，用于安全与故障排查</li>
+    </ul>
+    <h2 style="font-size:18px;margin:20px 0 12px">信息如何使用</h2>
+    <ul style="line-height:1.8;color:#3a4a5e;padding-left:20px">
+      <li>提供、维护与改进 AI 创作服务（含小说大脑记忆功能）</li>
+      <li>处理充值、退款与客服请求</li>
+      <li>经您同意后公开展示的案例作品（可在提交审核时选择）</li>
+      <li>遵守法律法规要求</li>
+    </ul>
+    <h2 style="font-size:18px;margin:20px 0 12px">信息存储与安全</h2>
+    <p>数据存储于中华人民共和国境内服务器，采用加密传输（HTTPS）与访问控制。我们不会向无关第三方出售您的个人信息。</p>
+    <h2 style="font-size:18px;margin:20px 0 12px">您的权利</h2>
+    <p>您可申请查阅、更正或删除账号与创作数据。注销账号请联系客服或通过设置页面操作（功能陆续开放）。</p>
+    <h2 style="font-size:18px;margin:20px 0 12px">联系我们</h2>
+    <p>隐私相关问题请通过网站「关于我们」页面所列方式联系。</p>
+    <div class="seo-cta">
+      <a href="{SITE_BASE}/terms">查看用户协议 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/">返回首页 →</a>
+    </div>
+    """
+    title = "隐私政策 - LyRead AI"
+    desc = "LyRead AI 隐私政策：说明我们如何收集、使用与保护您的账号、创作内容与交易信息。"
+    url = "/privacy"
+    json_ld = breadcrumb([("首页", f"{SITE_BASE}/"), ("隐私政策", f"{SITE_BASE}/privacy")])
+    return PAGE_TEMPLATE.format(
+        title=title, description=desc,
+        keywords="LyRead隐私政策,用户数据保护",
+        url=url, site_base=SITE_BASE, meta_info="法律与合规",
+        body_html=body_html, json_ld=json_ld,
+    )
+
+
+@router.get("/terms", response_class=HTMLResponse)
+async def seo_terms_page(request: Request):
+    """用户协议 SSR"""
+    body_html = f"""
+    <p>更新日期：2026-07-21。欢迎使用 LyRead AI。请在使用前仔细阅读本协议。</p>
+    <h2 style="font-size:18px;margin:20px 0 12px">服务说明</h2>
+    <p>LyRead AI 提供 AI 辅助小说创作服务，包括书名生成、大纲、章纲、正文续写、短故事生成等。生成内容由 AI 模型产出，平台不对内容的文学质量、版权归属或商业结果作保证。</p>
+    <h2 style="font-size:18px;margin:20px 0 12px">账号与点数</h2>
+    <ul style="line-height:1.8;color:#3a4a5e;padding-left:20px">
+      <li>注册即获赠体验点数；充值点数不可转让、不可兑换现金（法律另有规定除外）</li>
+      <li>生成任务失败将全额返还已冻结点数</li>
+      <li>禁止利用漏洞刷点、批量注册、恶意攻击系统</li>
+    </ul>
+    <h2 style="font-size:18px;margin:20px 0 12px">内容规范</h2>
+    <p>您不得利用本平台生成、发布违反法律法规、侵犯他人权益、含有色情暴力政治敏感等内容。平台有权删除违规内容并暂停或终止账号。</p>
+    <h2 style="font-size:18px;margin:20px 0 12px">知识产权</h2>
+    <p>您对输入的原创设定与经人工实质性修改后的输出内容享有相应权利。平台服务界面、技术与品牌标识归 LyRead 所有。提交公开展示的案例，您授权平台在站内展示用于宣传与 SEO。</p>
+    <h2 style="font-size:18px;margin:20px 0 12px">免责声明</h2>
+    <p>AI 生成内容仅供参考，投稿前请自行审核合规性与原创性。因不可抗力、第三方服务中断导致的服务暂停，平台将尽力恢复但不承担间接损失。</p>
+    <h2 style="font-size:18px;margin:20px 0 12px">协议变更</h2>
+    <p>我们可能更新本协议，重大变更将在站内公告。继续使用即视为接受更新后的条款。</p>
+    <div class="seo-cta">
+      <a href="{SITE_BASE}/privacy">查看隐私政策 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/">返回首页 →</a>
+    </div>
+    """
+    title = "用户协议 - LyRead AI"
+    desc = "LyRead AI 用户服务协议：账号规则、点数计费、内容规范与知识产权说明。"
+    url = "/terms"
+    json_ld = breadcrumb([("首页", f"{SITE_BASE}/"), ("用户协议", f"{SITE_BASE}/terms")])
+    return PAGE_TEMPLATE.format(
+        title=title, description=desc,
+        keywords="LyRead用户协议,服务条款",
+        url=url, site_base=SITE_BASE, meta_info="法律与合规",
         body_html=body_html, json_ld=json_ld,
     )
 

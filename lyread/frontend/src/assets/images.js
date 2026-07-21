@@ -72,7 +72,7 @@ export function coverForCase(item, index = 0) {
   if (/科幻|脑洞|末世/.test(cat)) return IMAGES.covers[5]
   if (/悬疑|推理|惊悚/.test(cat)) return IMAGES.covers[6]
   if (/历史|架空|宫廷/.test(cat)) return IMAGES.covers[7]
-  if (/战神|都市|神豪/.test(cat)) return IMAGES.covers[1]
+  if (/战神|都市|神豪|赘婿/.test(cat)) return IMAGES.covers[1]
   if (/重生|穿越/.test(cat)) return IMAGES.covers[2]
   return IMAGES.covers[index % 3]
 }

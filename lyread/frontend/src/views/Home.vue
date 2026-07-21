@@ -37,6 +37,33 @@
       </div>
     </section>
 
+    <section class="product-demo">
+      <div class="demo-inner">
+        <div class="demo-copy">
+          <p class="demo-label">产品预览</p>
+          <h2>7 步创作向导，从灵感到正文</h2>
+          <p class="demo-desc">题材 → 灵感 → 书名 → 设定 → 大纲 → 章纲 → 续写，专为中文网文日更设计。小说大脑自动记人物与伏笔，写到后期也不乱。</p>
+          <ul class="demo-list">
+            <li>大纲与章纲可批量生成、单章重写</li>
+            <li>按章约 1 元，失败全额返还点数</li>
+            <li>40+ 公开案例可参考风格与节奏</li>
+          </ul>
+          <router-link to="/reader" class="btn-demo">免费体验创作流程 →</router-link>
+        </div>
+        <div class="demo-visual">
+          <img
+            :src="images.workspace"
+            alt="LyRead 创作台界面：大纲、章纲与正文续写工作流"
+            class="demo-screenshot"
+            loading="lazy"
+            decoding="async"
+            width="720"
+            height="405"
+          />
+        </div>
+      </div>
+    </section>
+
     <section class="data-proof" v-if="statsLoaded">
       <div class="data-item">
         <h3>{{ stats.users }}</h3>
@@ -91,18 +118,28 @@
 
     <!-- 用户评价 -->
     <section class="testimonials">
-      <SectionHeading class="testimonials-title" :icon="images.pricing.gem" center>创作者反馈</SectionHeading>
-      <p class="testimonials-note">以下为典型使用场景反馈（非个别用户承诺效果）</p>
+      <SectionHeading class="testimonials-title" :icon="images.pricing.gem" center>创作者场景反馈</SectionHeading>
+      <p class="testimonials-note">以下为典型使用场景描述，不代表个别用户承诺效果</p>
       <div class="testimonial-grid">
         <div class="testimonial-card">
-          <img :src="images.avatars.author" alt="网文作者头像" class="avatar-img" width="56" height="56" />
-          <div class="name">网文作者小李</div>
-          <p>"AI生成大纲太香了！10分钟搞定一本书框架"</p>
+          <img :src="images.avatars.author" alt="日更作者场景" class="avatar-img" width="56" height="56" />
+          <div class="name">日更作者 · 长篇连载</div>
+          <p>「章纲批量出完再续写，日更 6000 字成本约 3 元，比请人代写划算太多。」</p>
         </div>
         <div class="testimonial-card">
-          <img :src="images.avatars.studio" alt="工作室负责人头像" class="avatar-img" width="56" height="56" />
-          <div class="name">工作室负责人</div>
-          <p>"批量产出效率翻倍，团队人手必备"</p>
+          <img :src="images.avatars.studio" alt="盐选作者场景" class="avatar-img" width="56" height="56" />
+          <div class="name">盐选作者 · 短篇试错</div>
+          <p>「短故事流程 15 点一篇，先批量试梗，命中再扩成长篇。」</p>
+        </div>
+        <div class="testimonial-card">
+          <img :src="images.avatars.author" alt="工作室场景" class="avatar-img" width="56" height="56" />
+          <div class="name">内容工作室 · 批量产出</div>
+          <p>「标准化大纲模板 + 人工质检，团队日产出提升明显。」</p>
+        </div>
+        <div class="testimonial-card">
+          <img :src="images.avatars.studio" alt="新手作者场景" class="avatar-img" width="56" height="56" />
+          <div class="name">新手作者 · 开书入门</div>
+          <p>「免费书名生成降低开书门槛，7 步向导不用自己搭 Prompt。」</p>
         </div>
       </div>
     </section>
@@ -447,6 +484,68 @@ const startTrial = async (append = false) => {
 .feature-card h3 { color: var(--lyread-text-dark); margin-bottom: 8px; }
 .feature-card p { color: var(--lyread-text-secondary); font-size: 14px; }
 
+.product-demo {
+  max-width: 1200px;
+  margin: 0 auto 48px;
+  padding: 0 24px;
+}
+.demo-inner {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 40px;
+  align-items: center;
+  background: var(--lyread-card-bg);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 8px 30px rgba(77, 163, 255, 0.08);
+  border: 1px solid rgba(218, 230, 245, 0.6);
+}
+.demo-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lyread-primary-blue-end);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+.demo-copy h2 {
+  font-size: 26px;
+  color: var(--lyread-text-dark);
+  margin-bottom: 12px;
+  line-height: 1.35;
+}
+.demo-desc {
+  color: var(--lyread-text-secondary);
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+.demo-list {
+  margin: 0 0 20px;
+  padding-left: 20px;
+  color: var(--lyread-text-secondary);
+  font-size: 14px;
+  line-height: 1.9;
+}
+.btn-demo {
+  display: inline-block;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #4da1ff, #2563eb);
+  color: #fff;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+}
+.btn-demo:hover { opacity: 0.92; }
+.demo-screenshot {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(30, 42, 58, 0.12);
+  border: 1px solid rgba(218, 230, 245, 0.8);
+}
+
 /* Data Proof Section */
 .data-proof {
   max-width: 1200px;
@@ -698,6 +797,11 @@ const startTrial = async (append = false) => {
   .features {
     grid-template-columns: repeat(2, 1fr); /* 4列 -> 2列 */
   }
+  .demo-inner {
+    grid-template-columns: 1fr;
+    padding: 28px;
+  }
+  .demo-visual { order: -1; }
 }
 @media (max-width: 768px) {
   .hot-grid, .testimonial-grid {

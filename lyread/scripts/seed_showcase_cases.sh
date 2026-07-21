@@ -8,21 +8,23 @@ CONTAINER="${MYSQL_CONTAINER:-lyread-mysql}"
 DB="${MYSQL_DATABASE:-lyread}"
 ROOT_PW=$(docker exec "$CONTAINER" printenv MYSQL_ROOT_PASSWORD)
 
-docker exec -i "$CONTAINER" mysql --default-character-set=utf8mb4 -uroot -p"$ROOT_PW" "$DB" <<'EOSQL'
-INSERT INTO contents (content_id, title, category, word_count, heat, score, status) VALUES
-  ('showcase_urban_01', '开局十个亿，我在都市横着走', '都市神豪', 128000, 9200, 8.6, 'active'),
-  ('showcase_warrior_01', '战神回归，发现女儿住狗窝', '战神归来', 156000, 8800, 8.4, 'active'),
-  ('showcase_reborn_01', '重生2003，当首富很简单', '重生', 98000, 7600, 8.2, 'active'),
-  ('showcase_xianxia_01', '仙帝归来，都市横推一切', '仙侠玄幻', 210000, 7100, 8.5, 'active'),
-  ('showcase_romance_01', '她走后，我让全世界追悔莫及', '言情甜宠', 86000, 6500, 8.1, 'active'),
-  ('showcase_scifi_01', '星际裂痕：最后的人类舰队', '科幻脑洞', 142000, 5900, 8.0, 'active'),
-  ('showcase_suspense_01', '第七个证人消失了', '悬疑推理', 112000, 5400, 7.9, 'active'),
-  ('showcase_history_01', '大明第一权臣', '历史架空', 178000, 4800, 8.3, 'active'),
-  ('showcase_system_01', '每写一个字，全网打赏十万', '系统流', 95000, 8700, 8.7, 'active'),
-  ('showcase_apocalypse_01', '极寒第七日，我囤了一整座超市', '末世求生', 118000, 6200, 8.2, 'active'),
-  ('showcase_campus_01', '转学生竟是隐藏学神，摸底考炸了', '校园青春', 72000, 5800, 8.0, 'active'),
-  ('showcase_game_01', '被战队开除那天，我登回国服第一', '游戏竞技', 105000, 8100, 8.4, 'active')
-ON DUPLICATE KEY UPDATE
+echo "[seed_showcase] generating excerpts from catalog..."
+python3 "$SCRIPT_DIR/generate_showcase_excerpts.py"
+
+SQL_BODY=$(python3 - "$SCRIPT_DIR/seed_data/showcase_catalog.json" <<'PY'
+import json, sys
+cases = json.load(open(sys.argv[1], encoding="utf-8"))
+rows = []
+for c in cases:
+    title = c["title"].replace("'", "''")
+    cat = c["category"].replace("'", "''")
+    rows.append(
+        f"  ('{c['content_id']}', '{title}', '{cat}', "
+        f"{c['word_count']}, {c['heat']}, {c['score']}, 'active')"
+    )
+print("INSERT INTO contents (content_id, title, category, word_count, heat, score, status) VALUES")
+print(",\n".join(rows))
+print("""ON DUPLICATE KEY UPDATE
   title=VALUES(title),
   category=VALUES(category),
   word_count=VALUES(word_count),
@@ -30,9 +32,13 @@ ON DUPLICATE KEY UPDATE
   score=VALUES(score),
   status='active';
 
-SELECT COUNT(*) AS active_showcase FROM contents WHERE status='active';
-EOSQL
+SELECT COUNT(*) AS active_showcase FROM contents WHERE status='active';""")
+PY
+)
+
+docker exec -i "$CONTAINER" mysql --default-character-set=utf8mb4 -uroot -p"$ROOT_PW" "$DB" <<<"$SQL_BODY"
 
 python3 "$SCRIPT_DIR/seed_showcase_preview_sql.py" | docker exec -i "$CONTAINER" mysql --default-character-set=utf8mb4 -uroot -p"$ROOT_PW" "$DB"
 
-echo "[seed_showcase] showcase cases + reading excerpts ready"
+CASE_COUNT=$(python3 -c "import json; print(len(json.load(open('$SCRIPT_DIR/seed_data/showcase_catalog.json'))))")
+echo "[seed_showcase] showcase cases + reading excerpts ready ($CASE_COUNT cases)"
