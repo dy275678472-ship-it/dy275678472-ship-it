@@ -100,10 +100,12 @@ FOOTER = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="/products/kd0100-02s-t1.html">KD0100-02S-T1 探头</a>
 <a href="/products/kd0100-02s-to.html">KD0100-02S-TO 插针</a>
 <a href="/products/mask-o2-sensor.html">面罩用氧传感器</a></div>
-<div><h4>公司</h4><a href="/">首页</a><a href="/products/">产品中心</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">行业案例</a><a href="/about/">关于中科国瓷</a><a href="/contact/">联系我们</a><a href="/privacy.html">隐私政策</a></div>
+<div><h4>公司</h4><a href="/">首页</a><a href="/products/">产品中心</a><a href="/news/">新闻资讯</a><a href="/knowledge/">知识库</a><a href="/cases/">行业案例</a><a href="/about/">关于中科国瓷</a></div>
 <div><h4>联系</h4><a href="mailto:{EMAIL}">{EMAIL}</a><br>
 <a href="tel:{PHONE}">{PHONE_DISPLAY}</a>
-<p style="font-size:13px;margin-top:8px">{ADDRESS}</p></div>
+<p style="font-size:13px;margin-top:8px">{ADDRESS}</p>
+<a href="/contact/">联系我们</a>
+<a href="/privacy.html">隐私政策</a></div>
 </div>
 <div class="footer-bottom"><div class="footer-meta">
 <span>© 2026 安徽中科国瓷新型元器件有限公司</span><span class="sep">·</span>
@@ -166,12 +168,12 @@ FOOTER_EN = f"""<footer><div class="footer-grid container" style="padding:0">
 <a href="/en/news.html">News</a>
 <a href="/en/knowledge.html">Knowledge</a>
 <a href="/en/cases.html">Industry Cases</a>
-<a href="/en/about.html">About</a>
-<a href="/en/contact.html">Contact</a>
-<a href="/privacy.html">Privacy</a></div>
+<a href="/en/about.html">About</a></div>
 <div><h4>Contact</h4><a href="mailto:{EMAIL}">{EMAIL}</a><br>
 <a href="tel:{PHONE}">{PHONE_DISPLAY}</a>
-<p style="font-size:13px;margin-top:8px">{ADDRESS_EN}</p></div>
+<p style="font-size:13px;margin-top:8px">{ADDRESS_EN}</p>
+<a href="/en/contact.html">Contact</a>
+<a href="/privacy.html">Privacy</a></div>
 </div>
 <div class="footer-bottom"><div class="footer-meta">
 <span>© 2026 Anhui ZK Guoci New Components Co., Ltd.</span><span class="sep">·</span>
