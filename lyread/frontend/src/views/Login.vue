@@ -239,10 +239,23 @@ onMounted(async () => {
   } catch { /* 忽略配置探测失败 */ }
 })
 
+/** 注册进创作台时补上 welcome=1，避免漏斗 redirect 丢掉赠点提示 */
+function withRegisterWelcome(path) {
+  if (!path.startsWith('/workspace')) return path
+  try {
+    const u = new URL(path, 'https://lyread.cn')
+    if (!u.searchParams.has('welcome')) u.searchParams.set('welcome', '1')
+    return `${u.pathname}${u.search}${u.hash}`
+  } catch {
+    if (path.includes('welcome=')) return path
+    return path.includes('?') ? `${path}&welcome=1` : `${path}?welcome=1`
+  }
+}
+
 function afterAuth(isRegister = false) {
   const redirect = safeRedirectPath()
   if (redirect) {
-    router.push(redirect)
+    router.push(isRegister ? withRegisterWelcome(redirect) : redirect)
     return
   }
   if (isRegister) {

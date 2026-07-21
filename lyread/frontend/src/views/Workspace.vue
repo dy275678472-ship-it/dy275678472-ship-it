@@ -1,5 +1,9 @@
 <template>
   <div class="workspace">
+    <div v-if="welcomeBanner" class="welcome-toast workspace-welcome" role="status">
+      欢迎！已到账 <strong>30 点</strong>，约可 AI 续写 3 章；失败不扣点。
+      <button class="welcome-close" @click="dismissWelcome">知道了</button>
+    </div>
     <aside
       class="sidebar"
       v-if="!editing"
@@ -44,10 +48,6 @@
     </main>
 
     <main class="editor" v-else-if="editing">
-      <div v-if="welcomeBanner" class="welcome-toast">
-        欢迎！已到账 <strong>30 点</strong>，试试「AI 续写正文」感受完整创作流程。
-        <button class="welcome-close" @click="welcomeBanner = false">知道了</button>
-      </div>
       <div v-if="creditsLow" class="credits-banner" role="status">
         <span>点数不足，无法继续生成 · 失败不扣点</span>
         <button
@@ -158,7 +158,8 @@
       <img :src="images.workspace" alt="创作台欢迎横幅" class="welcome-hero-img" />
       <h2>创作台</h2>
       <template v-if="!stories.length">
-        <p>约 10 分钟走完引导，写出第一章。失败不扣点；点数不足会引导充值。</p>
+        <p v-if="welcomeBanner">赠点已就绪。先走引导创作，写出你的第一章。</p>
+        <p v-else>约 10 分钟走完引导，写出第一章。失败不扣点；点数不足会引导充值。</p>
         <ol class="first-run-steps">
           <li>选题材与灵感</li>
           <li>AI 生成书名 / 大纲 / 章纲</li>
@@ -529,16 +530,28 @@ function exportStory(format) {
     })
 }
 
+function dismissWelcome() {
+  welcomeBanner.value = false
+  trackEvent('workspace_welcome_dismiss', { category: 'funnel', label: 'toast' })
+}
+
 onMounted(async () => {
   await loadList()
-  if (route.query.welcome === '1') welcomeBanner.value = true
+  if (route.query.welcome === '1') {
+    welcomeBanner.value = true
+    trackEvent('workspace_welcome_show', { category: 'funnel', label: 'register' })
+  }
   if (route.query.story) openStory(Number(route.query.story))
   else if (route.query.generatedTitle || route.query.prompt) newStory()
+  else if (route.query.mode === 'new') {
+    // 注册/创作漏斗常带 mode=new：直接进入向导，缩短空态停留
+    startWizard(welcomeBanner.value ? 'welcome_register' : 'query_mode_new')
+  }
 })
 </script>
 
 <style scoped>
-.workspace { display: flex; min-height: calc(100vh - 62px); }
+.workspace { display: flex; flex-wrap: wrap; min-height: calc(100vh - 62px); }
 .sidebar { width: 280px; border-right: 1px solid #e8f0fa; background: #fff; padding: 20px 16px; }
 .sidebar-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .sidebar-head h2 { font-size: 18px; }
@@ -600,6 +613,12 @@ onMounted(async () => {
   padding: 12px 16px; margin-bottom: 12px; border-radius: 10px; font-size: 13px;
 }
 .welcome-toast { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.workspace-welcome {
+  flex: 0 0 100%;
+  width: calc(100% - 32px);
+  box-sizing: border-box;
+  margin: 12px 16px 0;
+}
 .credits-banner { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; flex-wrap: wrap; gap: 10px; }
 .credits-banner a { color: #2563eb; font-weight: 600; text-decoration: none; }
 .btn-claim-inline {

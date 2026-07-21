@@ -82,17 +82,30 @@
       </footer>
       <section v-if="related.length" class="related" aria-label="相关案例">
         <h2 class="related-title">同风格还可读</h2>
-        <p class="related-sub">继续浏览相近题材，找到想写的味道再开写</p>
+        <p class="related-sub">继续浏览相近题材，展开节选挑到想写的味道再开写</p>
         <ul class="related-list">
           <li v-for="(c, i) in related" :key="c.id">
-            <router-link :to="`/case/${c.id}`" class="related-link" @click="onRelatedClick(c)">
-              <img :src="coverForCase(c, i)" :alt="`${c.title} 封面`" class="related-cover" width="48" height="64" loading="lazy" />
-              <span class="related-text">
-                <span class="related-cat">{{ c.category || '都市' }}</span>
-                <span class="related-name">{{ c.title }}</span>
-                <span class="related-meta">{{ c.word_count }} 字 · 热度 {{ c.heat }}</span>
-              </span>
-            </router-link>
+            <div class="related-item">
+              <router-link :to="`/case/${c.id}`" class="related-link" @click="onRelatedClick(c)">
+                <img :src="coverForCase(c, i)" :alt="`${c.title} 封面`" class="related-cover" width="48" height="64" loading="lazy" />
+                <span class="related-text">
+                  <span class="related-cat">{{ c.category || '都市' }}</span>
+                  <span class="related-name">{{ c.title }}</span>
+                  <span class="related-meta">{{ c.word_count }} 字 · 热度 {{ c.heat }}</span>
+                </span>
+              </router-link>
+              <p
+                v-if="c.excerpt"
+                class="related-excerpt"
+                :class="{ expanded: expandedRelatedId === c.id }"
+              >{{ c.excerpt }}</p>
+              <button
+                v-if="c.excerpt && c.excerpt.length > 72"
+                type="button"
+                class="related-excerpt-toggle"
+                @click="toggleRelatedExcerpt(c)"
+              >{{ expandedRelatedId === c.id ? '收起节选' : '展开节选' }}</button>
+            </div>
           </li>
         </ul>
         <div class="related-actions">
@@ -128,6 +141,7 @@ const loading = ref(true)
 const caseData = ref(null)
 const body = ref('')
 const related = ref([])
+const expandedRelatedId = ref(null)
 const copyLabel = ref('复制分享链接')
 const canNativeShare = ref(typeof navigator !== 'undefined' && typeof navigator.share === 'function')
 
@@ -237,6 +251,17 @@ function onRelatedClick(c) {
   })
 }
 
+/** 同风格区节选：触控端点按展开，减少只能看标题就跳出 */
+function toggleRelatedExcerpt(c) {
+  const next = expandedRelatedId.value === c.id ? null : c.id
+  expandedRelatedId.value = next
+  trackEvent('related_excerpt_toggle', {
+    category: 'engagement',
+    label: next ? 'expand' : 'collapse',
+    value: Number(c.id) || 0,
+  })
+}
+
 function trackRelatedMore() {
   trackEvent('related_case_more', {
     category: 'funnel',
@@ -309,6 +334,7 @@ async function loadCase(id) {
   caseData.value = null
   body.value = ''
   related.value = []
+  expandedRelatedId.value = null
   try {
     const res = await casesApi.get(id)
     if (res?.success) {
@@ -485,22 +511,30 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
   flex-direction: column;
   gap: 10px;
 }
-.related-link {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding: 10px 12px;
+.related-item {
+  padding: 10px 12px 12px;
   border-radius: 12px;
-  text-decoration: none;
-  color: inherit;
   background: #f8fbff;
   border: 1px solid transparent;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
-.related-link:hover,
-.related-link:focus-visible {
+.related-item:hover,
+.related-item:focus-within {
   border-color: #bfdbfe;
   background: #eff6ff;
+}
+.related-link {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+.related-link:hover,
+.related-link:focus-visible {
   outline: none;
 }
 .related-cover {
@@ -535,6 +569,32 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
   font-size: 12px;
   color: #94a3b8;
 }
+.related-excerpt {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #64748b;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.related-excerpt.expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+.related-excerpt-toggle {
+  margin-top: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.related-excerpt-toggle:hover { color: #1d4ed8; text-decoration: underline; }
 .related-actions {
   display: flex;
   flex-wrap: wrap;
