@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>网站后台 — 中科国瓷</title>
+<link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body>
+<aside class="side">
+  <div class="brand">中科国瓷<br><small>Website Admin · P2</small></div>
+  <nav>
+    <button data-tab="dash" class="active">数据看板</button>
+    <button data-tab="leads">线索管理</button>
+    <button data-tab="chat">在线客服</button>
+    <button data-tab="tickets">工单</button>
+    <button data-tab="knowledge">知识库</button>
+    <button data-tab="cases">行业案例</button>
+    <button data-tab="news">新闻</button>
+    <button data-tab="products">产品</button>
+    <button data-tab="logs">操作日志</button>
+    <button data-tab="site">站点 / 备份</button>
+  </nav>
+  <a class="back" href="/" target="_blank">打开前台 →</a>
+</aside>
+<main class="main">
+  <header class="top">
+    <h1 id="page-title">数据看板</h1>
+    <div class="auth">
+      <input id="token" type="password" placeholder="Admin / Editor / Ops Token" autocomplete="current-password">
+      <button id="btn-login" class="btn">登录</button>
+      <span id="auth-state" class="muted">未登录</span>
+      <span id="role-badge" class="muted"></span>
+    </div>
+  </header>
+
+  <section id="tab-dash" class="panel active">
+    <div class="stats" id="stats"></div>
+    <div class="card">
+      <h2>近 7 日趋势</h2>
+      <div class="table-wrap"><table id="series-table"><thead>
+        <tr><th>日期</th><th>线索</th><th>页面浏览</th></tr>
+      </thead><tbody></tbody></table></div>
+    </div>
+    <div class="card">
+      <h2>热门页面</h2>
+      <div class="table-wrap"><table id="top-pages-table"><thead>
+        <tr><th>路径</th><th>浏览量</th></tr>
+      </thead><tbody></tbody></table></div>
+    </div>
+    <div class="card card-warn">
+      <h2>发布前台</h2>
+      <p>编辑知识库/案例/新闻后，点击发布可重新生成静态 HTML。</p>
+      <button class="btn primary" id="btn-publish" type="button">一键发布前台</button>
+      <pre id="publish-log" class="muted" style="white-space:pre-wrap;margin-top:12px"></pre>
+    </div>
+  </section>
+
+  <section id="tab-leads" class="panel">
+    <div class="toolbar">
+      <button class="btn" onclick="loadLeads()">刷新</button>
+      <a class="btn primary" id="btn-export-leads" href="#">导出 CSV</a>
+      <select id="lead-filter">
+        <option value="">全部状态</option>
+        <option value="new">new</option>
+        <option value="contacted">contacted</option>
+        <option value="closed">closed</option>
+      </select>
+    </div>
+    <div class="table-wrap"><table id="leads-table"><thead>
+      <tr><th>时间</th><th>公司</th><th>联系人</th><th>电话</th><th>产品</th><th>需求</th><th>负责人</th><th>状态</th><th>操作</th></tr>
+    </thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="tab-chat" class="panel">
+    <div class="toolbar">
+      <button class="btn" onclick="loadChats()">刷新会话</button>
+      <select id="chat-filter">
+        <option value="">全部状态</option>
+        <option value="open">待接待</option>
+        <option value="closed">已关闭</option>
+      </select>
+      <span class="muted">FAQ 机器人会先自动回复高频问题</span>
+    </div>
+    <div class="chat-admin-layout">
+      <div class="table-wrap"><table id="chat-table"><thead>
+        <tr><th>最近消息</th><th>访客</th><th>内容</th><th>状态</th><th>操作</th></tr>
+      </thead><tbody></tbody></table></div>
+      <div class="chat-admin-box">
+        <div id="chat-admin-empty" class="chat-admin-empty">选择一个会话查看并回复</div>
+        <div id="chat-admin-active" hidden>
+          <div class="chat-admin-head">
+            <div><strong id="chat-admin-title">会话</strong><small id="chat-admin-meta"></small></div>
+            <div>
+              <button class="btn" id="chat-to-ticket">转工单</button>
+              <button class="btn" id="chat-close-session">关闭会话</button>
+            </div>
+          </div>
+          <div id="chat-admin-messages" class="chat-admin-messages"></div>
+          <div class="chat-admin-compose">
+            <textarea id="chat-admin-input" rows="3" maxlength="2000" placeholder="输入客服回复…"></textarea>
+            <button class="btn primary" id="chat-admin-send">发送回复</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-tickets" class="panel">
+    <div class="toolbar">
+      <button class="btn" onclick="loadTickets()">刷新</button>
+      <button class="btn primary" onclick="createTicket()">新建工单</button>
+    </div>
+    <div class="table-wrap"><table id="tickets-table"><thead>
+      <tr><th>时间</th><th>标题</th><th>分类</th><th>优先级</th><th>负责人</th><th>状态</th><th>操作</th></tr>
+    </thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="tab-knowledge" class="panel">
+    <div class="toolbar">
+      <button class="btn" onclick="loadKnowledge()">刷新</button>
+      <button class="btn primary" onclick="editKnowledge()">新建文章</button>
+    </div>
+    <div class="table-wrap"><table id="kb-table"><thead>
+      <tr><th>分类</th><th>标题</th><th>Slug</th><th>发布</th><th>操作</th></tr>
+    </thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="tab-cases" class="panel">
+    <div class="toolbar">
+      <button class="btn" onclick="loadCases()">刷新</button>
+      <button class="btn primary" onclick="editCase()">新建案例</button>
+    </div>
+    <div class="table-wrap"><table id="cases-table"><thead>
+      <tr><th>行业</th><th>标题</th><th>客户代名词</th><th>发布</th><th>操作</th></tr>
+    </thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="tab-news" class="panel">
+    <div class="toolbar">
+      <button class="btn" onclick="loadNews()">刷新</button>
+      <button class="btn primary" onclick="editNews()">新建新闻</button>
+    </div>
+    <div class="table-wrap"><table id="news-table"><thead>
+      <tr><th>标题</th><th>Slug</th><th>发布</th><th>操作</th></tr>
+    </thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="tab-products" class="panel">
+    <div class="toolbar"><button class="btn" onclick="loadProducts()">刷新</button></div>
+    <div class="table-wrap"><table id="products-table"><thead>
+      <tr><th>名称</th><th>Slug</th><th>亮点</th><th>发布</th><th>操作</th></tr>
+    </thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="tab-logs" class="panel">
+    <div class="toolbar"><button class="btn" onclick="loadLogs()">刷新</button></div>
+    <div class="table-wrap"><table id="logs-table"><thead>
+      <tr><th>时间</th><th>操作人</th><th>角色</th><th>动作</th><th>对象</th><th>详情</th><th>IP</th></tr>
+    </thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="tab-site" class="panel">
+    <div class="card">
+      <h2>角色说明</h2>
+      <ul>
+        <li><strong>admin</strong>：全部权限（内容/线索/客服/工单/发布/备份/日志）</li>
+        <li><strong>editor</strong>：内容编辑 + 发布 + 只读线索/客服</li>
+        <li><strong>ops</strong>：线索/客服/工单/导出/日志（无内容删除与备份）</li>
+      </ul>
+      <p class="muted">环境变量：<code>ADMIN_TOKEN</code> / <code>EDITOR_TOKEN</code> / <code>OPS_TOKEN</code>，或 <code>ADMIN_USERS=role:token:name,...</code></p>
+    </div>
+    <div class="card">
+      <h2>数据备份</h2>
+      <p>导出线索、工单、客服会话为 JSON 文件，保存在服务器 <code>backups/</code>。</p>
+      <button class="btn primary" id="btn-backup" type="button">立即备份</button>
+      <pre id="backup-log" class="muted" style="white-space:pre-wrap;margin-top:12px"></pre>
+    </div>
+    <div class="card">
+      <h2>站点信息</h2>
+      <ul>
+        <li>前台根目录：<code>/opt/kdgc-growth/frontend/dist/</code></li>
+        <li>邮箱：guanwn@kdgc.cc · 电话：153-8588-4309</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<dialog id="editor">
+  <form method="dialog" id="editor-form" class="editor">
+    <h2 id="editor-title">编辑</h2>
+    <div id="editor-fields"></div>
+    <div class="editor-actions">
+      <button value="cancel" class="btn">取消</button>
+      <button id="editor-save" value="default" class="btn primary">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="/assets/js/admin.js"></script>
+</body>
+</html>

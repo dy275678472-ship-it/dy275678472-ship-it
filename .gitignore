@@ -1,0 +1,7 @@
+# Never commit private SSH keys
+.ssh-keys/**/shanghai_a_deploy
+*.pem
+id_rsa
+id_ed25519
+__pycache__/
+assets-incoming/
