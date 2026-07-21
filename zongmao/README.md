@@ -67,3 +67,18 @@ sudo systemctl restart zongmao.service
 5. Article Schema 增强：publisher logo、articleSection、dateModified
 6. 全站 footer 内链：方法论 / 对比 / 教程
 7. 品种页走势图 `aria-label` 无障碍
+
+## SEO/GEO P2
+
+```bash
+sudo python3 /opt/zongmao/scripts/p2-seo-patch.py
+sudo systemctl restart zongmao.service
+```
+
+### SEO P2 包含项
+
+1. `/glossary` 期货术语词典（50 词 + FAQPage Schema）
+2. `/stats/2026` 年度信号年报（SSR 战绩 + 板块/月度/品种分解）
+3. `/compare` 留资表单（手机号 → lead_captures）
+4. `gen_news.py` 资讯末尾结构化块（行情速览表 + AI 信号观点）
+5. `llms.txt` / sitemap 更新
