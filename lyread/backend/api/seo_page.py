@@ -418,9 +418,27 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
                     </div>
                 </div>"""
                 if preview:
-                    safe_preview = escape(preview[:6000]).replace("\n", "<br>")
+                    mid_cta = ""
+                    text = preview[:6000]
+                    # 长节选中部插入 register-first 软 CTA（与 Vue CaseReader 对齐）
+                    if len(text) >= 900:
+                        parts = [p for p in text.replace("\r\n", "\n").split("\n\n") if p.strip()]
+                        if len(parts) >= 4:
+                            at = max(2, len(parts) // 2)
+                            head = escape("\n\n".join(parts[:at])).replace("\n", "<br>")
+                            tail = escape("\n\n".join(parts[at:])).replace("\n", "<br>")
+                            mid_cta = f"""
+                    <div style="margin:22px 0;padding:12px 0;border-top:1px dashed #dbeafe;border-bottom:1px dashed #dbeafe;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center">
+                        <p style="margin:0;font-size:14px;color:#64748b;line-height:1.5;flex:1 1 220px">读到一半了？注册送 30 点，用同风格接着写下去</p>
+                        <a href="{SITE_BASE}/login?mode=register&amp;redirect=/workspace" style="font-size:14px;font-weight:600;color:#0f766e;text-decoration:none;white-space:nowrap">免费注册开写 →</a>
+                    </div>"""
+                            safe_preview = head + mid_cta + tail
+                        else:
+                            safe_preview = escape(text).replace("\n", "<br>")
+                    else:
+                        safe_preview = escape(text).replace("\n", "<br>")
                     body_html += f"""
-                <div style="margin-top:24px;line-height:1.9;color:#2a3a4e;white-space:normal">
+                <div style="margin-top:24px;line-height:1.95;color:#2a3a4e;white-space:normal;letter-spacing:0.01em">
                     <h2 style="font-size:18px;margin-bottom:12px;color:#1e2a3a">正文节选</h2>
                     <div style="background:#f8fafc;padding:20px;border-radius:12px;border:1px solid #e8f0fa">{safe_preview}</div>
                 </div>"""
@@ -437,7 +455,7 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
                 body_html += f"""
                 <div class="seo-cta">
                     <a href="{SITE_BASE}/case/{int(row['id'])}">打开阅读器 →</a>
-                    <a href="{SITE_BASE}/login?redirect=/workspace" style="margin-left:12px">登录创作 →</a>
+                    <a href="{SITE_BASE}/login?mode=register&amp;redirect=/workspace" style="margin-left:12px">免费注册开写（送 30 点）→</a>
                 </div>
                 """
     except Exception as e:
