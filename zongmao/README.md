@@ -18,3 +18,21 @@ sudo nginx -t && sudo systemctl reload nginx
 5. 会员页战绩信任条（SSR KPI）
 6. Sitemap 卡片页 2000→300；robots 屏蔽 `/cards/`
 7. Cron：百度推送 + 资讯生成 + 信号生成
+
+## P2 爬取预算与性能
+
+```bash
+sudo python3 /opt/zongmao/scripts/p2-patch.py
+sudo systemctl restart zongmao.service
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+### P2 包含项
+
+1. Sitemap 瘦身：移除 `/cards/*` `/asset/*`；信号页仅收录有活跃信号的 URL；新闻限 500 篇
+2. 薄页 noindex：`/cards/*`、非标准 `/asset/*`、无内容的 `/signal/*`
+3. `/asset/{name}` → `/price/{symbol}` 301 重定向（标准品种）
+4. 信号页展示活跃 `trade_signals`（修复 symbol/中文名不匹配）
+5. 品类落地页 `/category/{能源|黑色|有色|化工|农产品}`
+6. Nginx 安全头：HSTS、Referrer-Policy、Permissions-Policy
+7. 百度统计配置：`/opt/zongmao/site_config.json` 设置 `baidu_hm_id`
