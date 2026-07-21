@@ -6,7 +6,7 @@
         <h1>让 AI 陪你写完一部长篇小说</h1>
         <p class="subtitle">从人物、大纲到连续章节，自动记住剧情和伏笔；也支持快速生成完整短故事</p>
         <div class="hero-btns">
-          <button class="btn-primary" @click="openTrial">免费试写第一章</button>
+          <button class="btn-primary" @click="openTrial">免费体验 AI 书名</button>
           <button class="btn-secondary" @click="$router.push('/trending')">查看真实案例</button>
         </div>
       </div>

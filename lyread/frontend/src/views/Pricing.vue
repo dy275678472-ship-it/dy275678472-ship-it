@@ -51,6 +51,14 @@
 
     <section class="packages">
       <h2>充值套餐</h2>
+      <div v-if="!isLoggedIn" class="guest-cta">
+        <p>不想先充值？注册即送 {{ info?.signup_bonus || 30 }} 点，可直接进创作台。</p>
+        <router-link
+          class="btn-register"
+          :to="{ path: '/login', query: { mode: 'register', redirect: '/pricing' } }"
+          @click="trackEvent('pricing_register_cta', { category: 'funnel', label: 'free_30' })"
+        >免费注册领 {{ info?.signup_bonus || 30 }} 点 →</router-link>
+      </div>
       <div class="pkg-grid">
         <div v-for="pkg in packages" :key="pkg.id" class="pkg-card" :class="{ popular: pkg.popular }">
           <div v-if="pkg.popular" class="badge">推荐</div>
@@ -59,7 +67,7 @@
           <div class="pkg-credits">{{ pkg.credits }} 点</div>
           <p class="pkg-desc">{{ pkg.desc }}</p>
           <button class="btn-buy" type="button" @click="buy(pkg)">
-            {{ isLoggedIn ? '立即充值' : '登录后充值' }}
+            {{ isLoggedIn ? '立即充值' : '注册后充值' }}
           </button>
         </div>
       </div>
@@ -211,6 +219,18 @@ th { background: #f8fafc; font-size: 13px; color: #64748b; }
 .note { color: #94a3b8; font-size: 13px; }
 .pay-error { color: #dc2626; background: #fef2f2; padding: 12px 16px; border-radius: 10px; border: 1px solid #fecaca; }
 
+.guest-cta {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px;
+  margin-bottom: 20px; padding: 16px 18px; border-radius: 14px;
+  background: linear-gradient(135deg, #eff6ff, #f8fafc); border: 1px solid #dbeafe;
+}
+.guest-cta p { margin: 0; color: #334155; font-size: 14px; line-height: 1.5; }
+.btn-register {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 18px; border-radius: 10px; text-decoration: none; white-space: nowrap;
+  background: #fff; color: #2563eb; font-weight: 700; border: 1px solid #93c5fd;
+}
+.btn-register:hover { background: #eff6ff; }
 .pkg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 16px; }
 .pkg-card {
   position: relative; background: #fff; border-radius: 16px; padding: 28px 22px;
