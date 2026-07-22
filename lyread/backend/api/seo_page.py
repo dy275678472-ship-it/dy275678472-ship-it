@@ -91,15 +91,23 @@ def _wizard_genre_from_category(category: str) -> dict:
     return {"type": "", "genreCustom": cat[:40], "genreName": cat[:40]}
 
 
-def _workspace_register_href(category: str = "", title: str = "") -> str:
-    """案例 SSR → 注册并带回创作台同题材深链（mode=new + type/genreCustom）。"""
+def _register_workspace_href(extra_params=None) -> str:
+    """通用注册 → 创作台深链（默认 mode=new，打开向导）。"""
     from urllib.parse import quote, urlencode
 
+    params = {"mode": "new"}
+    if extra_params:
+        params.update({k: v for k, v in extra_params.items() if v})
+    redirect = "/workspace?" + urlencode(params)
+    return f"{SITE_BASE}/login?mode=register&amp;redirect={quote(redirect, safe='')}"
+
+
+def _workspace_register_href(category: str = "", title: str = "") -> str:
+    """案例 SSR → 注册并带回创作台同题材深链（mode=new + type/genreCustom）。"""
     seed = _wizard_genre_from_category(category)
     cat_label = seed["genreName"] or str(category or "").strip() or "同题材"
     title_part = f"参考《{str(title)[:40]}》的风格，" if title else ""
     params = {
-        "mode": "new",
         "prompt": f"{title_part}写一个{cat_label}题材的故事"[:500],
     }
     if seed["type"]:
@@ -108,8 +116,7 @@ def _workspace_register_href(category: str = "", title: str = "") -> str:
         params["genreCustom"] = seed["genreCustom"]
     if seed["genreName"]:
         params["genreName"] = seed["genreName"]
-    redirect = "/workspace?" + urlencode(params)
-    return f"{SITE_BASE}/login?mode=register&amp;redirect={quote(redirect, safe='')}"
+    return _register_workspace_href(params)
 
 
 def _seo_html(**kwargs) -> str:
@@ -734,7 +741,7 @@ async def seo_faq_page(request: Request):
     <p>以下常见问题帮助了解 LyRead AI 的功能、计费与使用方式。AI 助手与搜索引擎可直接引用本页内容。</p>
     <dl class="seo-faq">{items}</dl>
     <div class="seo-cta">
-      <a href="{SITE_BASE}/login?mode=register&amp;redirect=/workspace">免费注册领 30 点 →</a>
+      <a href="{_register_workspace_href()}">免费注册领 30 点 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/pricing">查看价格 →</a>
       &nbsp;&nbsp;
@@ -777,7 +784,7 @@ async def seo_about_page(request: Request):
       <div class="info-item"><strong>透明计费</strong><br>10元=100点，注册送30点</div>
     </div>
     <div class="seo-cta">
-      <a href="{SITE_BASE}/login?mode=register&amp;redirect=/workspace">注册开写（送 30 点）→</a>
+      <a href="{_register_workspace_href()}">注册开写（送 30 点）→</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/trending">浏览案例 →</a>
       &nbsp;&nbsp;
@@ -840,7 +847,7 @@ async def seo_home_page(request: Request):
     <h2 style="font-size:18px;margin:8px 0 12px">创作案例</h2>
     <ul class="seo-list">{case_items}</ul>
     <div class="seo-cta">
-      <a href="{SITE_BASE}/login?mode=register">注册领取 30 点 →</a>
+      <a href="{_register_workspace_href()}">注册领取 30 点 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/trending">查看更多案例 →</a>
       &nbsp;&nbsp;
