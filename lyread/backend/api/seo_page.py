@@ -67,6 +67,51 @@ def _og_image_for_category(category: str) -> str:
     return f"{SITE_BASE}{path}"
 
 
+def _wizard_genre_from_category(category: str) -> dict:
+    """与前端 wizardGenreFromCategory 对齐：输出 type/genreCustom/genreName。"""
+    cat = str(category or "").strip()
+    if not cat:
+        return {"type": "", "genreCustom": "", "genreName": ""}
+    if "系统" in cat:
+        return {"type": "system", "genreCustom": "", "genreName": "系统流"}
+    if any(k in cat for k in ("战神", "兵王")):
+        return {"type": "warrior", "genreCustom": "", "genreName": "战神归来"}
+    if any(k in cat for k in ("重生", "穿越")):
+        return {"type": "reborn", "genreCustom": "", "genreName": "重生流"}
+    if any(k in cat for k in ("仙侠", "玄幻", "修仙")):
+        return {"type": "fantasy", "genreCustom": "", "genreName": "玄幻修仙"}
+    if any(k in cat for k in ("脑洞", "科幻", "末世")):
+        return {"type": "brainhole", "genreCustom": "", "genreName": "脑洞文"}
+    if any(k in cat for k in ("游戏", "竞技", "电竞")):
+        return {"type": "games", "genreCustom": "", "genreName": "游戏文"}
+    if any(k in cat for k in ("文娱", "明星", "娱乐")):
+        return {"type": "entertainment", "genreCustom": "", "genreName": "文娱"}
+    if any(k in cat for k in ("都市", "神豪")):
+        return {"type": "urban", "genreCustom": "", "genreName": "都市神豪"}
+    return {"type": "", "genreCustom": cat[:40], "genreName": cat[:40]}
+
+
+def _workspace_register_href(category: str = "", title: str = "") -> str:
+    """案例 SSR → 注册并带回创作台同题材深链（mode=new + type/genreCustom）。"""
+    from urllib.parse import quote, urlencode
+
+    seed = _wizard_genre_from_category(category)
+    cat_label = seed["genreName"] or str(category or "").strip() or "同题材"
+    title_part = f"参考《{str(title)[:40]}》的风格，" if title else ""
+    params = {
+        "mode": "new",
+        "prompt": f"{title_part}写一个{cat_label}题材的故事"[:500],
+    }
+    if seed["type"]:
+        params["type"] = seed["type"]
+    if seed["genreCustom"]:
+        params["genreCustom"] = seed["genreCustom"]
+    if seed["genreName"]:
+        params["genreName"] = seed["genreName"]
+    redirect = "/workspace?" + urlencode(params)
+    return f"{SITE_BASE}/login?mode=register&amp;redirect={quote(redirect, safe='')}"
+
+
 def _seo_html(**kwargs) -> str:
     """PAGE_TEMPLATE 填充，默认 OG 图为站点分享图；题材 OG 均为 1200×630。"""
     kwargs.setdefault("site_base", SITE_BASE)
@@ -406,6 +451,10 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
                     ]),
                 )
                 cover_path = _cover_path_for_category(str(row.get("category") or ""))
+                write_href = _workspace_register_href(
+                    str(row.get("category") or ""),
+                    str(row.get("title") or ""),
+                )
                 body_html = f"""
                 <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:8px">
                     <img src="{SITE_BASE}{cover_path}" alt="{safe_title} 封面" width="96" height="128"
@@ -429,8 +478,8 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
                             tail = escape("\n\n".join(parts[at:])).replace("\n", "<br>")
                             mid_cta = f"""
                     <div style="margin:22px 0;padding:12px 0;border-top:1px dashed #dbeafe;border-bottom:1px dashed #dbeafe;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center">
-                        <p style="margin:0;font-size:14px;color:#64748b;line-height:1.5;flex:1 1 220px">读到一半了？注册送 30 点，用同风格接着写下去</p>
-                        <a href="{SITE_BASE}/login?mode=register&amp;redirect=/workspace" style="font-size:14px;font-weight:600;color:#0f766e;text-decoration:none;white-space:nowrap">免费注册开写 →</a>
+                        <p style="margin:0;font-size:14px;color:#64748b;line-height:1.5;flex:1 1 220px">读到一半了？注册送 30 点，用同题材接着写下去</p>
+                        <a href="{write_href}" style="font-size:14px;font-weight:600;color:#0f766e;text-decoration:none;white-space:nowrap">免费注册开写 →</a>
                     </div>"""
                             safe_preview = head + mid_cta + tail
                         else:
@@ -449,13 +498,13 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
                     <p style="margin-top:12px">
                         <a href="{SITE_BASE}/trending">浏览更多案例 →</a>
                         &nbsp;&nbsp;
-                        <a href="{SITE_BASE}/login?mode=register&amp;redirect=/workspace">注册开写 →</a>
+                        <a href="{write_href}">注册开写 →</a>
                     </p>
                 </div>"""
                 body_html += f"""
                 <div class="seo-cta">
                     <a href="{SITE_BASE}/case/{int(row['id'])}">打开阅读器 →</a>
-                    <a href="{SITE_BASE}/login?mode=register&amp;redirect=/workspace" style="margin-left:12px">免费注册开写（送 30 点）→</a>
+                    <a href="{write_href}" style="margin-left:12px">免费注册开写（送 30 点）→</a>
                 </div>
                 """
     except Exception as e:

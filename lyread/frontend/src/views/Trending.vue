@@ -99,6 +99,7 @@ import { casesApi } from '../api'
 import { coverForCase, IMAGES } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
 import { trackEvent } from '../utils/analytics'
+import { workspaceWizardQuery } from '../utils/wizardGenre'
 
 const images = IMAGES
 
@@ -137,7 +138,10 @@ const emptyWorkspaceLink = computed(() => {
   if (!activeCategory.value) return { path: '/workspace', query: { mode: 'new' } }
   return {
     path: '/workspace',
-    query: { type: activeCategory.value, prompt: `写一个${activeCategory.value}题材的故事` },
+    query: workspaceWizardQuery({
+      category: activeCategory.value,
+      prompt: `写一个${activeCategory.value}题材的故事`,
+    }),
   }
 })
 
@@ -151,14 +155,23 @@ function withRegisterRedirect(ws) {
 
 const emptyCtaLink = computed(() => withRegisterRedirect(emptyWorkspaceLink.value))
 const emptyCtaLabel = computed(() => {
-  if (isLoggedIn.value) return activeCategory.value ? '用这个风格开写 →' : '开始创作 →'
+  if (isLoggedIn.value) return activeCategory.value ? '用同题材开写 →' : '开始创作 →'
   return activeCategory.value ? '注册送 30 点，开写 →' : '免费注册，开始创作（送 30 点）→'
 })
 
-const footerWorkspaceLink = computed(() => ({ path: '/workspace', query: { mode: 'new' } }))
+/** 页脚 CTA：有筛选时带同题材进向导 */
+const footerWorkspaceLink = computed(() => {
+  if (!activeCategory.value) return { path: '/workspace', query: { mode: 'new' } }
+  return {
+    path: '/workspace',
+    query: workspaceWizardQuery({ category: activeCategory.value }),
+  }
+})
 const footerCtaLink = computed(() => withRegisterRedirect(footerWorkspaceLink.value))
 const footerCtaLabel = computed(() =>
-  isLoggedIn.value ? '用这个风格开始创作 →' : '免费注册，用这个风格开写（送 30 点）→',
+  isLoggedIn.value
+    ? (activeCategory.value ? `用同题材开写（${activeCategory.value}）→` : '开始创作 →')
+    : '免费注册，用同题材开写（送 30 点）→',
 )
 
 function selectCategory(cat) {
@@ -210,6 +223,17 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+  // 触控端无 hover：默认展开首卡节选，降低只看标题就跳出
+  try {
+    const coarse = typeof window !== 'undefined'
+      && window.matchMedia
+      && window.matchMedia('(hover: none), (pointer: coarse)').matches
+    const first = cases.value.find((c) => c.excerpt && String(c.excerpt).length > 72)
+    if (coarse && first) {
+      expandedExcerptId.value = first.id
+      trackEvent('trending_excerpt_auto', { category: 'engagement', label: 'first_card', value: Number(first.id) || 0 })
+    }
+  } catch { /* ignore */ }
 })
 </script>
 

@@ -344,14 +344,19 @@ function resetForm() {
 
 function applyQuerySeed() {
   const q = route.query
+  const str = (v) => (typeof v === 'string' ? v : Array.isArray(v) ? String(v[0] || '') : '')
   wizardInitial.value = {
-    generatedTitle: q.generatedTitle,
-    prompt: q.prompt,
-    type: q.type,
+    generatedTitle: str(q.generatedTitle),
+    prompt: str(q.prompt),
+    type: str(q.type),
+    genreCustom: str(q.genreCustom),
+    genreName: str(q.genreName),
   }
-  if (q.generatedTitle) form.title = q.generatedTitle
-  if (q.prompt) form.intro = q.prompt
-  if (q.type) form.genre = q.type
+  if (q.generatedTitle) form.title = str(q.generatedTitle)
+  if (q.prompt) form.intro = str(q.prompt)
+  // Prefer human-readable genre label for classic editor seed
+  const genreLabel = str(q.genreCustom) || str(q.genreName) || str(q.type)
+  if (genreLabel) form.genre = genreLabel
 }
 
 function trackEmpty(label) {
@@ -542,7 +547,7 @@ onMounted(async () => {
     trackEvent('workspace_welcome_show', { category: 'funnel', label: 'register' })
   }
   if (route.query.story) openStory(Number(route.query.story))
-  else if (route.query.generatedTitle || route.query.prompt) newStory()
+  else if (route.query.generatedTitle || route.query.prompt || route.query.type || route.query.genreCustom) newStory()
   else if (route.query.mode === 'new') {
     // 注册/创作漏斗常带 mode=new：直接进入向导，缩短空态停留
     startWizard(welcomeBanner.value ? 'welcome_register' : 'query_mode_new')

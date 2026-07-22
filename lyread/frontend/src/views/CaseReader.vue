@@ -29,7 +29,7 @@
             <span> · 热度 {{ caseData.heat }}</span>
             <span v-if="caseData.score != null"> · 评分 {{ caseData.score }}</span>
           </p>
-          <p class="excerpt-note">以下为平台精选开篇节选，非完整连载。喜欢此风格可一键带入创作台。</p>
+          <p class="excerpt-note">以下为平台精选开篇节选，非完整连载。喜欢此风格可一键带入创作台开写同题材。</p>
         </div>
       </header>
       <section v-if="body" class="body">
@@ -40,7 +40,7 @@
               class="mid-read-cta"
               aria-label="读到一半，注册开写"
             >
-              <p>读到一半了？注册送 30 点，用同风格接着写下去</p>
+              <p>读到一半了？注册送 30 点，用同题材接着写下去</p>
               <router-link
                 :to="creationLink"
                 class="body-register-link"
@@ -52,16 +52,17 @@
           </template>
         </div>
         <aside
-          v-if="!isLoggedIn"
           class="body-register-strip"
-          aria-label="注册开写"
+          :class="{ logged: isLoggedIn }"
+          aria-label="用同题材开写"
         >
-          <p>读到这里了？注册送 30 点，用同风格接着写</p>
+          <p v-if="isLoggedIn">读完了？一键把「{{ genreLabel }}」带进创作向导开写</p>
+          <p v-else>读到这里了？注册送 30 点，用同题材接着写</p>
           <router-link
             :to="creationLink"
             class="body-register-link"
-            @click="trackCta('body_end_register')"
-          >免费注册开写 →</router-link>
+            @click="trackCta(isLoggedIn ? 'body_end_write' : 'body_end_register')"
+          >{{ endWriteLabel }}</router-link>
         </aside>
       </section>
       <section v-else class="body empty-body">
@@ -78,6 +79,7 @@
           <button v-if="canNativeShare" type="button" class="btn-share" @click="nativeShare">分享</button>
         </div>
         <p v-if="!isLoggedIn" class="guest-cta-hint">注册送 30 点，约可 AI 续写 3 章</p>
+        <p v-else class="guest-cta-hint">题材与灵感将预填进创作向导，可直接改大纲开写</p>
         <router-link :to="creationLink" class="btn-cta" @click="trackCta('footer')">{{ ctaLabel }}</router-link>
       </footer>
       <section v-if="related.length" class="related" aria-label="相关案例">
@@ -135,6 +137,7 @@ import { casesApi } from '../api'
 import { coverForCase, ogImageForCase } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
 import { trackEvent } from '../utils/analytics'
+import { workspaceWizardQuery } from '../utils/wizardGenre'
 
 const route = useRoute()
 const loading = ref(true)
@@ -187,9 +190,18 @@ const excerptMeta = computed(() => {
   return parts.join(' · ')
 })
 
-const workspaceLink = computed(() => {
-  const cat = caseData.value?.category || ''
-  return { path: '/workspace', query: { type: cat, prompt: `参考《${caseData.value?.title}》的风格创作` } }
+/** 读完 → 创作台：mode=new + 题材 id/自定义预填，避免中文类目误入 genreId */
+const workspaceLink = computed(() => ({
+  path: '/workspace',
+  query: workspaceWizardQuery({
+    category: caseData.value?.category || '',
+    title: caseData.value?.title || '',
+  }),
+}))
+
+const genreLabel = computed(() => {
+  const cat = String(caseData.value?.category || '').trim()
+  return cat || '同题材'
 })
 
 /** 游客直达注册表单并带回创作台意图，缩短案例→注册路径 */
@@ -201,10 +213,15 @@ const creationLink = computed(() => {
   return { path: '/login', query: { mode: 'register', redirect } }
 })
 const ctaLabel = computed(() =>
-  isLoggedIn.value ? '用这个风格开始创作 →' : '免费注册，用这个风格开写（送 30 点）→',
+  isLoggedIn.value
+    ? `用同题材开写（${genreLabel.value}）→`
+    : '免费注册，用同题材开写（送 30 点）→',
 )
 const ctaShortLabel = computed(() =>
-  isLoggedIn.value ? '用这个风格开写 →' : '注册送 30 点，开写 →',
+  isLoggedIn.value ? '用同题材开写 →' : '注册送 30 点，开写 →',
+)
+const endWriteLabel = computed(() =>
+  isLoggedIn.value ? `用同题材开写（${genreLabel.value}）→` : '免费注册开写 →',
 )
 
 function setCaseMeta(c) {
@@ -438,6 +455,9 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 14px;
+}
+.body-register-strip.logged {
+  border-top-color: #bbf7d0;
 }
 .body-register-strip p {
   margin: 0;

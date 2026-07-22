@@ -571,9 +571,47 @@ onMounted(async () => {
   if (ls?.success) levelSystems.value = ls.systems || []
   if (p?.success) prices.value = p.prices || {}
   const init = props.initial || {}
-  if (init.type) { draft.genreId = init.type; draft.genreName = init.type }
-  if (init.prompt) draft.intro = init.prompt
-  if (init.generatedTitle) draft.title = init.generatedTitle
+  const str = (v) => (typeof v === 'string' ? v : '')
+  const initType = str(init.type)
+  const initCustom = str(init.genreCustom)
+  const initName = str(init.genreName)
+  if (initCustom) {
+    draft.genreCustom = initCustom.slice(0, 40)
+    draft.genreId = ''
+    draft.genreName = (initName || initCustom).slice(0, 40)
+  } else if (initType) {
+    // ASCII ids (urban/system/…) select chips; Chinese labels → custom
+    if (/^[a-z][a-z0-9_-]*$/i.test(initType)) {
+      draft.genreId = initType
+      draft.genreName = (initName || initType).slice(0, 40)
+      draft.genreCustom = ''
+    } else {
+      draft.genreCustom = initType.slice(0, 40)
+      draft.genreId = ''
+      draft.genreName = (initName || initType).slice(0, 40)
+    }
+  }
+  // Resolve chip after genres load (match id or Chinese name)
+  if (allGenres.value.length) {
+    const match = allGenres.value.find(
+      (g) => g.id === draft.genreId
+        || g.name === draft.genreName
+        || g.name === initType
+        || g.name === initCustom
+        || g.name === initName,
+    )
+    if (match) {
+      draft.genreId = match.id
+      draft.genreName = match.name
+      draft.genreCustom = ''
+      displayedGenres.value = pickRandom(
+        [match, ...allGenres.value.filter((g) => g.id !== match.id)],
+        Math.min(6, allGenres.value.length),
+      )
+    }
+  }
+  if (init.prompt) draft.intro = str(init.prompt)
+  if (init.generatedTitle) draft.title = str(init.generatedTitle)
   refreshIdeaPool()
 })
 </script>
