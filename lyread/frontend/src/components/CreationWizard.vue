@@ -626,13 +626,15 @@ onMounted(async () => {
 .wizard-hint strong { display: block; font-size: 13px; margin-bottom: 4px; }
 .wizard-hint p { margin: 0; font-size: 13px; line-height: 1.55; color: #334155; }
 .hint-dismiss {
-  flex-shrink: 0; padding: 6px 12px; border-radius: 8px; border: 1px solid #93c5fd;
-  background: #fff; color: #2563eb; font-weight: 600; cursor: pointer; font-size: 12px;
+  flex-shrink: 0; min-height: 44px; min-width: 44px; padding: 10px 14px; border-radius: 8px;
+  border: 1px solid #93c5fd; background: #fff; color: #2563eb; font-weight: 600; cursor: pointer;
+  font-size: 12px;
 }
 .wizard-steps { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 20px; padding-bottom: 4px; }
 .step-pill {
-  display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px;
-  border: 1px solid #e2e8f0; background: #fff; cursor: pointer; white-space: nowrap; font-size: 12px;
+  display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 10px 14px;
+  border-radius: 999px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer;
+  white-space: nowrap; font-size: 12px;
 }
 .step-pill.active { background: #2563eb; color: #fff; border-color: #2563eb; }
 .step-pill.done { border-color: #93c5fd; }

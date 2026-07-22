@@ -40,7 +40,11 @@
         <strong>预览模式</strong>
         <span>可自由选题材与灵感；生成短篇需注册（送 30 点）</span>
       </div>
-      <router-link class="btn-gate" :to="registerTo">免费注册开始写</router-link>
+      <router-link
+        class="btn-gate"
+        :to="registerTo"
+        @click="trackEvent('story_gate_click', { category: 'conversion', label: 'banner' })"
+      >免费注册开始写</router-link>
     </div>
 
     <div v-if="creditsLow" class="credits-banner" role="status">

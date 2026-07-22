@@ -160,6 +160,12 @@
           <p>"批量产出效率翻倍，团队人手必备"</p>
         </div>
       </div>
+      <div v-if="!isLoggedIn" class="testimonials-cta">
+        <p>也想这样开书？注册送 30 点，马上进创作台</p>
+        <button type="button" class="btn-hot-register" @click="goRegisterContinue('home_testimonials')">
+          免费注册开写 →
+        </button>
+      </div>
     </section>
 
     <!-- 试用弹窗 -->
@@ -309,7 +315,11 @@ function goRegisterContinue(label = 'continue_after_title') {
   // 热门案例区：用首卡题材预填向导（与 CaseReader「同题材开写」对齐）
   // 试用成功：题材 id + genreName + 灵感 + 书名
   let redirect = `/workspace?${new URLSearchParams(workspaceQuery()).toString()}`
-  if (eventLabel === 'home_pricing_cta' || eventLabel === 'hero_register') {
+  if (
+    eventLabel === 'home_pricing_cta'
+    || eventLabel === 'hero_register'
+    || eventLabel === 'home_testimonials'
+  ) {
     redirect = '/workspace?mode=new'
   } else if (eventLabel === 'home_hot_cases' && hotCases.value[0]) {
     const c = hotCases.value[0]
@@ -644,6 +654,20 @@ const startTrial = async (append = false) => {
   font-size: 14px;
 }
 .btn-hot-register:hover { filter: brightness(1.05); }
+.testimonials-cta {
+  margin-top: 28px;
+  text-align: center;
+  padding: 20px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(77, 161, 255, 0.08), rgba(37, 99, 235, 0.06));
+  border: 1px solid rgba(147, 197, 253, 0.45);
+}
+.testimonials-cta p {
+  margin: 0 0 12px;
+  color: #5a6a7a;
+  font-size: 15px;
+  line-height: 1.5;
+}
 .hot-card {
   background: var(--lyread-card-bg);
   border-radius: 16px;
