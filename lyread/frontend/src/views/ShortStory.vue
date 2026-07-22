@@ -18,6 +18,22 @@
         </article>
       </div>
     </section>
+    <section v-else class="samples samples-empty" aria-label="暂无案例节选">
+      <h2>先读热门，再一键生成</h2>
+      <p class="samples-note">公开节选暂时不可用时，可先去热门逛逛，或直接注册开写（送 30 点）</p>
+      <div class="samples-empty-actions">
+        <router-link
+          to="/trending"
+          class="sample-link"
+          @click="trackEvent('story_empty_trending', { category: 'funnel', label: 'no_samples' })"
+        >去热门看看 →</router-link>
+        <router-link
+          :to="emptyPrimaryTo"
+          class="btn-gate"
+          @click="trackEvent('story_empty_register', { category: 'conversion', label: loggedIn ? 'workspace' : 'no_samples' })"
+        >{{ loggedIn ? '去创作台开写' : '免费注册开始写' }}</router-link>
+      </div>
+    </section>
 
     <div v-if="!loggedIn" class="gate-banner">
       <div>
@@ -154,6 +170,13 @@ const registerTo = computed(() => ({
   path: '/login',
   query: { mode: 'register', redirect: storyDraftRedirect() },
 }))
+
+/** Empty-samples CTA: guests register with draft redirect; authed users go write. */
+const emptyPrimaryTo = computed(() => (
+  loggedIn.value
+    ? { path: '/workspace', query: { mode: 'new' } }
+    : registerTo.value
+))
 
 const generateLabel = computed(() => {
   if (!loggedIn.value) return '免费注册并生成短篇'
@@ -358,6 +381,18 @@ onMounted(async () => {
 .samples { margin-bottom: 24px; }
 .samples h2 { font-size: 18px; margin: 0 0 6px; color: #1e293b; }
 .samples-note { font-size: 13px; color: #64748b; margin: 0 0 14px; }
+.samples-empty {
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  border: 1px dashed #dbe7f5;
+  border-radius: 14px;
+  padding: 16px 18px 18px;
+}
+.samples-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
 .sample-grid { display: grid; gap: 12px; }
 @media (min-width: 720px) {
   .sample-grid { grid-template-columns: repeat(3, 1fr); }
