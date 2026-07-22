@@ -38,7 +38,7 @@
       v-else-if="!filteredCases.length"
       :image="images.emptyCreate"
       :title="activeCategory ? `暂无「${activeCategory}」案例` : '暂无案例'"
-      :description="activeCategory ? '试试其他分类，或用这个风格去创作台开写' : '审核通过的作品将展示在这里，敬请期待'"
+      :description="activeCategory ? `「${activeCategory}」还没有可读节选。先看全部案例找灵感，或把这个题材带进创作台开写` : '审核通过的作品将展示在这里。也可以先注册领 30 点，去创作台开写第一篇'"
       :image-width="160"
     >
       <div class="empty-actions">
