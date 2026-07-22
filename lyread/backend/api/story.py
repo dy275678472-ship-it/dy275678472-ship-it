@@ -284,6 +284,8 @@ async def generate_outline(req: GenerateOutlineRequest, user: dict = Depends(get
             return {"success": False, "error": "大纲解析失败，本次未扣点"}
         settle(uid, job["job_id"], estimate_points("outline"))
         return {"success": True, "outline": outline}
+    except HTTPException:
+        raise
     except Exception as e:
         refund(uid, job["job_id"])
         return {"success": False, "error": str(e)}
@@ -395,6 +397,8 @@ async def generate_chapters(req: GenerateChaptersRequest, user: dict = Depends(g
 
         settle(uid, job["job_id"], estimate_points("chapters"))
         return {"success": True, "chapters": chapters}
+    except HTTPException:
+        raise
     except Exception as e:
         refund(uid, job["job_id"])
         return {"success": False, "error": str(e)}

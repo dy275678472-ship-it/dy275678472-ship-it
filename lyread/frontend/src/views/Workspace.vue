@@ -230,6 +230,8 @@ function setMsg(text, err = false) {
 }
 
 function handleApiError(res, fallback) {
+  // 失败路径可能已后端退点：刷新导航栏 reserved，避免「扣住不动」
+  window.dispatchEvent(new Event('credits-changed'))
   if (res?.insufficient_credits || res?.status === 402) {
     creditsLow.value = true
     trackEvent('credits_low', { category: 'conversion', label: 'workspace' })

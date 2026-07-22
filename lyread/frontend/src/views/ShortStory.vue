@@ -241,7 +241,10 @@ async function generateMoreIdeas() {
       ideaPool.value = mergeStringOptions(ideaPool.value, res.ideas || [])
       displayedTemplates.value = pickRandom(ideaPool.value, 4)
       window.dispatchEvent(new Event('credits-changed'))
-    } else error.value = res?.detail || res?.error || '生成失败'
+    } else {
+      error.value = res?.detail || res?.error || '生成失败'
+      window.dispatchEvent(new Event('credits-changed'))
+    }
   } finally { busy.value = false }
 }
 
@@ -281,8 +284,10 @@ async function generate() {
       trackEvent('credits_low', { category: 'conversion', label: 'story' })
       error.value = res.detail || '点数不足，可先领取每日免费额度'
       refreshClaimState()
+      window.dispatchEvent(new Event('credits-changed'))
     } else {
       error.value = res?.error || res?.detail || '生成失败'
+      window.dispatchEvent(new Event('credits-changed'))
     }
   } finally { busy.value = false }
 }
