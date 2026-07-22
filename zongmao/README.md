@@ -23,6 +23,29 @@ sudo systemctl restart zongmao.service
 
 **接入百度统计：** 编辑 `/opt/zongmao/site_config.json` 填入 `baidu_hm_id`（在百度统计后台创建 zongmao.cn 站点后获取）
 
+## 产品验证（当前阶段，P1 暂缓）
+
+```bash
+sudo bash /opt/zongmao/scripts/deploy-validation.sh
+# 手动生成报告
+sudo python3 /opt/zongmao/scripts/product-validation-report.py
+# 报告路径: /var/log/zongmao/validation-latest.txt
+# 管理后台 API: GET /api/admin/validation（需 admin 登录）
+```
+
+### 验证假设 & 成功标准（14 天）
+
+| 假设 | 验证方式 | 成功标准 |
+|------|----------|----------|
+| H1 交易者愿意为 AI 信号注册 | UV→注册转化率 | ≥2%，周新增 ≥3 |
+| H2 模拟赛是有效钩子 | 注册后访问 /trading-contest | 参与率 ≥40% |
+| H3 SEO 带来目标流量 | 信号/新闻页入口占比 | 非首页流量 >30% |
+
+### 埋点事件
+
+- `register_view` / `register_submit` / `register_success`
+- `cta_sticky` / `cta_signals_banner` / `cta_signals_gate`
+
 ## P0 增长修复
 
 ```bash
