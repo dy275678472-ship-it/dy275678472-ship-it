@@ -628,6 +628,8 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
   font-weight: 600;
   color: #2563eb;
   text-decoration: none;
+  min-height: 44px;
+  line-height: 44px;
 }
 .related-register {
   display: inline-block;
@@ -635,6 +637,8 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
   font-weight: 600;
   color: #0f766e;
   text-decoration: none;
+  min-height: 44px;
+  line-height: 44px;
 }
 .related-register:hover,
 .related-register:focus-visible {
@@ -661,7 +665,25 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
   .article-cover { width: 72px; height: 96px; }
   h1 { font-size: 20px; }
   .body-text { font-size: 15px; line-height: 1.9; }
-  .related { margin-top: 28px; padding-top: 20px; }
+  .related {
+    margin-top: 28px;
+    padding-top: 20px;
+    /* 避开底部 sticky CTA + iOS 安全区，避免相关 CTA 被遮挡 */
+    padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  }
+  .related-list { gap: 12px; }
+  .related-item { padding: 12px 12px 14px; }
+  .related-excerpt-toggle {
+    min-height: 44px;
+    padding: 10px 0;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .related-actions {
+    gap: 8px 16px;
+    margin-top: 16px;
+    padding-bottom: 4px;
+  }
   .sticky-cta {
     display: block;
     position: fixed;
@@ -669,7 +691,7 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
     right: 0;
     bottom: 0;
     z-index: 40;
-    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
     background: rgba(255, 255, 255, 0.96);
     border-top: 1px solid #e8f0fa;
     box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.06);
@@ -687,6 +709,12 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
-  .reader-page:has(.sticky-hint) { padding-bottom: 120px; }
+  /* sticky 有 hint 时预留双行高度；无 hint 也要避开单行条 */
+  .reader-page:has(.sticky-cta) {
+    padding-bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+  }
+  .reader-page:has(.sticky-hint) {
+    padding-bottom: calc(132px + env(safe-area-inset-bottom, 0px));
+  }
 }
 </style>
