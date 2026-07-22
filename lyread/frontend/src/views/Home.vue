@@ -13,13 +13,21 @@
     </section>
 
     <section class="features">
-      <router-link to="/workspace" class="feature-card" @click="trackFeature('brain')">
+      <router-link
+        :to="featureWorkspaceTo('list')"
+        class="feature-card"
+        @click="trackFeature('brain')"
+      >
         <img :src="images.features.brain" alt="小说大脑功能图标" class="icon-img" width="56" height="56" />
         <h3>小说大脑</h3>
         <p>人物档案、伏笔、章节摘要自动记忆，写到第 50 章也不乱</p>
         <span class="feature-cta">{{ isLoggedIn ? '进入创作台 →' : '注册开写 →' }}</span>
       </router-link>
-      <router-link to="/workspace" class="feature-card" @click="trackFeature('novel')">
+      <router-link
+        :to="featureWorkspaceTo('new')"
+        class="feature-card"
+        @click="trackFeature('novel')"
+      >
         <img :src="images.features.novel" alt="长篇连载功能图标" class="icon-img" width="56" height="56" />
         <h3>长篇连载</h3>
         <p>大纲 → 章纲 → 正文续写，专为日更作者设计</p>
@@ -334,6 +342,13 @@ function trackFeature(label) {
     category: 'funnel',
     label: isLoggedIn.value ? label : `guest_${label}`,
   })
+}
+
+/** 功能卡：游客 register-first → 创作台；已登录脑图进列表、长篇开向导 */
+function featureWorkspaceTo(intent = 'new') {
+  const target = intent === 'list' ? '/workspace' : '/workspace?mode=new'
+  if (isLoggedIn.value) return target
+  return { path: '/login', query: { mode: 'register', redirect: '/workspace?mode=new' } }
 }
 
 onMounted(async () => {

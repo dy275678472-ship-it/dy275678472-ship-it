@@ -6,8 +6,8 @@
       <p>{{ desc }}</p>
       <div class="actions">
         <router-link to="/" class="btn">返回首页</router-link>
-        <router-link v-if="!isLoggedIn" to="/login" class="btn primary">登录 / 注册</router-link>
-        <router-link v-else to="/workspace" class="btn primary">进入创作台</router-link>
+        <router-link v-if="!isLoggedIn" :to="{ path: '/login', query: { mode: 'register', redirect: '/workspace?mode=new' } }" class="btn primary">免费注册开写</router-link>
+        <router-link v-else to="/workspace?mode=new" class="btn primary">进入创作台</router-link>
       </div>
     </div>
   </div>

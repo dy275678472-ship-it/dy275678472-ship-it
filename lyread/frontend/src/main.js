@@ -27,7 +27,14 @@ const router = createRouter({ history: createWebHistory(), routes })
 
 router.beforeEach((to, from, next) => {
   if (protectedRoutes.includes(to.path) && !localStorage.getItem('token')) {
-    const query = { redirect: to.fullPath }
+    // 裸 /workspace 默认落到 mode=new，注册后直接打开创作向导
+    let redirect = to.fullPath
+    if (to.path === '/workspace' && !Object.keys(to.query || {}).length) {
+      redirect = '/workspace?mode=new'
+    } else if (to.path === '/reader') {
+      redirect = '/workspace?mode=new'
+    }
+    const query = { redirect }
     if (registerPromptRoutes.includes(to.path)) query.mode = 'register'
     next({ path: '/login', query })
     return
