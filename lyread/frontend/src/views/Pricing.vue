@@ -114,11 +114,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { creditsApi, ordersApi } from '../api'
 import { IMAGES } from '../assets/images'
 import { trackEvent } from '../utils/analytics'
 
+const route = useRoute()
 const router = useRouter()
 const info = ref(null)
 const sandboxMode = ref(false)
@@ -126,6 +127,8 @@ const alipayReady = ref(false)
 const payError = ref('')
 const paySuccess = ref('')
 const images = IMAGES
+/** 注册回流只自动续买一次，避免沙箱确认取消后循环弹窗 */
+let buyResumeHandled = false
 
 const LABELS = {
   title: ['生成 5 个书名', '含黄金钩子简介'],
@@ -177,14 +180,30 @@ onMounted(async () => {
       trackEvent('pricing_pay_mode', { category: 'commerce', label: payLabel })
     }
   } catch (e) { /* 使用默认展示 */ }
+  await resumePendingBuy()
 })
+
+async function resumePendingBuy() {
+  if (buyResumeHandled || !isLoggedIn.value) return
+  const buyId = typeof route.query.buy === 'string' ? route.query.buy : ''
+  const pkg = packages.find((p) => p.id === buyId)
+  if (!pkg) return
+  buyResumeHandled = true
+  // 清掉 query，避免刷新/返回再次自动弹窗
+  router.replace({ path: '/pricing' })
+  trackEvent('pricing_buy_resume', { category: 'funnel', label: pkg.id, value: pkg.price })
+  await buy(pkg)
+}
 
 async function buy(pkg) {
   payError.value = ''
   paySuccess.value = ''
   if (!isLoggedIn.value) {
     trackEvent('pricing_buy_click', { category: 'funnel', label: 'redirect_login', value: pkg.price })
-    router.push({ path: '/login', query: { mode: 'register', redirect: '/pricing' } })
+    router.push({
+      path: '/login',
+      query: { mode: 'register', redirect: `/pricing?buy=${encodeURIComponent(pkg.id)}` },
+    })
     return
   }
   trackEvent('pricing_buy_click', { category: 'funnel', label: pkg.id, value: pkg.price })

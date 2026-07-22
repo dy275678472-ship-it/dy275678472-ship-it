@@ -177,7 +177,12 @@ const redirectHint = computed(() => {
   if (path.startsWith('/workspace')) return '完成后将进入创作台，题材与草稿会一并带上'
   if (path.startsWith('/case/') || path.startsWith('/ep/')) return '完成后可返回案例，并用同风格开写'
   if (path.startsWith('/story')) return '完成后将回到短故事页，继续生成完整短篇'
-  if (path.startsWith('/pricing') || path.startsWith('/wallet')) return '完成后可领取赠点，再按需充值'
+  if (path.startsWith('/pricing')) {
+    return path.includes('buy=')
+      ? '完成后将返回定价页，并继续你刚才选的套餐充值'
+      : '完成后可领取赠点，再按需充值'
+  }
+  if (path.startsWith('/wallet')) return '完成后可领取赠点，再按需充值'
   if (path.startsWith('/trending')) return '完成后将回到案例阅读，随时用同风格开写'
   return '完成后将回到你刚才浏览的页面'
 })

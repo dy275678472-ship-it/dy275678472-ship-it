@@ -7,8 +7,22 @@
         <p class="subtitle">从人物、大纲到连续章节，自动记住剧情和伏笔；也支持快速生成完整短故事</p>
         <div class="hero-btns">
           <button class="btn-primary" @click="openTrial">免费体验 AI 书名</button>
-          <button class="btn-secondary" @click="$router.push('/trending')">查看真实案例</button>
+          <button
+            v-if="!isLoggedIn"
+            type="button"
+            class="btn-secondary"
+            @click="goRegisterContinue('hero_register')"
+          >免费注册领 30 点 →</button>
+          <button
+            v-else
+            type="button"
+            class="btn-secondary"
+            @click="$router.push('/trending')"
+          >查看真实案例</button>
         </div>
+        <p v-if="!isLoggedIn" class="hero-cases-link">
+          <button type="button" class="hero-cases-btn" @click="$router.push('/trending')">先看真实案例 →</button>
+        </p>
       </div>
     </section>
 
@@ -295,7 +309,7 @@ function goRegisterContinue(label = 'continue_after_title') {
   // 热门案例区：用首卡题材预填向导（与 CaseReader「同题材开写」对齐）
   // 试用成功：题材 id + genreName + 灵感 + 书名
   let redirect = `/workspace?${new URLSearchParams(workspaceQuery()).toString()}`
-  if (eventLabel === 'home_pricing_cta') {
+  if (eventLabel === 'home_pricing_cta' || eventLabel === 'hero_register') {
     redirect = '/workspace?mode=new'
   } else if (eventLabel === 'home_hot_cases' && hotCases.value[0]) {
     const c = hotCases.value[0]
@@ -477,7 +491,14 @@ const startTrial = async (append = false) => {
 .hero-content { position: relative; z-index: 1; }
 .hero h1 { font-size: 36px; margin-bottom: 16px; }
 .subtitle { font-size: 18px; opacity: 0.9; margin-bottom: 32px; }
-.hero-btns { display: flex; gap: 16px; justify-content: center; }
+.hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.hero-cases-link { margin: 14px 0 0; text-align: center; }
+.hero-cases-btn {
+  background: none; border: none; color: rgba(255, 255, 255, 0.92);
+  font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: underline;
+  text-underline-offset: 3px; min-height: 44px; padding: 8px 12px;
+}
+.hero-cases-btn:hover { color: #fff; }
 .btn-primary, .btn-secondary, .btn-start-trial {
   padding: 16px 32px; /* 增大触摸目标 */
   min-height: 44px;   /* 最小触摸高度 */
