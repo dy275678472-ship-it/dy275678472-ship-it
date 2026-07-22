@@ -16,6 +16,8 @@ HANDCRAFTED_IDS = {
     "showcase_xianxia_01", "showcase_romance_01", "showcase_scifi_01",
     "showcase_suspense_01", "showcase_history_01", "showcase_system_01",
     "showcase_apocalypse_01", "showcase_campus_01", "showcase_game_01",
+    "showcase_palace_01", "showcase_soninlaw_01", "showcase_baby_01",
+    "showcase_horror_01",
 }
 
 GENRE_OPENINGS = {
