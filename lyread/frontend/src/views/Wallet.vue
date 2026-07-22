@@ -100,7 +100,28 @@
         title="暂无消费记录"
         description="开始创作或领取每日免费点数后，记录会显示在这里"
         :image-width="140"
-      />
+      >
+        <div class="txn-empty-actions">
+          <router-link
+            to="/workspace?mode=new"
+            class="btn-create"
+            @click="trackEvent('wallet_create_click', { category: 'conversion', label: 'txn_empty' })"
+          >去创作台开写 →</router-link>
+          <button
+            v-if="balance && !balance.claimed_today"
+            type="button"
+            class="btn-claim"
+            :disabled="claiming"
+            @click="claimDaily"
+          >{{ claiming ? '领取中...' : '先领今日免费 5 点' }}</button>
+          <router-link
+            v-else
+            to="/pricing"
+            class="btn-next-pricing"
+            @click="trackRecharge"
+          >查看充值套餐</router-link>
+        </div>
+      </EmptyState>
       <ul v-else class="txn-list">
         <li v-for="(t, i) in txns" :key="i" class="txn-item">
           <img :src="txnIcon(t.type)" :alt="typeLabel(t.type)" class="txn-icon" width="32" height="32" />
@@ -351,6 +372,16 @@ onMounted(() => {
 }
 
 .transactions h2 { font-size: 20px; margin-bottom: 16px; color: #1e2a3a; }
+.txn-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+.txn-empty-actions .btn-claim {
+  width: auto;
+}
 .empty { text-align: center; color: #94a3b8; padding: 40px; background: #fff; border-radius: 12px; }
 .txn-list { list-style: none; background: #fff; border-radius: 14px; overflow: hidden; border: 1px solid #e8f0fa; }
 .txn-item {
