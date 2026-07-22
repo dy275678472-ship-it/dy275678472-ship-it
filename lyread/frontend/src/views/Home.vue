@@ -250,6 +250,7 @@ import SectionHeading from '../components/SectionHeading.vue'
 import { statsApi, casesApi } from '../api'
 import { formatCount, formatWords } from '../utils/format'
 import { trackEvent } from '../utils/analytics'
+import { workspaceTrialQuery, workspaceWizardQuery } from '../utils/wizardGenre'
 
 const router = useRouter()
 const images = IMAGES
@@ -268,9 +269,11 @@ function pickTrialTitle(t) {
 }
 
 function workspaceQuery() {
-  const q = { type: trialType.value, prompt: trialPrompt.value }
-  if (trialResult.value?.title) q.generatedTitle = trialResult.value.title
-  return q
+  return workspaceTrialQuery({
+    type: trialType.value,
+    prompt: trialPrompt.value,
+    title: trialResult.value?.title,
+  })
 }
 
 function goWorkspaceContinue() {
@@ -280,12 +283,18 @@ function goWorkspaceContinue() {
 
 function goRegisterContinue(label = 'continue_after_title') {
   const eventLabel = typeof label === 'string' ? label : 'continue_after_title'
-  // 案例区/计费区：无试用上下文，进创作台新建
-  // 试用成功「继续创作台」：带题材+灵感+书名深链，注册后直接预填向导
-  const bareWorkspace = eventLabel === 'home_hot_cases' || eventLabel === 'home_pricing_cta'
-  const redirect = bareWorkspace
-    ? '/workspace?mode=new'
-    : `/workspace?${new URLSearchParams(workspaceQuery()).toString()}`
+  // 计费区：无试用上下文 → mode=new
+  // 热门案例区：用首卡题材预填向导（与 CaseReader「同题材开写」对齐）
+  // 试用成功：题材 id + genreName + 灵感 + 书名
+  let redirect = `/workspace?${new URLSearchParams(workspaceQuery()).toString()}`
+  if (eventLabel === 'home_pricing_cta') {
+    redirect = '/workspace?mode=new'
+  } else if (eventLabel === 'home_hot_cases' && hotCases.value[0]) {
+    const c = hotCases.value[0]
+    redirect = `/workspace?${new URLSearchParams(
+      workspaceWizardQuery({ category: c.category, title: c.title }),
+    ).toString()}`
+  }
   router.push({ path: '/login', query: { redirect, mode: 'register' } })
   showTrialModal.value = false
   trackEvent('trial_register_cta', { category: 'funnel', label: eventLabel })
