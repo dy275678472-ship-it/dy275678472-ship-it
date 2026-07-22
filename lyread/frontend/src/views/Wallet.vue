@@ -8,6 +8,27 @@
       </div>
     </header>
 
+    <section
+      v-if="balance && (balance.total ?? 0) === 0 && !balance.claimed_today"
+      class="zero-balance"
+      aria-label="空余额引导"
+    >
+      <p class="zero-title">当前可用 0 点</p>
+      <p class="zero-desc">先领每日免费 5 点即可开写；生成失败自动返还，不白扣。</p>
+      <div class="zero-actions">
+        <button class="btn-claim primary" :disabled="claiming" @click="claimDaily">
+          <img :src="images.wallet.free" alt="每日免费" width="18" height="18" />
+          {{ claiming ? '领取中...' : '领取今日免费 5 点' }}
+        </button>
+        <router-link
+          to="/workspace?mode=new"
+          class="btn-create"
+          @click="trackEvent('wallet_create_click', { category: 'conversion', label: 'zero_balance' })"
+        >先去创作台看看 →</router-link>
+        <router-link to="/pricing" class="btn-next-pricing" @click="trackRecharge">查看充值套餐</router-link>
+      </div>
+    </section>
+
     <section class="balance-cards" v-if="balance">
       <div class="bal-card total">
         <img :src="images.wallet.total" alt="可用总额" class="bal-icon" width="28" height="28" />
@@ -216,6 +237,35 @@ onMounted(() => {
 .wallet-hero h1 { font-size: 28px; color: #1e2a3a; margin: 0 0 6px; }
 .wallet-hero p { color: #5a6a7a; font-size: 14px; margin: 0; }
 
+.zero-balance {
+  margin: 0 0 20px;
+  padding: 18px 18px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fff7ed, #fff);
+  border: 1px solid #fed7aa;
+}
+.zero-title {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #9a3412;
+}
+.zero-desc {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: #7c2d12;
+  line-height: 1.55;
+}
+.zero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.btn-claim.primary {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #fff;
+  border: none;
+}
 .balance-cards { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; margin-bottom: 24px; }
 .bal-card {
   position: relative; background: #fff; border-radius: 14px; padding: 20px;
@@ -322,6 +372,10 @@ onMounted(() => {
   .balance-cards { grid-template-columns: 1fr; }
   .actions { flex-direction: column; }
   .btn-claim, .btn-recharge { width: 100%; }
+  .zero-actions { flex-direction: column; }
+  .zero-actions .btn-claim,
+  .zero-actions .btn-create,
+  .zero-actions .btn-next-pricing { width: 100%; text-align: center; }
   .next-actions { flex-direction: column; }
   .btn-create, .btn-next-pricing { width: 100%; text-align: center; }
 }
