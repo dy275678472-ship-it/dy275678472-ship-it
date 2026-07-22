@@ -259,6 +259,20 @@
           </div>
         </div>
 
+        <div v-if="creditsLow" class="trial-credits-banner" role="status">
+          <span>点数不足 · 失败不扣点</span>
+          <button
+            type="button"
+            class="btn-claim-inline"
+            :disabled="claiming || claimDone"
+            @click="claimDailyInline"
+          >
+            {{ claiming ? '领取中...' : (claimDone ? '今日已领取' : '领取今日免费 5 点') }}
+          </button>
+          <router-link to="/pricing" @click="trackEvent('home_recharge_click', { category: 'conversion', label: '402' })">充值</router-link>
+          <router-link to="/wallet">点数中心</router-link>
+        </div>
+
         <div v-if="trialError" class="trial-error">{{ trialError }}</div>
 
         <div class="trial-tips" v-if="!trialResult">
@@ -275,7 +289,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { IMAGES, coverForCase } from '../assets/images'
 import SectionHeading from '../components/SectionHeading.vue'
-import { statsApi, casesApi } from '../api'
+import { statsApi, casesApi, creditsApi } from '../api'
 import { formatCount, formatWords } from '../utils/format'
 import { trackEvent } from '../utils/analytics'
 import { workspaceTrialQuery, workspaceWizardQuery } from '../utils/wizardGenre'
@@ -290,7 +304,49 @@ const trialLoading = ref(false)
 const trialResult = ref(null)
 const trialTitles = ref([])
 const trialError = ref('')
+const creditsLow = ref(false)
+const claiming = ref(false)
+const claimDone = ref(false)
 const isLoggedIn = computed(() => !!localStorage.getItem('token'))
+
+async function refreshClaimState() {
+  try {
+    const bal = await creditsApi.balance()
+    if (bal?.success) claimDone.value = !!bal.claimed_today
+  } catch (_) { /* ignore */ }
+}
+
+async function claimDailyInline() {
+  if (claiming.value || claimDone.value) return
+  claiming.value = true
+  trackEvent('home_claim_click', { category: 'conversion', label: '402_inline' })
+  try {
+    const res = await creditsApi.dailyClaim()
+    if (res?.success) {
+      claimDone.value = true
+      const claimed = !!res.claimed
+      trackEvent('home_claim_result', {
+        category: 'conversion',
+        label: claimed ? 'claimed' : 'already',
+      })
+      if (claimed) {
+        creditsLow.value = false
+        trialError.value = ''
+        window.dispatchEvent(new Event('credits-changed'))
+      } else {
+        trialError.value = res.message || '今日已领取，请充值后续写'
+      }
+    } else {
+      trialError.value = res?.detail || '领取失败，请稍后再试'
+      trackEvent('home_claim_result', { category: 'conversion', label: 'fail' })
+    }
+  } catch (_) {
+    trialError.value = '领取失败，请稍后再试'
+    trackEvent('home_claim_result', { category: 'conversion', label: 'error' })
+  } finally {
+    claiming.value = false
+  }
+}
 
 function pickTrialTitle(t) {
   trialResult.value = { title: t.title, description: t.hook || t.description || '' }
@@ -407,6 +463,7 @@ const startTrial = async (append = false) => {
     trialTitles.value = []
   }
   trialError.value = ''
+  creditsLow.value = false
   try {
     const token = localStorage.getItem('token')
     const headers = { 'Content-Type': 'application/json' }
@@ -423,12 +480,24 @@ const startTrial = async (append = false) => {
       headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
-    const data = await res.json()
+    const data = await res.json().catch(() => ({}))
+    if (res.status === 402 || data?.insufficient_credits) {
+      creditsLow.value = true
+      trackEvent('credits_low', { category: 'conversion', label: 'home_trial' })
+      trialError.value = data.detail || data.error || '点数不足，可先领取每日免费额度'
+      refreshClaimState()
+      return
+    }
     if (!data.success) {
       trialError.value = data.error || data.detail || 'AI 生成失败，请稍后再试'
       return
     }
-    const incoming = data.titles || [{ title: data.title, hook: data.description }]
+    const incoming = (data.titles || [{ title: data.title, hook: data.description }])
+      .filter(t => t && t.title)
+    if (!incoming.length) {
+      trialError.value = data.error || '书名解析失败，本次未扣点'
+      return
+    }
     if (append) {
       const seen = new Set(trialTitles.value.map(t => t.title))
       for (const t of incoming) {
@@ -439,7 +508,7 @@ const startTrial = async (append = false) => {
       }
     } else {
       trialTitles.value = incoming
-      trialResult.value = { title: data.title, description: data.description }
+      trialResult.value = { title: data.title || incoming[0].title, description: data.description || incoming[0].hook || '' }
     }
     if (!trialResult.value && trialTitles.value.length) {
       trialResult.value = { title: trialTitles.value[0].title, description: trialTitles.value[0].hook || '' }
@@ -920,6 +989,18 @@ const startTrial = async (append = false) => {
   margin-top: 12px; padding: 10px 12px; border-radius: 8px;
   background: #fef2f2; color: #dc2626; font-size: 13px; text-align: left;
 }
+.trial-credits-banner {
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  margin-top: 12px; padding: 12px; border-radius: 10px;
+  background: #fff7ed; font-size: 13px; color: #9a3412; text-align: left;
+}
+.trial-credits-banner a { color: #2563eb; font-weight: 600; text-decoration: none; }
+.btn-claim-inline {
+  padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 600;
+  background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
+}
+.btn-claim-inline:disabled { opacity: 0.65; cursor: not-allowed; }
 
 /* 媒体查询调整 */
 @media (max-width: 1024px) {

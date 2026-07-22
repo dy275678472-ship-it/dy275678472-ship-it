@@ -201,19 +201,28 @@ async def generate_title(req: GenerateTitleRequest, user: Optional[dict] = Depen
         for line in result.strip().split("\n"):
             if "|" in line:
                 parts = line.split("|")
+                title = parts[0].strip()
+                if not title:
+                    continue
                 titles.append({
-                    "title": parts[0].strip(),
+                    "title": title,
                     "hook": parts[1].strip() if len(parts) > 1 else ""
                 })
+        if not titles:
+            if uid and job:
+                refund(uid, job["job_id"])
+            return {"success": False, "error": "书名解析失败，本次未扣点"}
         if uid and job:
             settle(uid, job["job_id"], estimate_points("title"))
-        first = titles[0] if titles else {"title": "", "hook": ""}
+        first = titles[0]
         return {
             "success": True,
             "titles": titles[:count],
             "title": first["title"],
             "description": first["hook"],
         }
+    except HTTPException:
+        raise
     except Exception as e:
         if uid and job:
             refund(uid, job["job_id"])
@@ -451,6 +460,9 @@ async def ai_continue(req: AIContinueRequest, user: dict = Depends(get_current_u
         if not mod["ok"]:
             refund(uid, job["job_id"])
             raise HTTPException(status_code=422, detail=moderation_detail(mod["hits"]))
+        if len((new_content or "").strip()) < 200:
+            refund(uid, job["job_id"])
+            return {"success": False, "error": "续写内容过短，本次未扣点"}
         watermarked = inject_watermark(new_content, user_id=uid)
 
         if req.story_id and new_content:
