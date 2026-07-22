@@ -123,6 +123,7 @@ def _seo_html(**kwargs) -> str:
     """PAGE_TEMPLATE 填充，默认 OG 图为站点分享图；题材 OG 均为 1200×630。"""
     kwargs.setdefault("site_base", SITE_BASE)
     kwargs.setdefault("og_image", DEFAULT_OG_IMAGE)
+    kwargs.setdefault("register_href", _register_workspace_href())
     if "og_image_size_tags" not in kwargs:
         # 默认图与 og-genre-* 均为 1200×630
         kwargs["og_image_size_tags"] = DEFAULT_OG_SIZE_TAGS
@@ -302,6 +303,14 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
         .seo-nav a {{
             margin: 0 6px;
         }}
+        .seo-footer-cta {{
+            margin: 0 0 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }}
+        .seo-footer-cta a {{
+            color: #2563eb;
+        }}
         .seo-faq dt {{
             font-weight: 600;
             color: #1e2a3a;
@@ -315,6 +324,12 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
         @media (max-width: 600px) {{
             .seo-container {{ padding: 20px 12px; }}
             .info-grid {{ grid-template-columns: 1fr; }}
+            .seo-footer-cta a {{
+                display: inline-block;
+                min-height: 44px;
+                line-height: 44px;
+                padding: 0 8px;
+            }}
         }}
     </style>
 </head>
@@ -339,6 +354,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
                 <a href="{site_base}/faq">常见问题</a>
                 <a href="{site_base}/about">关于我们</a>
             </nav>
+            <p class="seo-footer-cta"><a href="{register_href}">免费注册领 30 点 →</a></p>
             <p>© LyRead AI 智能小说创作平台</p>
         </div>
     </div>

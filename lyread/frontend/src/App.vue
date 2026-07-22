@@ -45,6 +45,14 @@
       <span class="footer-sep" aria-hidden="true">·</span>
       <a href="/faq" class="footer-link">常见问题</a>
       <a href="/about" class="footer-link">关于我们</a>
+      <template v-if="!isLoggedIn">
+        <span class="footer-sep" aria-hidden="true">·</span>
+        <router-link
+          :to="registerNavTo"
+          class="footer-link footer-register"
+          @click="onFooterRegister"
+        >免费注册领 30 点</router-link>
+      </template>
     </footer>
   </div>
 </template>
@@ -106,6 +114,9 @@ export default {
       this.menuOpen = false
       trackEvent('nav_register_click', { category: 'funnel', label: 'guest_mode_new' })
     },
+    onFooterRegister() {
+      trackEvent('footer_register_click', { category: 'funnel', label: 'guest_mode_new' })
+    },
     async fetchMe() {
       try {
         const token = localStorage.getItem('token')
@@ -152,6 +163,11 @@ body {
 .footer-sep { opacity: 0.6; }
 .footer-link { color: #64748b; text-decoration: none; }
 .footer-link:hover { color: #2563eb; }
+.footer-register {
+  color: #2563eb;
+  font-weight: 600;
+}
+.footer-register:hover { color: #1d4ed8; }
 
 .navbar {
   display: flex;

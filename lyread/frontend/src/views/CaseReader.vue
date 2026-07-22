@@ -669,18 +669,24 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
     right: 0;
     bottom: 0;
     z-index: 40;
-    padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
     background: rgba(255, 255, 255, 0.96);
     border-top: 1px solid #e8f0fa;
     box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.06);
   }
   .btn-cta.sticky {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
+    min-height: 48px;
     text-align: center;
-    padding: 13px 16px;
+    padding: 14px 18px;
     box-sizing: border-box;
+    font-size: 16px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
-  .reader-page:has(.sticky-hint) { padding-bottom: 108px; }
+  .reader-page:has(.sticky-hint) { padding-bottom: 120px; }
 }
 </style>
