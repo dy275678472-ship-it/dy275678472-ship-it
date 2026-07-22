@@ -153,6 +153,15 @@ echo "[4] Creation APIs"
 if curl -sf "$BASE_URL/api/credits/prices" | grep -q signup_bonus; then ok "credits/prices"; else bad "credits/prices"; fi
 if curl -sf "$BASE_URL/api/cases" | grep -q '"success":true'; then ok "public cases"; else bad "public cases"; fi
 
+# sitemap Content-Type（text/plain 会被部分爬虫降权/忽略）
+echo ""
+echo "[4a] Sitemap / SEO cluster"
+SITEMAP_CT=$(curl -sI "$BASE_URL/sitemap.xml" | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}')
+if [[ "$SITEMAP_CT" == application/xml* ]]; then ok "sitemap Content-Type ($SITEMAP_CT)"; else bad "sitemap Content-Type ($SITEMAP_CT, expect application/xml)"; fi
+GUIDE_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/guide")
+COMPARE_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/compare")
+if [[ "$GUIDE_CODE" == "200" && "$COMPARE_CODE" == "200" ]]; then ok "SEO cluster /guide /compare"; else bad "SEO cluster guide=$GUIDE_CODE compare=$COMPARE_CODE"; fi
+
 # 题材 OG / 封面光栅资源（社交爬虫不吃 SVG；缺文件时 nginx SPA 也会 200 HTML，需验 Content-Type）
 echo ""
 echo "[4b] Genre OG assets"

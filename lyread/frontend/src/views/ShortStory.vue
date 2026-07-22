@@ -17,6 +17,13 @@
           <router-link :to="`/case/${s.id}`" class="sample-link">阅读全文 →</router-link>
         </article>
       </div>
+      <p v-if="!loggedIn" class="samples-guest-cta">
+        喜欢这些开篇？
+        <router-link
+          :to="registerTo"
+          @click="trackEvent('story_sample_register', { category: 'conversion', label: 'samples' })"
+        >免费注册开写（送 30 点）→</router-link>
+      </p>
     </section>
     <section v-else class="samples samples-empty" aria-label="暂无案例节选">
       <h2>先读热门，再一键生成</h2>
@@ -361,7 +368,14 @@ onMounted(async () => {
   if (g?.success) genres.value = g.genres || []
   if (gf?.success) godfingers.value = gf.godfingers || []
   const list = casesRes?.cases || []
-  samples.value = list.filter((c) => c.excerpt).slice(0, 3)
+  // Prefer long showcase excerpts so guests see real prose, not 120-char stubs.
+  const ranked = [...list].sort((a, b) => {
+    const la = Number(a.excerpt_chars || (a.excerpt || '').length || 0)
+    const lb = Number(b.excerpt_chars || (b.excerpt || '').length || 0)
+    if (lb !== la) return lb - la
+    return Number(b.heat || 0) - Number(a.heat || 0)
+  })
+  samples.value = ranked.filter((c) => c.excerpt && c.has_body !== false).slice(0, 3)
   if (genreId.value && genres.value.length) {
     const matched = genres.value.find((x) => x.id === genreId.value)
     if (matched) {
@@ -419,7 +433,7 @@ onMounted(async () => {
   line-height: 1.7;
   margin: 0;
   display: -webkit-box;
-  -webkit-line-clamp: 5;
+  -webkit-line-clamp: 8;
   -webkit-box-orient: vertical;
   overflow: hidden;
   flex: 1;
@@ -430,6 +444,16 @@ onMounted(async () => {
   color: #2563eb;
   text-decoration: none;
   margin-top: 4px;
+}
+.samples-guest-cta {
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: #64748b;
+}
+.samples-guest-cta a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
 }
 .gate-banner {
   display: flex;
