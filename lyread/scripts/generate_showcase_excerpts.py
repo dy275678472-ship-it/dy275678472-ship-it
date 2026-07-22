@@ -500,21 +500,33 @@ def _strip_boilerplate(text: str) -> str:
     return text.rstrip()
 
 
-def pad_excerpt(text: str, title: str, genre: str, min_chars: int = 2000) -> str:
+def pad_excerpt(text: str, case: dict, min_chars: int = 2000) -> str:
     """不足最低字数时扩写剧情段落，避免重复「阅读提示」堆砌。"""
+    title = case["title"]
+    genre = case["genre"]
+    name = case["protagonist"]
+    hook = case.get("hook", "")
+    category = case.get("category", "")
     text = _strip_boilerplate(text)
     if "（节选完" in text:
         base, _ = text.split("（节选完", 1)
         text = base.rstrip()
-    extra_line = GENRE_EXTRA.get(genre, GENRE_EXTRA["default"])
+    pool = [
+        f"《{title}》在这一章埋下伏笔：{hook}",
+        f"{name}意识到，{category}赛道的读者最吃这一套节奏。",
+        f"冲突升级时，{name}做出了一个让所有人意外的决定。",
+        f"夜色里，{name}复盘方才的交锋，寻找下一步的突破口。",
+        GENRE_EXTRA.get(genre, GENRE_EXTRA["default"]),
+    ]
     appendix = (
-        f"\n\n——\n\n{extra_line}\n"
-        f"窗外天色渐暗，{title}的故事才刚刚拉开序幕。"
-        f"若你喜欢这个开篇，可在 LyRead 创作台用同题材继续大纲与续写。\n\n"
+        f"\n\n——\n\n{pool[0]}\n"
+        f"若你喜欢这个开篇，可在 LyRead 创作台用「{category}」题材继续大纲与续写。\n\n"
         f"（节选完，共三章）"
     )
+    idx = 0
     while len(text) + len(appendix) < min_chars:
-        text += f"\n\n{extra_line}"
+        text += f"\n\n{pool[idx % len(pool)]}"
+        idx += 1
     return text + appendix
 
 
@@ -527,7 +539,7 @@ def generate_excerpt(case: dict) -> str:
         title=case["title"],
         name=name,
     )
-    return pad_excerpt(body, case["title"], genre)
+    return pad_excerpt(body, case)
 
 
 def main() -> None:

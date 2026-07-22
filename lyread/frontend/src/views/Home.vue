@@ -108,7 +108,7 @@
             <div class="hot-type">{{ c.category || '都市' }}</div>
             <h3>{{ c.title }}</h3>
             <div class="hot-tags">
-              <span>{{ formatWords(c.word_count) }}</span>
+              <span>{{ formatExcerptLabel(c) }}</span>
               <span>热度 {{ c.heat }}</span>
             </div>
           </div>
@@ -121,25 +121,10 @@
       <SectionHeading class="testimonials-title" :icon="images.pricing.gem" center>创作者场景反馈</SectionHeading>
       <p class="testimonials-note">以下为典型使用场景描述，不代表个别用户承诺效果</p>
       <div class="testimonial-grid">
-        <div class="testimonial-card">
-          <img :src="images.avatars.author" alt="日更作者场景" class="avatar-img" width="56" height="56" />
-          <div class="name">日更作者 · 长篇连载</div>
-          <p>「章纲批量出完再续写，日更 6000 字成本约 3 元，比请人代写划算太多。」</p>
-        </div>
-        <div class="testimonial-card">
-          <img :src="images.avatars.studio" alt="盐选作者场景" class="avatar-img" width="56" height="56" />
-          <div class="name">盐选作者 · 短篇试错</div>
-          <p>「短故事流程 15 点一篇，先批量试梗，命中再扩成长篇。」</p>
-        </div>
-        <div class="testimonial-card">
-          <img :src="images.avatars.author" alt="工作室场景" class="avatar-img" width="56" height="56" />
-          <div class="name">内容工作室 · 批量产出</div>
-          <p>「标准化大纲模板 + 人工质检，团队日产出提升明显。」</p>
-        </div>
-        <div class="testimonial-card">
-          <img :src="images.avatars.studio" alt="新手作者场景" class="avatar-img" width="56" height="56" />
-          <div class="name">新手作者 · 开书入门</div>
-          <p>「免费书名生成降低开书门槛，7 步向导不用自己搭 Prompt。」</p>
+        <div v-for="t in testimonials" :key="t.name" class="testimonial-card">
+          <AvatarBadge :label="t.initial" :color="t.color" :alt-color="t.altColor" />
+          <div class="name">{{ t.name }}</div>
+          <p>{{ t.quote }}</p>
         </div>
       </div>
     </section>
@@ -237,13 +222,21 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { IMAGES } from '../assets/images'
 import CaseCover from '../components/CaseCover.vue'
+import AvatarBadge from '../components/AvatarBadge.vue'
 import SectionHeading from '../components/SectionHeading.vue'
 import { statsApi, casesApi } from '../api'
-import { formatCount, formatWords } from '../utils/format'
+import { formatCount, formatExcerptLabel } from '../utils/format'
 import { trackEvent } from '../utils/analytics'
 
 const router = useRouter()
 const images = IMAGES
+
+const testimonials = [
+  { initial: '日', name: '日更作者 · 长篇连载', color: '#2563eb', altColor: '#60a5fa', quote: '「章纲批量出完再续写，日更 6000 字成本约 3 元，比请人代写划算太多。」' },
+  { initial: '盐', name: '盐选作者 · 短篇试错', color: '#db2777', altColor: '#f9a8d4', quote: '「短故事流程 15 点一篇，先批量试梗，命中再扩成长篇。」' },
+  { initial: '工', name: '内容工作室 · 批量产出', color: '#0f766e', altColor: '#2dd4bf', quote: '「标准化大纲模板 + 人工质检，团队日产出提升明显。」' },
+  { initial: '新', name: '新手作者 · 开书入门', color: '#7c3aed', altColor: '#a78bfa', quote: '「免费书名生成降低开书门槛，7 步向导不用自己搭 Prompt。」' },
+]
 
 const showTrialModal = ref(false)
 const trialType = ref('')
@@ -654,6 +647,7 @@ const startTrial = async (append = false) => {
   border-radius: 50%;
   object-fit: cover;
 }
+.testimonial-card :deep(.avatar-badge) { margin: 0 auto 12px; }
 .testimonial-card .name { font-weight: 600; color: var(--lyread-text-dark); margin-bottom: 8px; }
 .testimonial-card p { color: var(--lyread-text-secondary); font-size: 14px; }
 

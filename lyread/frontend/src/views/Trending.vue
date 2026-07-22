@@ -39,7 +39,7 @@
           <h3>{{ c.title }}</h3>
           <p v-if="c.excerpt" class="excerpt">{{ c.excerpt }}</p>
           <div class="meta">
-            <span>{{ formatWords(c.word_count) }}</span>
+            <span>{{ formatExcerptLabel(c) }}</span>
             <span class="heat"><img :src="images.fire" alt="热度" width="14" height="14" /> {{ c.heat }}</span>
           </div>
         </div>
@@ -58,6 +58,7 @@ import { casesApi } from '../api'
 import { IMAGES } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
 import CaseCover from '../components/CaseCover.vue'
+import { formatExcerptLabel } from '../utils/format'
 
 const images = IMAGES
 
@@ -66,11 +67,6 @@ const categories = ref([])
 const activeCategory = ref('')
 const totalCount = ref(0)
 const loading = ref(true)
-
-function formatWords(n) {
-  const w = Number(n) || 0
-  return w >= 10000 ? `${(w / 10000).toFixed(1)} 万字` : `${w} 字`
-}
 
 async function loadCases() {
   loading.value = true

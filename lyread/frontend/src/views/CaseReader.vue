@@ -9,7 +9,7 @@
         <p class="meta">
           <span v-if="excerptChapters">节选 {{ excerptChapters }} 章</span>
           <span v-if="excerptChars"> · 约 {{ excerptChars }} 字</span>
-          <span v-if="caseData.word_count"> · {{ formatStoryWords(caseData.word_count) }}</span>
+          <span v-if="caseData.word_count"> · {{ formatStorySettingWords(caseData.word_count) }}</span>
           <span> · 热度 {{ caseData.heat }}</span>
         </p>
         <p class="excerpt-note">以下为平台精选开篇节选，非完整连载。喜欢此风格可一键带入创作台。</p>
@@ -35,7 +35,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { casesApi } from '../api'
-import { parseChapters, countChapters, formatStoryWords } from '../utils/caseContent'
+import { parseChapters, countChapters } from '../utils/caseContent'
+import { formatStorySettingWords } from '../utils/format'
 
 const route = useRoute()
 const loading = ref(true)
