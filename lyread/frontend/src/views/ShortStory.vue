@@ -91,9 +91,15 @@
         <span>{{ result.word_count }} 字</span>
       </div>
       <pre class="content">{{ result.content }}</pre>
+      <p class="continue-hint">短篇已成。想拉成长篇？把同题材/灵感带进创作台，继续大纲与章纲。</p>
       <div class="actions">
         <button class="btn-secondary" @click="reset">再写一篇</button>
         <button class="btn-primary" @click="saveToWorkspace">保存到创作台</button>
+      </div>
+      <div class="actions continue-row">
+        <button type="button" class="btn-continue-long" @click="continueAsLongform">
+          进创作台续写长篇 →
+        </button>
       </div>
     </section>
   </div>
@@ -304,6 +310,19 @@ async function saveToWorkspace() {
   else error.value = res?.detail || '保存失败'
 }
 
+/** 短篇成功 → 创作台向导：预填书名/题材/灵感，引导扩写长篇 */
+function continueAsLongform() {
+  if (!result.value) return
+  trackEvent('story_continue_longform', { category: 'conversion', label: 'post_generate' })
+  const query = {
+    mode: 'new',
+    generatedTitle: String(result.value.title || '').slice(0, 80),
+    type: String(genreLabel.value || '').slice(0, 40),
+    prompt: String(prompt.value || result.value.title || '').slice(0, 500),
+  }
+  router.push({ path: '/workspace', query })
+}
+
 onMounted(async () => {
   loggedIn.value = !!localStorage.getItem('token')
   restoreDraftFromQuery()
@@ -426,6 +445,17 @@ onMounted(async () => {
 .btn-claim-inline:disabled { opacity: 0.65; cursor: not-allowed; }
 .result-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .content { white-space: pre-wrap; line-height: 1.9; font-size: 15px; color: #1e2a3a; max-height: 60vh; overflow: auto; }
+.continue-hint {
+  margin: 14px 0 0; padding: 10px 12px; border-radius: 10px;
+  background: linear-gradient(135deg, #eff6ff, #f8fafc); border: 1px solid #dbeafe;
+  font-size: 13px; color: #334155; line-height: 1.5;
+}
 .actions { display: flex; gap: 10px; margin-top: 16px; }
 .actions .btn-primary { width: auto; flex: 1; }
+.continue-row { margin-top: 10px; }
+.btn-continue-long {
+  width: 100%; padding: 12px 16px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 14px;
+  border: 1px solid #93c5fd; background: #fff; color: #1d4ed8;
+}
+.btn-continue-long:hover { background: #eff6ff; }
 </style>

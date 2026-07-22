@@ -60,8 +60,14 @@
         >免费注册领 {{ info?.signup_bonus || 30 }} 点 →</router-link>
       </div>
       <div class="pkg-grid">
-        <div v-for="pkg in packages" :key="pkg.id" class="pkg-card" :class="{ popular: pkg.popular }">
+        <div
+          v-for="pkg in packages"
+          :key="pkg.id"
+          class="pkg-card"
+          :class="{ popular: pkg.popular, guest: !isLoggedIn }"
+        >
           <div v-if="pkg.popular" class="badge">推荐</div>
+          <p v-if="!isLoggedIn" class="guest-pkg-hint">也可先注册领 {{ info?.signup_bonus || 30 }} 点试用</p>
           <h3>{{ pkg.name }}</h3>
           <div class="pkg-price">¥{{ pkg.price }}</div>
           <div class="pkg-credits">{{ pkg.credits }} 点</div>
@@ -69,6 +75,12 @@
           <button class="btn-buy" type="button" @click="buy(pkg)">
             {{ isLoggedIn ? '立即充值' : '注册后充值' }}
           </button>
+          <router-link
+            v-if="!isLoggedIn"
+            class="pkg-register-link"
+            :to="{ path: '/login', query: { mode: 'register', redirect: '/workspace?mode=new' } }"
+            @click="trackEvent('pricing_pkg_register', { category: 'funnel', label: pkg.id })"
+          >不想充？免费领 {{ info?.signup_bonus || 30 }} 点开写 →</router-link>
         </div>
       </div>
       <p class="pay-note pay-error" v-if="payError">{{ payError }}</p>
@@ -241,9 +253,24 @@ th { background: #f8fafc; font-size: 13px; color: #64748b; }
 .pkg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 16px; }
 .pkg-card {
   position: relative; background: #fff; border-radius: 16px; padding: 28px 22px;
-  text-align: center; border: 2px solid #e8f0fa; transition: transform 0.2s;
+  text-align: center; border: 2px solid #e8f0fa; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.pkg-card:hover { transform: translateY(-2px); }
+.pkg-card.guest:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.12);
 }
 .pkg-card.popular { border-color: #4da1ff; box-shadow: 0 8px 24px rgba(77,161,255,0.15); }
+.guest-pkg-hint {
+  margin: 0 0 10px; font-size: 12px; font-weight: 600; color: #1d4ed8;
+  opacity: 0.85; transition: opacity 0.2s;
+}
+.pkg-card.guest:hover .guest-pkg-hint { opacity: 1; }
+.pkg-register-link {
+  display: inline-block; margin-top: 12px; font-size: 12px; font-weight: 600;
+  color: #2563eb; text-decoration: none; line-height: 1.4;
+}
+.pkg-register-link:hover { text-decoration: underline; }
 .badge {
   position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
   background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
