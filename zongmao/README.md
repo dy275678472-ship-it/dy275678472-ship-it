@@ -1,5 +1,28 @@
 # 宗贸网 (zongmao.cn) 运维工具
 
+## 商业化 P0（注册转化）
+
+```bash
+sudo bash /opt/zongmao/scripts/deploy-p0-convert.sh
+# 或
+sudo python3 /opt/zongmao/scripts/p0-convert-patch.py
+sudo systemctl restart zongmao.service
+```
+
+### 商业化 P0 包含项
+
+1. 首页 sparkline API 修复（`/api/symbol/{sym}/sparkline` 404 → 200）
+2. 登录/注册设置 `user_id` cookie（支付/激活码绑定）
+3. 百度统计动态注入（`site_config.json` → `baidu_hm_id`，60s 热加载）
+4. 注册页简化（仅手机号+密码，加载态，权益说明）
+5. 信号页游客门控（前 3 条可见，其余模糊+注册 CTA）
+6. 获客弹窗改为注册引导（20s，已登录跳过）
+7. 首页底部 sticky 注册条（滚动后出现）
+8. 会员页支付绑定真实 user_id（不再 guest_ 随机）
+9. 管理后台 monetize API 鉴权修复
+
+**接入百度统计：** 编辑 `/opt/zongmao/site_config.json` 填入 `baidu_hm_id`（在百度统计后台创建 zongmao.cn 站点后获取）
+
 ## P0 增长修复
 
 ```bash
