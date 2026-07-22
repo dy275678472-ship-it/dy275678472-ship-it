@@ -55,8 +55,8 @@
         <p>不想先充值？注册即送 {{ info?.signup_bonus || 30 }} 点，可直接进创作台。</p>
         <router-link
           class="btn-register"
-          :to="{ path: '/login', query: { mode: 'register', redirect: '/pricing' } }"
-          @click="trackEvent('pricing_register_cta', { category: 'funnel', label: 'free_30' })"
+          :to="{ path: '/login', query: { mode: 'register', redirect: '/workspace?mode=new' } }"
+          @click="trackEvent('pricing_register_cta', { category: 'funnel', label: 'free_30_workspace' })"
         >免费注册领 {{ info?.signup_bonus || 30 }} 点 →</router-link>
       </div>
       <div class="pkg-grid">
@@ -105,6 +105,9 @@
         <summary>{{ item.q }}</summary>
         <p>{{ item.a }}</p>
       </details>
+      <p class="faq-more">
+        <a href="/faq" @click="trackEvent('pricing_faq_more', { category: 'funnel', label: 'to_faq' })">查看完整常见问题 →</a>
+      </p>
     </section>
   </div>
 </template>
@@ -316,6 +319,17 @@ th { background: #f8fafc; font-size: 13px; color: #64748b; }
 }
 .faq summary { cursor: pointer; font-weight: 600; color: #1e2a3a; }
 .faq p { margin-top: 10px; color: #5a6a7a; font-size: 14px; line-height: 1.6; }
+.faq-more {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 14px;
+}
+.faq-more a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+.faq-more a:hover { text-decoration: underline; }
 
 @media (max-width: 768px) {
   .highlights, .pkg-grid { grid-template-columns: 1fr; }

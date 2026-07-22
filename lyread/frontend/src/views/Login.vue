@@ -97,7 +97,9 @@
         <span class="divider">|</span>
         <a href="#" @click.prevent="showForgot = true">忘记密码</a>
         <span class="divider">|</span>
-        <a href="#" @click.prevent="$router.push('/')">先看看</a>
+        <a href="#" @click.prevent="goGuestWorkspace">先去创作台</a>
+        <span class="divider">|</span>
+        <a href="#" @click.prevent="$router.push('/')">回首页</a>
       </div>
       <div class="footer" v-else>
         <a href="#" @click.prevent="showForgot = false; showReset = false">返回登录</a>
@@ -156,6 +158,17 @@ function safeRedirectPath() {
     return raw
   }
   return null
+}
+
+/** 游客旁路：未注册也可先摸创作台；若漏斗已指向创作台则保留题材/草稿参数 */
+function goGuestWorkspace() {
+  const path = safeRedirectPath()
+  const target = path && path.startsWith('/workspace') ? path : '/workspace?mode=new'
+  trackEvent('login_guest_workspace', {
+    category: 'funnel',
+    label: path && path.startsWith('/workspace') ? 'preserve_redirect' : 'mode_new',
+  })
+  router.push(target)
 }
 
 const redirectHint = computed(() => {

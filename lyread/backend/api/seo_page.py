@@ -761,7 +761,7 @@ async def seo_faq_page(request: Request):
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/pricing">查看价格 →</a>
       &nbsp;&nbsp;
-      <a href="{SITE_BASE}/">先试用书名生成 →</a>
+      <a href="{SITE_BASE}/workspace?mode=new">先去创作台 →</a>
     </div>
     """
     title = "常见问题 - LyRead AI"
@@ -801,6 +801,8 @@ async def seo_about_page(request: Request):
     </div>
     <div class="seo-cta">
       <a href="{_register_workspace_href()}">注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/pricing">查看价格 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/trending">浏览案例 →</a>
       &nbsp;&nbsp;
@@ -988,9 +990,11 @@ async def seo_pricing_page(request: Request):
     <h2 style="font-size:18px;margin-bottom:12px">充值套餐</h2>
     <div class="info-grid">{pkg_html}</div>
     <div class="seo-cta">
-      <a href="{SITE_BASE}/login?mode=register&redirect=/pricing">注册领取 30 点 →</a>
+      <a href="{_register_workspace_href()}">注册领取 30 点 →</a>
       &nbsp;&nbsp;
-      <a href="{SITE_BASE}/workspace">进入创作台 →</a>
+      <a href="{SITE_BASE}/faq">常见问题 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/workspace?mode=new">进入创作台 →</a>
     </div>
     """
     title = "价格与点数计费 - LyRead AI"

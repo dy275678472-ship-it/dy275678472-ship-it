@@ -40,7 +40,7 @@
         <span class="feature-cta">{{ isLoggedIn ? '去写短故事 →' : '免费预览 →' }}</span>
       </router-link>
       <router-link
-        :to="isLoggedIn ? '/pricing' : { path: '/login', query: { mode: 'register', redirect: '/pricing' } }"
+        :to="isLoggedIn ? '/pricing' : { path: '/login', query: { mode: 'register', redirect: '/workspace?mode=new' } }"
         class="feature-card"
         @click="trackFeature('credits')"
       >
