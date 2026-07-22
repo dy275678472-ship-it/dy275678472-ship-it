@@ -169,6 +169,9 @@ onMounted(async () => {
     if (pkgs) {
       alipayReady.value = !!pkgs.alipay_ready
       sandboxMode.value = pkgs.payment_mode === 'sandbox'
+      // 沙箱 / 正式支付宝双路径看板：页载即打点，便于开通前后对比
+      const payLabel = alipayReady.value ? 'alipay_ready' : (sandboxMode.value ? 'sandbox' : 'unavailable')
+      trackEvent('pricing_pay_mode', { category: 'commerce', label: payLabel })
     }
   } catch (e) { /* 使用默认展示 */ }
 })
@@ -189,8 +192,12 @@ async function buy(pkg) {
     return
   }
   if (res.sandbox || !res.alipay_ready) {
+    trackEvent('pricing_pay_path', { category: 'commerce', label: `sandbox:${pkg.id}`, value: pkg.price })
     const ok = confirm(`体验充值（沙箱）：确认模拟支付 ¥${pkg.price}，到账 ${pkg.credits} 点？点数可立即用于创作。`)
-    if (!ok) return
+    if (!ok) {
+      trackEvent('pricing_sandbox_cancel', { category: 'commerce', label: pkg.id, value: pkg.price })
+      return
+    }
     const paid = await ordersApi.sandboxConfirm(res.out_trade_no)
     if (paid?.success) {
       window.dispatchEvent(new Event('credits-changed'))
@@ -199,13 +206,16 @@ async function buy(pkg) {
       trackEvent('pricing_sandbox_success', { category: 'conversion', label: pkg.id, value: pkg.credits })
     } else {
       payError.value = paid?.detail || '体验充值失败，请稍后再试'
+      trackEvent('pricing_sandbox_fail', { category: 'commerce', label: pkg.id })
     }
     return
   }
   if (res.pay_url) {
+    trackEvent('pricing_pay_path', { category: 'commerce', label: `alipay:${pkg.id}`, value: pkg.price })
     window.location.href = res.pay_url
     return
   }
+  trackEvent('pricing_pay_path', { category: 'commerce', label: `unavailable:${pkg.id}`, value: pkg.price })
   payError.value = '支付宝下单暂不可用。请先使用注册赠送与每日免费额度，或稍后再试体验充值。'
 }
 </script>

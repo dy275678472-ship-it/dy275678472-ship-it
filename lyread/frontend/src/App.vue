@@ -12,7 +12,11 @@
       </div>
       <div class="nav-links" :class="{ open: menuOpen }">
         <router-link to="/" class="nav-link" @click="menuOpen = false">首页</router-link>
-        <router-link to="/reader" class="nav-link" @click="menuOpen = false">长篇小说</router-link>
+        <router-link
+          :to="novelNavTo"
+          class="nav-link"
+          @click="onNovelNav"
+        >长篇小说</router-link>
         <router-link to="/story" class="nav-link" @click="menuOpen = false">短故事</router-link>
         <router-link to="/trending" class="nav-link" @click="menuOpen = false">案例阅读</router-link>
         <router-link to="/pricing" class="nav-link" @click="menuOpen = false">价格</router-link>
@@ -28,9 +32,9 @@
         </template>
         <router-link
           v-else
-          :to="{ path: '/login', query: { mode: 'register' } }"
+          :to="registerNavTo"
           class="nav-link btn-login"
-          @click="menuOpen = false"
+          @click="onRegisterNav"
         >免费注册</router-link>
       </div>
     </nav>
@@ -48,6 +52,10 @@
 <script>
 import { creditsApi } from './api'
 import { IMAGES } from './assets/images'
+import { trackEvent } from './utils/analytics'
+
+/** 导航创作入口：注册后直达创作台并向导（mode=new） */
+const WORKSPACE_NEW = '/workspace?mode=new'
 
 export default {
   name: 'App',
@@ -57,7 +65,21 @@ export default {
   computed: {
     isLoggedIn() {
       return !!localStorage.getItem('token')
-    }
+    },
+    /** 游客 register-first；已登录开向导 */
+    novelNavTo() {
+      if (this.isLoggedIn) return WORKSPACE_NEW
+      return {
+        path: '/login',
+        query: { mode: 'register', redirect: WORKSPACE_NEW },
+      }
+    },
+    registerNavTo() {
+      return {
+        path: '/login',
+        query: { mode: 'register', redirect: WORKSPACE_NEW },
+      }
+    },
   },
   watch: {
     $route() {
@@ -73,6 +95,17 @@ export default {
     window.removeEventListener('credits-changed', this.fetchCredits)
   },
   methods: {
+    onNovelNav() {
+      this.menuOpen = false
+      trackEvent('nav_novel_click', {
+        category: 'funnel',
+        label: this.isLoggedIn ? 'user' : 'guest_register',
+      })
+    },
+    onRegisterNav() {
+      this.menuOpen = false
+      trackEvent('nav_register_click', { category: 'funnel', label: 'guest_mode_new' })
+    },
     async fetchMe() {
       try {
         const token = localStorage.getItem('token')

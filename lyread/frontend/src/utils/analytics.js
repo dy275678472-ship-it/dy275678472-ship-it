@@ -48,6 +48,19 @@ export function trackPageView(path, title) {
 
 export function trackEvent(name, params = {}) {
   loadScripts()
+  // 无第三方 ID 时仍写入内存缓冲，避免构建期 DCE 掉埋点字面量，便于沙箱/转化漏斗本地核对
+  if (typeof window !== 'undefined') {
+    const buf = (window.__lyreadEvents = window.__lyreadEvents || [])
+    if (buf.length < 200) {
+      buf.push({
+        name,
+        category: params.category || 'site',
+        label: params.label || '',
+        value: params.value || 0,
+        t: Date.now(),
+      })
+    }
+  }
   if (BAIDU_ID && window._hmt) {
     window._hmt.push(['_trackEvent', params.category || 'site', name, params.label || '', params.value || 0])
   }
