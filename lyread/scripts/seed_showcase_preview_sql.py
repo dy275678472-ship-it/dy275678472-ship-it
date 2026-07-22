@@ -1,24 +1,12 @@
 #!/usr/bin/env python3
-"""Output SQL to set preview_body for showcase cases (utf8mb4-safe escaping)."""
+"""Output SQL to set preview_body for showcase cases (utf8mb4-safe escaping).
+
+Auto-discovers `seed_data/showcase_excerpts/*.txt` → content_id = stem.
+"""
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 EXCERPT_DIR = SCRIPT_DIR / "seed_data" / "showcase_excerpts"
-
-CASES = [
-    ("showcase_urban_01.txt", "showcase_urban_01"),
-    ("showcase_warrior_01.txt", "showcase_warrior_01"),
-    ("showcase_reborn_01.txt", "showcase_reborn_01"),
-    ("showcase_xianxia_01.txt", "showcase_xianxia_01"),
-    ("showcase_romance_01.txt", "showcase_romance_01"),
-    ("showcase_scifi_01.txt", "showcase_scifi_01"),
-    ("showcase_suspense_01.txt", "showcase_suspense_01"),
-    ("showcase_history_01.txt", "showcase_history_01"),
-    ("showcase_system_01.txt", "showcase_system_01"),
-    ("showcase_apocalypse_01.txt", "showcase_apocalypse_01"),
-    ("showcase_campus_01.txt", "showcase_campus_01"),
-    ("showcase_game_01.txt", "showcase_game_01"),
-]
 
 
 def sql_escape(value: str) -> str:
@@ -26,12 +14,16 @@ def sql_escape(value: str) -> str:
 
 
 def main() -> None:
+    files = sorted(EXCERPT_DIR.glob("showcase_*.txt"))
+    if not files:
+        raise SystemExit(f"no excerpt files in {EXCERPT_DIR}")
+
     print("SET NAMES utf8mb4;")
-    for filename, content_id in CASES:
-        path = EXCERPT_DIR / filename
-        if not path.is_file():
-            raise SystemExit(f"missing excerpt file: {path}")
+    for path in files:
+        content_id = path.stem
         body = path.read_text(encoding="utf-8").strip()
+        if len(body) < 2000:
+            raise SystemExit(f"excerpt too short (<2000): {path.name} len={len(body)}")
         escaped = sql_escape(body)
         print(
             f"UPDATE contents SET preview_body='{escaped}' "
