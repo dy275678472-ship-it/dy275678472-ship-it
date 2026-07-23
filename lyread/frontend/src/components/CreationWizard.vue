@@ -507,11 +507,14 @@ onMounted(async () => {
 function applyInitialIntent(init) {
   if (!init || typeof init !== 'object') return
   const type = (init.type || '').trim()
+  const genreCustom = String(init.genreCustom || '').trim()
+  const genreName = String(init.genreName || '').trim()
   if (type) {
     const pool = allGenres.value.length ? allGenres.value : genres.value
     const matched = pool.find((g) =>
       g.id === type
       || g.name === type
+      || g.name === genreName
       || (Array.isArray(g.tags) && g.tags.includes(type))
       || (g.name && (type.includes(g.name) || g.name.includes(type))),
     )
@@ -524,10 +527,14 @@ function applyInitialIntent(init) {
         displayedGenres.value = [matched, ...displayedGenres.value].slice(0, 6)
       }
     } else {
-      draft.genreCustom = type
+      draft.genreCustom = genreCustom || type
       draft.genreId = ''
-      draft.genreName = type
+      draft.genreName = genreName || genreCustom || type
     }
+  } else if (genreCustom) {
+    draft.genreCustom = genreCustom
+    draft.genreId = ''
+    draft.genreName = genreName || genreCustom
   }
   if (init.prompt) draft.intro = String(init.prompt)
   const title = (init.generatedTitle || '').trim()

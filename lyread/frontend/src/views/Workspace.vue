@@ -249,14 +249,19 @@ function newStory() {
   wizardMode.value = true
   editing.value = true
   const q = route.query
+  // 与 SSR _workspace_register_href / wizardGenreFromCategory 深链对齐
   wizardInitial.value = {
     generatedTitle: q.generatedTitle,
     prompt: q.prompt,
     type: q.type,
+    genreCustom: q.genreCustom,
+    genreName: q.genreName,
   }
   if (q.generatedTitle) form.title = q.generatedTitle
   if (q.prompt) form.intro = q.prompt
-  if (q.type) form.genre = q.type
+  if (q.genreName || q.genreCustom || q.type) {
+    form.genre = q.genreName || q.genreCustom || q.type
+  }
 }
 
 async function finishWizard(payload) {
@@ -415,7 +420,13 @@ onMounted(async () => {
   if (route.query.welcome === '1') welcomeBanner.value = true
   if (route.query.story) openStory(Number(route.query.story))
   // Trending/CaseReader 注册深链 ?mode=new → 直接进入创作向导，避免落空白欢迎页
-  else if (route.query.mode === 'new' || route.query.generatedTitle || route.query.prompt || route.query.type) newStory()
+  else if (
+    route.query.mode === 'new'
+    || route.query.generatedTitle
+    || route.query.prompt
+    || route.query.type
+    || route.query.genreCustom
+  ) newStory()
 })
 </script>
 

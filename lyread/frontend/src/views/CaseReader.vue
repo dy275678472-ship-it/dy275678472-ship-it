@@ -23,10 +23,25 @@
         <p class="excerpt-note">以下为平台精选开篇节选，非完整连载。喜欢此风格可一键带入创作台。</p>
       </header>
       <section v-if="chapters.length" class="body">
-        <div v-for="(ch, i) in chapters" :key="i" class="chapter">
-          <h2 v-if="ch.title" class="chapter-title">{{ ch.title }}</h2>
-          <p v-for="(para, j) in ch.paragraphs" :key="j" class="paragraph">{{ para }}</p>
-        </div>
+        <template v-for="(ch, i) in chapters" :key="i">
+          <div class="chapter">
+            <h2 v-if="ch.title" class="chapter-title">{{ ch.title }}</h2>
+            <p v-for="(para, j) in ch.paragraphs" :key="j" class="paragraph">{{ para }}</p>
+          </div>
+          <!-- 长节选中部软 CTA：与 SSR 案例页对齐，缩短阅读→注册路径 -->
+          <div
+            v-if="showMidCta && i === midCtaAfterIndex"
+            class="mid-cta"
+            role="note"
+          >
+            <p class="mid-cta-text">读到一半了？注册送 30 点，用同题材接着写下去</p>
+            <router-link
+              :to="creationLink"
+              class="mid-cta-link"
+              @click="trackEvent('case_mid_cta_click', { category: 'conversion', label: isLoggedIn ? 'logged_in' : 'register_first', value: Number(caseData.id) || 0 })"
+            >{{ isLoggedIn ? '用同题材开写 →' : '免费注册开写 →' }}</router-link>
+          </div>
+        </template>
       </section>
       <section v-else class="body empty-body">
         <p>该案例暂无正文节选。</p>
@@ -66,6 +81,7 @@ import { casesApi } from '../api'
 import { parseChapters, countChapters } from '../utils/caseContent'
 import { formatStorySettingWords } from '../utils/format'
 import { trackEvent } from '../utils/analytics'
+import { workspaceWizardQuery } from '../utils/wizardGenre'
 
 const route = useRoute()
 const loading = ref(true)
@@ -120,9 +136,17 @@ const chapters = computed(() => parseChapters(rawBody.value))
 const excerptChapters = computed(() => caseData.value?.excerpt_chapters ?? countChapters(rawBody.value))
 const excerptChars = computed(() => caseData.value?.excerpt_chars ?? rawBody.value.length)
 
+/** ≥4 章或正文较长时，在中部插入 register-first 软 CTA（对齐 SSR） */
+const showMidCta = computed(() => chapters.value.length >= 4 || rawBody.value.length >= 900)
+const midCtaAfterIndex = computed(() => {
+  const n = chapters.value.length
+  if (n < 2) return -1
+  return Math.max(1, Math.floor(n / 2) - 1)
+})
+
 const workspaceLink = computed(() => {
-  const cat = caseData.value?.category || ''
-  return { path: '/workspace', query: { type: cat, prompt: `参考《${caseData.value?.title}》的风格创作` } }
+  const q = workspaceWizardQuery(caseData.value?.category || '', caseData.value?.title || '')
+  return { path: '/workspace', query: q }
 })
 
 /** 游客直达注册表单并带回创作台意图，缩短案例→注册路径 */
@@ -162,6 +186,31 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; color: #1e2a3a; }
 .paragraph:last-child { margin-bottom: 0; }
 .empty-body { color: #64748b; font-size: 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
 .link { color: #2563eb; }
+.mid-cta {
+  margin: 8px 0 28px;
+  padding: 14px 0;
+  border-top: 1px dashed #dbeafe;
+  border-bottom: 1px dashed #dbeafe;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+}
+.mid-cta-text {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+  flex: 1 1 220px;
+}
+.mid-cta-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f766e;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.mid-cta-link:hover { text-decoration: underline; }
 .case-nav {
   display: flex; justify-content: space-between; gap: 16px;
   margin-top: 28px; padding-top: 24px; border-top: 1px solid #eef2f7;
@@ -179,7 +228,13 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; color: #1e2a3a; }
 .nav-spacer { flex: 1; }
 .cta { text-align: center; margin-top: 24px; padding-top: 24px; border-top: 1px solid #eef2f7; }
 .btn-cta {
-  display: inline-block; padding: 14px 28px; border-radius: 12px;
-  background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff; font-weight: 600; text-decoration: none;
+  display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff; border-radius: 10px; text-decoration: none; font-weight: 600;
+}
+.btn-cta:hover { filter: brightness(1.05); }
+@media (max-width: 640px) {
+  .article { padding: 20px 16px 24px; }
+  h1 { font-size: 20px; }
+  .nav-title { font-size: 13px; }
 }
 </style>
