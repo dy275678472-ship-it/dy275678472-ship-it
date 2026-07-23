@@ -584,13 +584,16 @@ def main() -> None:
     for case in cases:
         cid = case["content_id"]
         path = OUT_DIR / f"{cid}.txt"
-        if cid in HANDCRAFTED_IDS and path.is_file():
-            cleaned = _strip_boilerplate(path.read_text(encoding="utf-8"))
-            if "（节选完" not in cleaned:
-                cleaned += "\n\n（节选完，共三章）"
-            path.write_text(cleaned, encoding="utf-8")
-            print(f"kept handcrafted {path.name} ({len(cleaned)} chars)")
-            continue
+        # 手写名单，或已达 2000+ 字的现存节选，一律保留，避免 seed 冲掉 tip 质量
+        if path.is_file():
+            existing = path.read_text(encoding="utf-8")
+            if cid in HANDCRAFTED_IDS or len(existing.strip()) >= 2000:
+                cleaned = _strip_boilerplate(existing)
+                if "（节选完" not in cleaned:
+                    cleaned += "\n\n（节选完，共三章）"
+                path.write_text(cleaned, encoding="utf-8")
+                print(f"kept handcrafted {path.name} ({len(cleaned)} chars)")
+                continue
         text = generate_excerpt(case)
         path.write_text(text, encoding="utf-8")
         print(f"wrote {path.name} ({len(text)} chars)")
