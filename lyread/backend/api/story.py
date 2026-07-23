@@ -524,7 +524,23 @@ async def consistency_check(req: AIContinueRequest, user: dict = Depends(get_cur
         result = chat_with_llm(prompt, max_tokens=600)
         import re
         m = re.search(r"\{.*\}", result, re.DOTALL)
-        report = json.loads(m.group()) if m else {"ok": True, "issues": [], "suggestion": ""}
+        report = {}
+        if m:
+            try:
+                parsed = json.loads(m.group())
+                if isinstance(parsed, dict):
+                    report = parsed
+            except json.JSONDecodeError:
+                report = {}
+        if not report:
+            refund(uid, job["job_id"])
+            return {"success": False, "error": "一致性检查解析失败，本次未扣点"}
+        # 规范化字段，避免残缺 JSON 被当成「检查通过」
+        report.setdefault("ok", False)
+        if not isinstance(report.get("issues"), list):
+            report["issues"] = []
+        if not isinstance(report.get("suggestion"), str):
+            report["suggestion"] = str(report.get("suggestion") or "")
         settle(uid, job["job_id"], estimate_points("consistency"))
         return {"success": True, "report": report}
     except Exception as e:
