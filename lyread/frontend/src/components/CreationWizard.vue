@@ -499,12 +499,51 @@ onMounted(async () => {
   if (gf?.success) godfingers.value = gf.godfingers || []
   if (ls?.success) levelSystems.value = ls.systems || []
   if (p?.success) prices.value = p.prices || {}
-  const init = props.initial || {}
-  if (init.type) { draft.genreId = init.type; draft.genreName = init.type }
-  if (init.prompt) draft.intro = init.prompt
-  if (init.generatedTitle) draft.title = init.generatedTitle
+  applyInitialIntent(props.initial || {})
   refreshIdeaPool()
 })
+
+/** 试用/案例回流：匹配题材芯片，预填书名灵感，并跳到最近可继续的步骤 */
+function applyInitialIntent(init) {
+  if (!init || typeof init !== 'object') return
+  const type = (init.type || '').trim()
+  if (type) {
+    const pool = allGenres.value.length ? allGenres.value : genres.value
+    const matched = pool.find((g) =>
+      g.id === type
+      || g.name === type
+      || (Array.isArray(g.tags) && g.tags.includes(type))
+      || (g.name && (type.includes(g.name) || g.name.includes(type))),
+    )
+    if (matched) {
+      draft.genreId = matched.id
+      draft.genreName = matched.name
+      draft.genreCustom = ''
+      // 确保选中题材出现在推荐芯片中
+      if (!displayedGenres.value.some((g) => g.id === matched.id)) {
+        displayedGenres.value = [matched, ...displayedGenres.value].slice(0, 6)
+      }
+    } else {
+      draft.genreCustom = type
+      draft.genreId = ''
+      draft.genreName = type
+    }
+  }
+  if (init.prompt) draft.intro = String(init.prompt)
+  const title = (init.generatedTitle || '').trim()
+  if (title) {
+    draft.title = title
+    if (!draft.titleCandidates.some((t) => t.title === title)) {
+      draft.titleCandidates = [{ title, hook: draft.intro || '' }, ...draft.titleCandidates]
+    }
+  }
+  const hasGenre = !!(draft.genreId || draft.genreCustom?.trim())
+  const hasIntro = !!draft.intro?.trim()
+  const hasTitle = !!draft.title?.trim()
+  if (hasGenre && hasIntro && hasTitle) step.value = 3
+  else if (hasGenre && hasIntro) step.value = 2
+  else if (hasGenre) step.value = 1
+}
 </script>
 
 <style scoped>

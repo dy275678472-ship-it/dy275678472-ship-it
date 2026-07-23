@@ -11,6 +11,11 @@
         <span class="logo-text">LyRead</span>
       </div>
       <p class="subtitle">AI小说创作引擎</p>
+
+      <div v-if="intentBanner" class="intent-banner" role="status">
+        <strong>{{ intentBanner.title }}</strong>
+        <p>{{ intentBanner.detail }}</p>
+      </div>
       
       <!-- 注册表单 -->
       <form v-if="showRegister" @submit.prevent="handleRegister">
@@ -42,7 +47,7 @@
           required
         />
         <button type="submit" class="btn btn-primary" :disabled="loading">
-          {{ loading ? '注册中...' : '注册' }}
+          {{ loading ? '注册中...' : registerCtaLabel }}
         </button>
       </form>
 
@@ -116,7 +121,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { authApi } from '../api'
 import { IMAGES } from '../assets/images'
@@ -135,6 +140,75 @@ const showForgot = ref(false)
 const showReset = ref(false)
 const resetToken = ref('')
 const oauth = ref({ wechat: false, qq: false })
+
+/** 解析 redirect 深链：试用书名 / 案例风格 / 充值套餐 / 创作台 */
+function parseRedirectIntent(redirect) {
+  if (typeof redirect !== 'string' || !redirect.startsWith('/') || redirect.startsWith('//')) {
+    return null
+  }
+  try {
+    const u = new URL(redirect, 'https://lyread.cn')
+    const pkg = u.searchParams.get('pkg')
+    const title = (u.searchParams.get('generatedTitle') || '').trim()
+    const type = (u.searchParams.get('type') || '').trim()
+    const prompt = (u.searchParams.get('prompt') || '').trim()
+    const mode = (u.searchParams.get('mode') || '').trim()
+    if (u.pathname.startsWith('/pricing') && pkg) {
+      return {
+        kind: 'pricing',
+        title: '注册后继续充值',
+        detail: `套餐意图已保留（${pkg}）。注册送 30 点，回到价格页将自动续下单。`,
+      }
+    }
+    if (title) {
+      const genreBit = type ? ` · 题材 ${type}` : ''
+      return {
+        kind: 'trial',
+        title: `书名「${title}」将带入创作台`,
+        detail: `注册送 30 点，约可续写 3 章${genreBit}`,
+      }
+    }
+    const caseMatch = prompt.match(/参考《(.+?)》/)
+    if (caseMatch) {
+      return {
+        kind: 'case',
+        title: `按《${caseMatch[1]}》同风格开写`,
+        detail: '注册送 30 点，直达创作台向导',
+      }
+    }
+    if (u.pathname.startsWith('/workspace')) {
+      return {
+        kind: 'workspace',
+        title: mode === 'new' ? '注册后打开新建向导' : '注册后进入创作台',
+        detail: '注册送 30 点，失败全额返还',
+      }
+    }
+    if (u.pathname.startsWith('/story')) {
+      return {
+        kind: 'story',
+        title: '注册后生成短故事',
+        detail: '注册送 30 点，约可生成 2 篇短篇',
+      }
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+const intentBanner = computed(() => {
+  const raw = route.query.redirect
+  return parseRedirectIntent(typeof raw === 'string' ? raw : null)
+})
+
+const registerCtaLabel = computed(() => {
+  const kind = intentBanner.value?.kind
+  if (kind === 'pricing') return '注册并继续充值（送 30 点）'
+  if (kind === 'trial' || kind === 'case') return '注册并开写（送 30 点）'
+  if (kind === 'story') return '注册并生成短篇（送 30 点）'
+  if (kind === 'workspace') return '注册领 30 点开写'
+  return '注册领 30 点'
+})
 
 const onWechatLogin = async () => {
   if (oauth.value.wechat) {
@@ -198,6 +272,12 @@ onMounted(async () => {
   if (route.query.mode === 'register') {
     showRegister.value = true
   }
+  if (intentBanner.value) {
+    trackEvent('login_intent_resume', {
+      category: 'funnel',
+      label: intentBanner.value.kind,
+    })
+  }
   try {
     const res = await authApi.oauthStatus()
     if (res?.success) oauth.value = { wechat: !!res.wechat, qq: !!res.qq }
@@ -210,6 +290,17 @@ function safeRedirectPath() {
     return raw
   }
   return null
+}
+
+function registerSuccessMessage(redirect) {
+  if (!redirect) return '注册成功，已到账 30 点，正在进入创作台...'
+  if (redirect.startsWith('/pricing')) return '注册成功，已到账 30 点，正在回到充值页…'
+  if (redirect.startsWith('/story')) return '注册成功，已到账 30 点，正在打开短故事…'
+  if (redirect.includes('generatedTitle=') || /prompt=.*参考/.test(redirect)) {
+    return '注册成功，已到账 30 点，正在带入你的创作意图…'
+  }
+  if (redirect.startsWith('/workspace')) return '注册成功，已到账 30 点，正在进入创作台...'
+  return '注册成功，已到账 30 点，正在跳转…'
 }
 
 function afterAuth(isRegister = false) {
@@ -275,9 +366,7 @@ const handleRegister = async () => {
       trackEvent('register_success', { category: 'auth', label: 'auto_login' })
       {
         const redirect = safeRedirectPath()
-        success.value = redirect && redirect.startsWith('/pricing')
-          ? '注册成功，已到账 30 点，正在回到充值页…'
-          : '注册成功，已到账 30 点，正在进入创作台...'
+        success.value = registerSuccessMessage(redirect)
       }
       afterAuth(true)
       return
@@ -392,6 +481,28 @@ const handleRegister = async () => {
   color: var(--lyread-text-secondary);
   font-size: 15px;
   margin-bottom: 40px;
+}
+
+.intent-banner {
+  margin: -20px 0 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  text-align: left;
+}
+.intent-banner strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+.intent-banner p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #047857;
 }
 
 .login-card form {
