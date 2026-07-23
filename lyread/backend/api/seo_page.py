@@ -1654,9 +1654,24 @@ async def ping_search_engines(_user: dict = Depends(get_current_user)):
     return {"sitemap": sitemap_url, "results": results}
 
 
+def _clip_list_excerpt(text: str, limit: int = 280) -> str:
+    """SEO 列表节选：句读处截断，与 cases API 列表卡对齐。"""
+    clean = (text or "").strip()
+    if "【节选说明】" in clean:
+        clean = clean.split("【节选说明】")[0].strip()
+    if len(clean) <= limit:
+        return clean
+    window = clean[:limit]
+    for marks in ("。！？…", "；，、", "\n"):
+        cut = max(window.rfind(m) for m in marks)
+        if cut >= int(limit * 0.55):
+            return window[: cut + 1].rstrip()
+    return window.rstrip() + "…"
+
+
 @router.api_route("/ep", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_content_list(request: Request):
-    """生成内容列表页 HTML（供爬虫索引）"""
+    """生成内容列表页 HTML（供爬虫索引）；主 CTA 对齐 register-first。"""
     items_html = ""
     try:
         db = get_db()
@@ -1669,10 +1684,10 @@ async def seo_content_list(request: Request):
             for row in cursor.fetchall():
                 safe_title = escape(str(row['title']))
                 safe_category = escape(str(row['category']))
-                preview = (row.get("preview_body") or "").strip()
+                preview = _clip_list_excerpt(row.get("preview_body") or "", 280)
                 excerpt_html = ""
                 if preview:
-                    excerpt_html = f'<p class="excerpt">{escape(preview[:200])}</p>'
+                    excerpt_html = f'<p class="excerpt">{escape(preview)}</p>'
                 items_html += f"""
                 <li>
                     <a href="{SITE_BASE}/ep/{int(row['id'])}">{safe_title}</a>
@@ -1685,25 +1700,39 @@ async def seo_content_list(request: Request):
     except Exception as e:
         print(f"[SEO Page] Error fetching list: {e}")
 
+    register_href = _register_workspace_href()
     if not items_html:
-        items_html = '<li style="text-align:center;color:#7a8ba8;padding:40px;">暂无内容</li>'
+        items_html = (
+            '<li style="text-align:center;color:#7a8ba8;padding:40px;">'
+            f'暂无公开案例 · <a href="{register_href}">注册领 30 点开写 →</a>'
+            "</li>"
+        )
 
     body_html = f"""
+    <p>公开案例节选索引（sitemap 收录）。读完可用同题材开写；游客请先注册（送 30 点）。</p>
     <ul class="seo-list">
         {items_html}
     </ul>
+    <div class="seo-cta">
+      <a href="{register_href}">免费注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">热门案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/story">试试短故事 →</a>
+    </div>
     """
 
     list_title = "LyRead AI 小说作品列表 - 智能小说创作平台"
-    list_desc = "浏览 LyRead AI 公开案例节选：都市神豪、战神归来、系统流等题材的 AI 生成开篇，点击进入全文阅读。"
-    list_path = str(request.url.path)
+    list_desc = "浏览 LyRead AI 公开案例节选：都市神豪、战神归来、系统流等题材 AI 开篇。注册送 30 点，可用同风格开写。"
+    # 规范路径固定 /ep，避免 /ep/ 与 /ep 重复描述
+    list_path = "/ep"
     return _seo_html(
         title=list_title,
         description=list_desc,
         keywords="AI小说,网文列表,智能写作,小说推荐,案例节选",
         url=list_path,
         site_base=SITE_BASE,
-        meta_info="共收录作品",
+        meta_info="注册送 30 点 · 公开案例索引",
         body_html=body_html,
         json_ld=_json_ld_list(list_title, list_desc, list_path),
     )

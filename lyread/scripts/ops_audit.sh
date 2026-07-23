@@ -113,6 +113,9 @@ assert_seo_register_cta "/about"
 # 教程/对比集群同样应对齐 register-first（勿链到 robots Disallow 的 /workspace）
 assert_seo_register_cta "/guide"
 assert_seo_register_cta "/compare"
+# sitemap 收录的 /ep 作品索引：主 CTA 须 register-first（送 30 点）
+assert_seo_register_cta "/ep"
+assert_no_workspace_in_seo_cta "/ep"
 
 # FAQ/Pricing/教程/对比：主 CTA 区不应直链 /workspace（robots Disallow；游客多一跳）
 # pricing 仅 bot/?ssr=1 走后端 HTML，巡检用 Googlebot 避免 SPA 壳误报 missing
