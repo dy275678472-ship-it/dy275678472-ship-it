@@ -119,7 +119,8 @@ assert_no_workspace_in_seo_cta() {
   local path="$1"
   local html cta
   html=$(curl -sf "$BASE_URL$path" || true)
-  cta=$(printf '%s' "$html" | tr '\n' ' ' | grep -oE '<div class="seo-cta">.{0,900}</div>' | head -1)
+  # grep 无匹配时退出码 1；配合 set -euo pipefail 必须吞掉，否则整段巡检中断
+  cta=$(printf '%s' "$html" | tr '\n' ' ' | grep -oE '<div class="seo-cta">.{0,900}</div>' | head -1 || true)
   if [[ -z "$cta" ]]; then
     warn "seo-cta missing on $path"
     return
