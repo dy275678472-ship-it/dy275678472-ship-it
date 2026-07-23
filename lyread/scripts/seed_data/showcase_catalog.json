@@ -126,5 +126,17 @@
   {"content_id": "showcase_palace_07", "title": "废后回宫，这一次我要称帝", "category": "宫廷权谋", "word_count": 172000, "heat": 4800, "score": 8.2, "genre": "palace", "protagonist": "谢长歌", "hook": "被废离宫三年，归来先收禁军再收天下"},
   {"content_id": "showcase_soninlaw_07", "title": "赘婿签离婚那天，老丈人跪了", "category": "赘婿逆袭", "word_count": 116000, "heat": 6600, "score": 8.0, "genre": "soninlaw", "protagonist": "傅临", "hook": "签字离婚时，债主带人上门喊他傅爷"},
   {"content_id": "showcase_baby_07", "title": "萌宝把DNA报告递给总裁", "category": "萌宝甜宠", "word_count": 81000, "heat": 6000, "score": 7.9, "genre": "baby", "protagonist": "小满", "hook": "四岁女儿偷拿亲子鉴定，直接拍在总裁桌上"},
-  {"content_id": "showcase_horror_07", "title": "午夜电台，听众全是死人", "category": "灵异悬疑", "word_count": 93000, "heat": 4300, "score": 7.7, "genre": "horror", "protagonist": "沈音", "hook": "深夜情感电台，来电者报的全是已死之人"}
+  {"content_id": "showcase_horror_07", "title": "午夜电台，听众全是死人", "category": "灵异悬疑", "word_count": 93000, "heat": 4300, "score": 7.7, "genre": "horror", "protagonist": "沈音", "hook": "深夜情感电台，来电者报的全是已死之人"},
+  {"content_id": "showcase_urban_12", "title": "扫大街的，是江城首富", "category": "都市神豪", "word_count": 104000, "heat": 6900, "score": 8.0, "genre": "urban", "protagonist": "叶深", "hook": "体验生活扫街三年，身份曝光全城震动"},
+  {"content_id": "showcase_warrior_11", "title": "老兵收徒，徒弟是军区首长", "category": "战神归来", "word_count": 132000, "heat": 7100, "score": 8.1, "genre": "warrior", "protagonist": "老周", "hook": "隐退教拳，新学员竟是当年部下"},
+  {"content_id": "showcase_reborn_10", "title": "重生回到房价最低那年", "category": "重生", "word_count": 120000, "heat": 7000, "score": 8.1, "genre": "reborn", "protagonist": "方铭", "hook": "重生2008，贷款买十套学区房"},
+  {"content_id": "showcase_xianxia_09", "title": "我有一剑，可斩天上仙", "category": "仙侠玄幻", "word_count": 220000, "heat": 7100, "score": 8.3, "genre": "xianxia", "protagonist": "剑无名", "hook": "凡人佩剑十年，剑出鞘天裂"},
+  {"content_id": "showcase_game_10", "title": "国服第一被误封，全服请愿", "category": "游戏竞技", "word_count": 110000, "heat": 6800, "score": 8.1, "genre": "game", "protagonist": "孤城", "hook": "系统误封账号，百万玩家联名申诉"},
+  {"content_id": "showcase_system_09", "title": "情绪系统：越愤怒越强", "category": "系统流", "word_count": 106000, "heat": 7200, "score": 8.2, "genre": "system", "protagonist": "林怒", "hook": "绑定情绪系统，被羞辱一次涨一级"},
+  {"content_id": "showcase_romance_09", "title": "先婚后爱，他宠我上天", "category": "言情甜宠", "word_count": 76000, "heat": 5700, "score": 7.9, "genre": "romance", "protagonist": "温言", "hook": "家族联姻本想应付，他认真了"},
+  {"content_id": "showcase_apocalypse_09", "title": "极热末世，我有一台空调", "category": "末世求生", "word_count": 118000, "heat": 6200, "score": 7.9, "genre": "apocalypse", "protagonist": "方晴", "hook": "全球高温50度，祖传空调外机成了圣物"},
+  {"content_id": "showcase_campus_08", "title": "转校生是奥数金牌", "category": "校园青春", "word_count": 68000, "heat": 5200, "score": 7.8, "genre": "campus", "protagonist": "林知", "hook": "低调转校，国际奥赛金牌身份曝光"},
+  {"content_id": "showcase_scifi_08", "title": "意识上传后，我删了备份", "category": "科幻脑洞", "word_count": 132000, "heat": 5500, "score": 7.9, "genre": "scifi", "protagonist": "零一", "hook": "数字永生时代，他选择只留一个自己"},
+  {"content_id": "showcase_suspense_08", "title": "密室逃脱，出口是十年前", "category": "悬疑推理", "word_count": 96000, "heat": 5000, "score": 7.8, "genre": "suspense", "protagonist": "陈默", "hook": "逃出最后一扇门，日期回到十年前"},
+  {"content_id": "showcase_history_09", "title": "穿越成霍去病，封狼居胥", "category": "历史架空", "word_count": 205000, "heat": 5200, "score": 8.3, "genre": "history", "protagonist": "霍云", "hook": "少年将军重来，这一次不早夭"}
 ]
