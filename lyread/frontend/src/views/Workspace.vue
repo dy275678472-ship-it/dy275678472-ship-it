@@ -417,6 +417,7 @@ async function deleteStory() {
 async function runConsistency() {
   if (!chapterContent.value) { setMsg('请先填写正文', true); return }
   busy.value = true
+  trackEvent('consistency_click', { category: 'creation', label: 'workspace' })
   try {
     const res = await storyApi.consistencyCheck({ story_id: form.id, content: chapterContent.value })
     if (res?.success) {
@@ -424,7 +425,18 @@ async function runConsistency() {
       const issues = r?.issues?.length ? r.issues.join('；') : '未发现明显冲突'
       setMsg(r?.ok ? `检查通过：${issues}` : `发现问题：${issues}`, !r?.ok)
       window.dispatchEvent(new Event('credits-changed'))
-    } else handleApiError(res, '检查失败')
+      trackEvent('consistency_result', {
+        category: 'creation',
+        label: r?.ok ? 'ok' : 'issues',
+        value: Array.isArray(r?.issues) ? r.issues.length : 0,
+      })
+    } else {
+      handleApiError(res, '检查失败')
+      trackEvent('consistency_result', {
+        category: 'creation',
+        label: res?.insufficient_credits || res?.status === 402 ? '402' : 'fail',
+      })
+    }
   } finally { busy.value = false }
 }
 

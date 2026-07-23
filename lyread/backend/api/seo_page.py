@@ -569,9 +569,8 @@ async def seo_case_alias_page(content_id: int):
     return _render_case_seo_page(content_id)
 
 
-@router.get("/sitemap.xml")
-async def sitemap_xml():
-    """生成搜索引擎站点地图（含 lastmod）；Content-Type 必须为 application/xml。"""
+def _build_sitemap_xml() -> str:
+    """生成 sitemap XML 正文（GET/HEAD 共用，避免 HEAD 405 导致巡检误读 CT）。"""
     today = datetime.now().strftime('%Y-%m-%d')
     urls = [
         (f"{SITE_BASE}/", "weekly", "1.0", today),
@@ -617,12 +616,22 @@ async def sitemap_xml():
         xml += f"    <priority>{priority}</priority>\n"
         xml += "  </url>\n"
     xml += "</urlset>"
-    return Response(content=xml, media_type="application/xml; charset=utf-8")
+    return xml
 
 
-@router.get("/robots.txt", response_class=PlainTextResponse)
+@router.api_route("/sitemap.xml", methods=["GET", "HEAD"])
+async def sitemap_xml(request: Request):
+    """生成搜索引擎站点地图（含 lastmod）；Content-Type 必须为 application/xml；支持 HEAD。"""
+    xml = _build_sitemap_xml()
+    headers = {"content-length": str(len(xml.encode("utf-8")))}
+    if request.method == "HEAD":
+        return Response(content=b"", media_type="application/xml; charset=utf-8", headers=headers)
+    return Response(content=xml, media_type="application/xml; charset=utf-8", headers=headers)
+
+
+@router.api_route("/robots.txt", methods=["GET", "HEAD"], response_class=PlainTextResponse)
 async def robots_txt():
-    """爬虫规则（含 AI/GEO 爬虫）"""
+    """爬虫规则（含 AI/GEO 爬虫）；支持 HEAD 供 CDN/巡检探测"""
     return f"""User-agent: *
 Allow: /
 Disallow: /api/
@@ -662,9 +671,9 @@ Allow: /
 """
 
 
-@router.get("/llms.txt", response_class=PlainTextResponse)
+@router.api_route("/llms.txt", methods=["GET", "HEAD"], response_class=PlainTextResponse)
 async def llms_txt():
-    """GEO：供大模型爬虫读取的站点摘要（llms.txt 规范）"""
+    """GEO：供大模型爬虫读取的站点摘要（llms.txt 规范）；支持 HEAD"""
     return f"""# LyRead AI
 
 > LyRead AI（https://lyread.cn）是面向中文作者与内容工作室的智能小说创作 SaaS 平台。产品支持长篇小说连载、短故事生成、人物/伏笔记忆（小说大脑），采用点数按量计费。
@@ -698,9 +707,9 @@ async def llms_txt():
 """
 
 
-@router.get("/llms-full.txt", response_class=PlainTextResponse)
+@router.api_route("/llms-full.txt", methods=["GET", "HEAD"], response_class=PlainTextResponse)
 async def llms_full_txt():
-    """GEO：详细站点说明供 AI 引用"""
+    """GEO：详细站点说明供 AI 引用；支持 HEAD"""
     cases = _fetch_public_cases(10)
     case_lines = "\n".join(
         f"- {c.get('title')}（{c.get('category')}，{c.get('word_count')}字）https://lyread.cn/ep/{c['id']}"

@@ -153,10 +153,17 @@ echo "[4] Creation APIs"
 if curl -sf "$BASE_URL/api/credits/prices" | grep -q signup_bonus; then ok "credits/prices"; else bad "credits/prices"; fi
 if curl -sf "$BASE_URL/api/cases" | grep -q '"success":true'; then ok "public cases"; else bad "public cases"; fi
 
-# sitemap Content-Type（text/plain 会被部分爬虫降权/忽略）
+# sitemap Content-Type（text/plain 会被部分爬虫降权/忽略）；HEAD 需 200 且 CT 正确
 echo ""
 echo "[4a] Sitemap / SEO cluster"
-SITEMAP_CT=$(curl -sI "$BASE_URL/sitemap.xml" | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}')
+SITEMAP_HEAD=$(curl -sI "$BASE_URL/sitemap.xml" | tr -d '\r')
+SITEMAP_HEAD_CODE=$(printf '%s\n' "$SITEMAP_HEAD" | awk 'NR==1{print $2; exit}')
+SITEMAP_CT=$(printf '%s\n' "$SITEMAP_HEAD" | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}')
+# 若 HEAD 未通，回退 GET（避免旧后端 405 JSON 误报 CT）
+if [[ "$SITEMAP_HEAD_CODE" != "200" || "$SITEMAP_CT" != application/xml* ]]; then
+  SITEMAP_CT=$(curl -sD - -o /dev/null "$BASE_URL/sitemap.xml" | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}')
+fi
+if [[ "$SITEMAP_HEAD_CODE" == "200" ]]; then ok "HEAD /sitemap.xml"; else bad "HEAD /sitemap.xml ($SITEMAP_HEAD_CODE, expect 200)"; fi
 if [[ "$SITEMAP_CT" == application/xml* ]]; then ok "sitemap Content-Type ($SITEMAP_CT)"; else bad "sitemap Content-Type ($SITEMAP_CT, expect application/xml)"; fi
 GUIDE_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/guide")
 COMPARE_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/compare")

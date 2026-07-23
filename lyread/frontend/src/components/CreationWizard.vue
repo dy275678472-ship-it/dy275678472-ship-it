@@ -498,8 +498,13 @@ async function continueWriting() {
 }
 
 async function runConsistency() {
+  if (!draft.chapterContent?.trim()) {
+    setMsg('请先填写正文再做一致性检查', true)
+    return
+  }
   busy.value = true
   consistencyReport.value = ''
+  trackEvent('consistency_click', { category: 'creation', label: 'wizard' })
   try {
     const res = await storyApi.consistencyCheck({
       story_id: props.initial?.storyId || null,
@@ -507,10 +512,24 @@ async function runConsistency() {
       context: buildContext(),
     })
     if (res?.success) {
-      consistencyReport.value = typeof res.report === 'string' ? res.report : JSON.stringify(res.report, null, 2)
+      const report = res.report
+      consistencyReport.value = typeof report === 'string' ? report : JSON.stringify(report, null, 2)
       setMsg('一致性检查完成')
       window.dispatchEvent(new Event('credits-changed'))
-    } else handleErr(res, '检查失败')
+      const ok = typeof report === 'object' && report ? !!report.ok : true
+      const issueN = typeof report === 'object' && Array.isArray(report?.issues) ? report.issues.length : 0
+      trackEvent('consistency_result', {
+        category: 'creation',
+        label: ok ? 'ok' : 'issues',
+        value: issueN,
+      })
+    } else {
+      handleErr(res, '检查失败')
+      trackEvent('consistency_result', {
+        category: 'creation',
+        label: res?.insufficient_credits || res?.status === 402 ? '402' : 'fail',
+      })
+    }
   } finally { busy.value = false }
 }
 
