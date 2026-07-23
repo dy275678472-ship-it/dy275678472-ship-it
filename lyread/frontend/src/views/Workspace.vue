@@ -239,7 +239,9 @@ function handleApiError(res, fallback) {
     refreshClaimState()
     return true
   }
-  setMsg(res?.error || res?.detail || fallback, true)
+  const raw = res?.error || res?.detail || fallback
+  const text = /返还|退回|未扣/.test(String(raw || '')) ? raw : `${raw} · 点数已全额返还`
+  setMsg(text, true)
   return false
 }
 

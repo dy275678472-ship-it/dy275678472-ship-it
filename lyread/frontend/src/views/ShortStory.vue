@@ -242,7 +242,8 @@ async function generateMoreIdeas() {
       displayedTemplates.value = pickRandom(ideaPool.value, 4)
       window.dispatchEvent(new Event('credits-changed'))
     } else {
-      error.value = res?.detail || res?.error || '生成失败'
+      const raw = res?.detail || res?.error || '生成失败'
+      error.value = /返还|退回|未扣/.test(String(raw)) ? raw : `${raw} · 点数已全额返还`
       window.dispatchEvent(new Event('credits-changed'))
     }
   } finally { busy.value = false }
@@ -286,7 +287,8 @@ async function generate() {
       refreshClaimState()
       window.dispatchEvent(new Event('credits-changed'))
     } else {
-      error.value = res?.error || res?.detail || '生成失败'
+      const raw = res?.error || res?.detail || '生成失败'
+      error.value = /返还|退回|未扣/.test(String(raw)) ? raw : `${raw} · 点数已全额返还`
       window.dispatchEvent(new Event('credits-changed'))
     }
   } finally { busy.value = false }

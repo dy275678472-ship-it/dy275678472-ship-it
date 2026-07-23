@@ -486,16 +486,22 @@ const startTrial = async (append = false) => {
       trackEvent('credits_low', { category: 'conversion', label: 'home_trial' })
       trialError.value = data.detail || data.error || '点数不足，可先领取每日免费额度'
       refreshClaimState()
+      window.dispatchEvent(new Event('credits-changed'))
       return
     }
     if (!data.success) {
-      trialError.value = data.error || data.detail || 'AI 生成失败，请稍后再试'
+      window.dispatchEvent(new Event('credits-changed'))
+      trackEvent('trial_fail', { category: 'funnel', label: 'generate_title' })
+      const base = data.error || data.detail || 'AI 生成失败，请稍后再试'
+      trialError.value = token ? `${base} · 点数已全额返还` : base
       return
     }
     const incoming = (data.titles || [{ title: data.title, hook: data.description }])
       .filter(t => t && t.title)
     if (!incoming.length) {
-      trialError.value = data.error || '书名解析失败，本次未扣点'
+      window.dispatchEvent(new Event('credits-changed'))
+      trackEvent('trial_fail', { category: 'funnel', label: 'empty_parse' })
+      trialError.value = data.error || (token ? '书名解析失败 · 点数已全额返还' : '书名解析失败，本次未扣点')
       return
     }
     if (append) {
@@ -517,7 +523,12 @@ const startTrial = async (append = false) => {
     window.dispatchEvent(new Event('credits-changed'))
   } catch (error) {
     console.error('试用生成失败:', error)
-    trialError.value = 'AI 生成失败，请稍后再试或更换内容。'
+    window.dispatchEvent(new Event('credits-changed'))
+    trackEvent('trial_fail', { category: 'funnel', label: 'network' })
+    const token = localStorage.getItem('token')
+    trialError.value = token
+      ? 'AI 生成失败，请稍后再试或更换内容 · 点数已全额返还'
+      : 'AI 生成失败，请稍后再试或更换内容。'
   } finally {
     trialLoading.value = false
   }

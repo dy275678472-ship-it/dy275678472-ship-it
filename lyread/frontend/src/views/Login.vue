@@ -97,7 +97,7 @@
         <span class="divider">|</span>
         <a href="#" @click.prevent="showForgot = true">忘记密码</a>
         <span class="divider">|</span>
-        <a href="#" @click.prevent="goGuestWorkspace">先去创作台</a>
+        <a href="#" @click.prevent="goGuestWorkspace">注册进创作台</a>
         <span class="divider">|</span>
         <a href="#" @click.prevent="$router.push('/')">回首页</a>
       </div>
@@ -160,15 +160,26 @@ function safeRedirectPath() {
   return null
 }
 
-/** 游客旁路：未注册也可先摸创作台；若漏斗已指向创作台则保留题材/草稿参数 */
+/**
+ * 创作台受鉴权保护：直接 push /workspace 会被 beforeEach 弹回登录，形成死循环。
+ * 改为打开注册表单并保留创作台 redirect，注册成功后 afterAuth 直达。
+ */
 function goGuestWorkspace() {
   const path = safeRedirectPath()
-  const target = path && path.startsWith('/workspace') ? path : '/workspace?mode=new'
+  const redirect = path && path.startsWith('/workspace') ? path : '/workspace?mode=new'
+  showRegister.value = true
+  showForgot.value = false
+  showReset.value = false
+  error.value = ''
+  success.value = '创作台需登录。注册送 30 点，完成后立刻进入创作台。'
   trackEvent('login_guest_workspace', {
     category: 'funnel',
-    label: path && path.startsWith('/workspace') ? 'preserve_redirect' : 'mode_new',
+    label: path && path.startsWith('/workspace') ? 'register_preserve' : 'register_mode_new',
   })
-  router.push(target)
+  router.replace({
+    path: '/login',
+    query: { ...route.query, mode: 'register', redirect },
+  })
 }
 
 const redirectHint = computed(() => {
