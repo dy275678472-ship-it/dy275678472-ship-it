@@ -59,6 +59,14 @@ def list_cases(limit: int = 20, category: str = None):
                 (lim,),
             )
         rows = cursor.fetchall()
+        if category:
+            cursor.execute(
+                f"SELECT COUNT(*) AS c FROM contents WHERE {public_case_sql_clause()} AND category=%s",
+                (category,),
+            )
+        else:
+            cursor.execute(f"SELECT COUNT(*) AS c FROM contents WHERE {public_case_sql_clause()}")
+        total = int((cursor.fetchone() or {}).get("c") or 0)
         return {
             "success": True,
             "cases": [
@@ -78,7 +86,7 @@ def list_cases(limit: int = 20, category: str = None):
                 }
                 for r in rows
             ],
-            "total": len(rows),
+            "total": total,
         }
     finally:
         if conn.is_connected():
@@ -102,6 +110,56 @@ def list_categories():
                 {"name": r["category"] or "其他", "count": int(r["count"] or 0)}
                 for r in rows
             ],
+        }
+    finally:
+        if conn.is_connected():
+            conn.close()
+
+
+@router.get("/{case_id}/neighbors")
+def case_neighbors(case_id: int):
+    """同题材上下篇（按热度排序，与列表页一致）。"""
+    conn = _db()
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            f"SELECT id, title, category, heat FROM contents "
+            f"WHERE id=%s AND {public_case_sql_clause()} LIMIT 1",
+            (case_id,),
+        )
+        cur = cursor.fetchone()
+        if not cur:
+            raise HTTPException(status_code=404, detail="案例不存在")
+        cat = cur["category"] or "都市"
+        heat = int(cur.get("heat") or 0)
+        cid = int(cur["id"])
+
+        cursor.execute(
+            f"SELECT id, title FROM contents WHERE {public_case_sql_clause()} AND category=%s "
+            f"AND (heat > %s OR (heat = %s AND id > %s)) "
+            f"ORDER BY heat ASC, id ASC LIMIT 1",
+            (cat, heat, heat, cid),
+        )
+        prev_row = cursor.fetchone()
+
+        cursor.execute(
+            f"SELECT id, title FROM contents WHERE {public_case_sql_clause()} AND category=%s "
+            f"AND (heat < %s OR (heat = %s AND id < %s)) "
+            f"ORDER BY heat DESC, id DESC LIMIT 1",
+            (cat, heat, heat, cid),
+        )
+        next_row = cursor.fetchone()
+
+        def _pack(row):
+            if not row:
+                return None
+            return {"id": row["id"], "title": row.get("title") or "未命名", "url": f"/case/{row['id']}"}
+
+        return {
+            "success": True,
+            "category": cat,
+            "prev": _pack(prev_row),
+            "next": _pack(next_row),
         }
     finally:
         if conn.is_connected():

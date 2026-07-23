@@ -24,6 +24,17 @@
         <p>该案例暂无正文节选。</p>
         <router-link :to="`/ep/${caseData.id}`" target="_blank" class="link">查看 SEO 页面 →</router-link>
       </section>
+      <nav v-if="prevCase || nextCase" class="case-nav" aria-label="同题材案例">
+        <router-link v-if="prevCase" :to="`/case/${prevCase.id}`" class="nav-link nav-prev">
+          <span class="nav-label">← 上一篇</span>
+          <span class="nav-title">{{ prevCase.title }}</span>
+        </router-link>
+        <span v-else class="nav-spacer" />
+        <router-link v-if="nextCase" :to="`/case/${nextCase.id}`" class="nav-link nav-next">
+          <span class="nav-label">下一篇 →</span>
+          <span class="nav-title">{{ nextCase.title }}</span>
+        </router-link>
+      </nav>
       <footer class="cta">
         <router-link :to="workspaceLink" class="btn-cta">用这个风格开始创作 →</router-link>
       </footer>
@@ -32,7 +43,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { casesApi } from '../api'
 import { parseChapters, countChapters } from '../utils/caseContent'
@@ -42,6 +53,49 @@ const route = useRoute()
 const loading = ref(true)
 const caseData = ref(null)
 const rawBody = ref('')
+const prevCase = ref(null)
+const nextCase = ref(null)
+
+function updatePageMeta(c) {
+  if (!c?.title) return
+  const title = `${c.title} - 案例阅读 | LyRead AI`
+  const desc = `${c.category || '网文'}精选节选，${c.excerpt_chars ? `约 ${c.excerpt_chars} 字` : '可一键带入创作台'}`
+  document.title = title
+  const descMeta = document.querySelector('meta[name="description"]')
+  if (descMeta) descMeta.content = desc
+  const setOg = (prop, content) => {
+    const el = document.querySelector(`meta[property="${prop}"]`)
+    if (el) el.content = content
+  }
+  setOg('og:title', title)
+  setOg('og:description', desc)
+  setOg('og:url', `https://lyread.cn/case/${c.id}`)
+}
+
+async function loadCase(id) {
+  loading.value = true
+  caseData.value = null
+  rawBody.value = ''
+  prevCase.value = null
+  nextCase.value = null
+  try {
+    const [res, navRes] = await Promise.all([
+      casesApi.get(id),
+      casesApi.neighbors(id).catch(() => null),
+    ])
+    if (res?.success) {
+      caseData.value = res.case
+      rawBody.value = res.case.preview_body || res.case.preview_excerpt || ''
+      updatePageMeta(res.case)
+    }
+    if (navRes?.success) {
+      prevCase.value = navRes.prev
+      nextCase.value = navRes.next
+    }
+  } finally {
+    loading.value = false
+  }
+}
 
 const chapters = computed(() => parseChapters(rawBody.value))
 const excerptChapters = computed(() => caseData.value?.excerpt_chapters ?? countChapters(rawBody.value))
@@ -52,15 +106,8 @@ const workspaceLink = computed(() => {
   return { path: '/workspace', query: { type: cat, prompt: `参考《${caseData.value?.title}》的风格创作` } }
 })
 
-onMounted(async () => {
-  try {
-    const res = await casesApi.get(route.params.id)
-    if (res?.success) {
-      caseData.value = res.case
-      rawBody.value = res.case.preview_body || res.case.preview_excerpt || ''
-    }
-  } finally { loading.value = false }
-})
+onMounted(() => loadCase(route.params.id))
+watch(() => route.params.id, (id) => { if (id) loadCase(id) })
 </script>
 
 <style scoped>
@@ -83,7 +130,22 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; color: #1e2a3a; }
 .paragraph:last-child { margin-bottom: 0; }
 .empty-body { color: #64748b; font-size: 14px; }
 .link { color: #2563eb; }
-.cta { text-align: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid #eef2f7; }
+.case-nav {
+  display: flex; justify-content: space-between; gap: 16px;
+  margin-top: 28px; padding-top: 24px; border-top: 1px solid #eef2f7;
+}
+.nav-link {
+  flex: 1; max-width: 48%; padding: 12px 14px; border-radius: 12px;
+  border: 1px solid #e8f0fa; background: #f8fafc; text-decoration: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.nav-link:hover { border-color: #93c5fd; background: #eff6ff; }
+.nav-prev { text-align: left; }
+.nav-next { text-align: right; margin-left: auto; }
+.nav-label { display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; }
+.nav-title { display: block; font-size: 14px; font-weight: 600; color: #1e2a3a; line-height: 1.4; }
+.nav-spacer { flex: 1; }
+.cta { text-align: center; margin-top: 24px; padding-top: 24px; border-top: 1px solid #eef2f7; }
 .btn-cta {
   display: inline-block; padding: 14px 28px; border-radius: 12px;
   background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff; font-weight: 600; text-decoration: none;

@@ -79,6 +79,7 @@ export const casesApi = {
   },
   categories() { return request('/api/cases/categories/list') },
   get(id) { return request(`/api/cases/${id}`) },
+  neighbors(id) { return request(`/api/cases/${id}/neighbors`) },
 }
 
 export const ordersApi = {

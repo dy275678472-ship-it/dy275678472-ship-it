@@ -46,7 +46,7 @@
           <ul class="demo-list">
             <li>大纲与章纲可批量生成、单章重写</li>
             <li>按章约 1 元，失败全额返还点数</li>
-            <li>40+ 公开案例可参考风格与节奏</li>
+            <li>{{ publicCaseLine }}</li>
           </ul>
           <router-link to="/reader" class="btn-demo">免费体验创作流程 →</router-link>
         </div>
@@ -276,6 +276,11 @@ const stats = ref({
   users: '—',
   works: '—',
   cases: '—',
+})
+
+const publicCaseLine = computed(() => {
+  if (!statsLoaded.value || stats.value.cases === '—') return '100+ 公开案例可参考风格与节奏'
+  return `${stats.value.cases}+ 公开案例可参考风格与节奏`
 })
 
 function openTrial() {
