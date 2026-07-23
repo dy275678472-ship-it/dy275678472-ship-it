@@ -379,7 +379,7 @@ async def sitemap_xml():
             cursor = db.cursor(dictionary=True)
             cursor.execute(
                 f"SELECT id, title, updated_at FROM contents WHERE {public_case_sql_clause()} "
-                "ORDER BY heat DESC LIMIT 200"
+                "ORDER BY heat DESC LIMIT 300"
             )
             for row in cursor.fetchall():
                 updated = row['updated_at'].strftime('%Y-%m-%d') if row.get('updated_at') else today

@@ -43,7 +43,7 @@ def list_cases(limit: int = 20, category: str = None):
     conn = _db()
     try:
         cursor = conn.cursor(dictionary=True)
-        lim = max(1, min(limit, 120))
+        lim = max(1, min(limit, 128))
         if category:
             cursor.execute(
                 f"SELECT id, content_id, title, category, word_count, heat, score, preview_body, created_at "

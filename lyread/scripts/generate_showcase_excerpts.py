@@ -14,8 +14,8 @@ OUT_DIR = SCRIPT_DIR / "seed_data" / "showcase_excerpts"
 HANDCRAFTED_IDS = {
     "showcase_urban_01", "showcase_urban_02", "showcase_urban_03",
     "showcase_warrior_01", "showcase_warrior_02", "showcase_warrior_03",
-    "showcase_reborn_01", "showcase_reborn_02",
-    "showcase_xianxia_01", "showcase_xianxia_02",
+    "showcase_reborn_01", "showcase_reborn_02", "showcase_reborn_03", "showcase_reborn_04",
+    "showcase_xianxia_01", "showcase_xianxia_02", "showcase_xianxia_03", "showcase_xianxia_04",
     "showcase_romance_01", "showcase_romance_02",
     "showcase_scifi_01", "showcase_scifi_02",
     "showcase_suspense_01", "showcase_suspense_02",
@@ -23,7 +23,7 @@ HANDCRAFTED_IDS = {
     "showcase_system_01", "showcase_system_02", "showcase_system_03",
     "showcase_apocalypse_01", "showcase_apocalypse_02",
     "showcase_campus_01", "showcase_campus_02",
-    "showcase_game_01", "showcase_game_02",
+    "showcase_game_01", "showcase_game_02", "showcase_game_03", "showcase_game_04",
     "showcase_palace_01", "showcase_palace_02",
     "showcase_palace_05", "showcase_palace_06",
     "showcase_soninlaw_01", "showcase_soninlaw_02",
@@ -32,6 +32,16 @@ HANDCRAFTED_IDS = {
     "showcase_baby_05", "showcase_baby_06",
     "showcase_horror_01", "showcase_horror_02",
     "showcase_horror_05", "showcase_horror_06",
+    "showcase_urban_10", "showcase_urban_11",
+    "showcase_warrior_09", "showcase_warrior_10",
+    "showcase_reborn_08", "showcase_reborn_09",
+    "showcase_xianxia_08", "showcase_romance_08",
+    "showcase_scifi_07", "showcase_suspense_07",
+    "showcase_history_08", "showcase_system_08",
+    "showcase_apocalypse_08", "showcase_campus_07",
+    "showcase_game_08", "showcase_game_09",
+    "showcase_palace_07", "showcase_soninlaw_07",
+    "showcase_baby_07", "showcase_horror_07",
 }
 
 GENRE_OPENINGS = {
