@@ -179,7 +179,19 @@
             >
               {{ trialLoading ? '生成中...' : '🎲 再随机 5 个（1 点）' }}
             </button>
-            <span v-else class="guest-more-hint">注册后可无限换批生成书名</span>
+            <button
+              v-else
+              type="button"
+              class="btn-more-titles"
+              @click="goRegisterForMoreTitles"
+            >
+              注册后无限换批 →
+            </button>
+          </div>
+          <div v-if="creditsLow" class="trial-credits-banner" role="status">
+            <span>点数不足（未扣点）</span>
+            <router-link to="/wallet">领每日免费 5 点</router-link>
+            <router-link to="/pricing">去充值</router-link>
           </div>
           <div v-if="trialTitles.length" class="title-pick-grid">
             <button
@@ -207,7 +219,19 @@
           </div>
         </div>
 
-        <div v-if="trialError" class="trial-error">{{ trialError }}</div>
+        <div v-if="trialError" class="trial-error">
+          <p>{{ trialError }}</p>
+          <p v-if="creditsLow" class="trial-error-actions">
+            <router-link to="/wallet">领每日免费</router-link>
+            ·
+            <router-link to="/pricing">查看充值</router-link>
+          </p>
+          <p v-else-if="!isLoggedIn" class="trial-error-actions">
+            <button type="button" class="trial-error-register" @click="goRegisterContinue">
+              注册领 30 点再试 →
+            </button>
+          </p>
+        </div>
 
         <div class="trial-tips" v-if="!trialResult">
           <span class="tip-badge"><img :src="images.pricing.gift" alt="免费试用" width="16" height="16" /> 游客可免费生成书名一次</span>
@@ -246,6 +270,7 @@ const trialLoading = ref(false)
 const trialResult = ref(null)
 const trialTitles = ref([])
 const trialError = ref('')
+const creditsLow = ref(false)
 const isLoggedIn = computed(() => !!localStorage.getItem('token'))
 
 /** 游客走注册表单并深链创作台新建向导；登录用户直接进入向导 */
@@ -261,9 +286,15 @@ function pickTrialTitle(t) {
   trialResult.value = { title: t.title, description: t.hook || t.description || '' }
 }
 
+/** 始终带 mode=new，并省略空键，避免注册回流落空白欢迎页 */
 function workspaceQuery() {
-  const q = { type: trialType.value, prompt: trialPrompt.value }
-  if (trialResult.value?.title) q.generatedTitle = trialResult.value.title
+  const q = { mode: 'new' }
+  const type = (trialType.value || '').trim()
+  const prompt = (trialPrompt.value || '').trim()
+  const title = (trialResult.value?.title || '').trim()
+  if (type) q.type = type
+  if (prompt) q.prompt = prompt
+  if (title) q.generatedTitle = title
   return q
 }
 
@@ -272,11 +303,16 @@ function goWorkspaceContinue() {
   showTrialModal.value = false
 }
 
-function goRegisterContinue() {
+function goRegisterContinue(label = 'continue_after_title') {
+  const eventLabel = typeof label === 'string' ? label : 'continue_after_title'
   const redirect = `/workspace?${new URLSearchParams(workspaceQuery()).toString()}`
   router.push({ path: '/login', query: { redirect, mode: 'register' } })
   showTrialModal.value = false
-  trackEvent('trial_register_cta', { category: 'funnel', label: 'continue_after_title' })
+  trackEvent('trial_register_cta', { category: 'funnel', label: eventLabel })
+}
+
+function goRegisterForMoreTitles() {
+  goRegisterContinue('more_titles_guest')
 }
 const statsLoaded = ref(false)
 const hotCases = ref([])
@@ -334,6 +370,7 @@ const startTrial = async (append = false) => {
     trialTitles.value = []
   }
   trialError.value = ''
+  creditsLow.value = false
   try {
     const token = localStorage.getItem('token')
     const headers = { 'Content-Type': 'application/json' }
@@ -350,9 +387,19 @@ const startTrial = async (append = false) => {
       headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
-    const data = await res.json()
+    const data = await res.json().catch(() => ({}))
+    if (res.status === 402 || data?.insufficient_credits) {
+      creditsLow.value = true
+      trialError.value = data.detail || data.error || '点数不足，请充值或领取每日免费额度'
+      trackEvent('insufficient_credits', { category: 'funnel', label: 'home_trial' })
+      window.dispatchEvent(new Event('credits-changed'))
+      return
+    }
     if (!data.success) {
-      trialError.value = data.error || data.detail || 'AI 生成失败，请稍后再试'
+      const msg = data.error || data.detail || 'AI 生成失败，请稍后再试'
+      trialError.value = /扣点|扣费|点数/.test(String(msg))
+        ? msg
+        : `${msg}（未扣点）`
       return
     }
     const incoming = data.titles || [{ title: data.title, hook: data.description }]
@@ -375,7 +422,7 @@ const startTrial = async (append = false) => {
     window.dispatchEvent(new Event('credits-changed'))
   } catch (error) {
     console.error('试用生成失败:', error)
-    trialError.value = 'AI 生成失败，请稍后再试或更换内容。'
+    trialError.value = 'AI 生成失败，请稍后再试或更换内容。（未扣点）'
   } finally {
     trialLoading.value = false
   }
@@ -794,7 +841,12 @@ const startTrial = async (append = false) => {
   padding: 8px 14px; border-radius: 8px; border: 1px solid #93c5fd;
   background: #fff; color: #2563eb; font-size: 13px; font-weight: 600; cursor: pointer;
 }
-.guest-more-hint { font-size: 12px; color: #64748b; }
+.trial-credits-banner {
+  display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center;
+  margin: 8px 0 4px; padding: 10px 12px; border-radius: 10px;
+  background: #fff7ed; color: #9a3412; font-size: 13px;
+}
+.trial-credits-banner a { color: #2563eb; font-weight: 600; text-decoration: none; }
 .result-title { font-weight: 700; color: #1e2a3a; margin-bottom: 6px; }
 .result-hook { font-size: 13px; color: #5a6a7a; }
 .trial-cta-row { margin-top: 16px; text-align: center; }
@@ -807,6 +859,13 @@ const startTrial = async (append = false) => {
 .trial-error {
   margin-top: 12px; padding: 10px 12px; border-radius: 8px;
   background: #fef2f2; color: #dc2626; font-size: 13px; text-align: left;
+}
+.trial-error p { margin: 0; }
+.trial-error-actions { margin-top: 8px !important; color: #64748b; font-size: 12px; }
+.trial-error-actions a { color: #2563eb; font-weight: 600; text-decoration: none; }
+.trial-error-register {
+  border: none; background: none; padding: 0; cursor: pointer;
+  color: #2563eb; font-weight: 600; font-size: 12px;
 }
 
 /* 媒体查询调整 */
