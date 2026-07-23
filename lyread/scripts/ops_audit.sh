@@ -153,6 +153,27 @@ echo "[4] Creation APIs"
 if curl -sf "$BASE_URL/api/credits/prices" | grep -q signup_bonus; then ok "credits/prices"; else bad "credits/prices"; fi
 if curl -sf "$BASE_URL/api/cases" | grep -q '"success":true'; then ok "public cases"; else bad "public cases"; fi
 
+# 案例节选质量：列表 has_body + excerpt_chars（seed 后应全量 ≥2000）
+CASES_AUDIT_FILE=$(mktemp)
+if curl -sf "$BASE_URL/api/cases?limit=200" -o "$CASES_AUDIT_FILE" \
+  && python3 - <<PY
+import json
+cases = json.load(open("$CASES_AUDIT_FILE")).get("cases") or []
+if not cases:
+    raise SystemExit(1)
+no_body = sum(1 for c in cases if not c.get("has_body"))
+short = sum(1 for c in cases if int(c.get("excerpt_chars") or 0) < 2000)
+if no_body or short:
+    print(f"  detail: total={len(cases)} no_body={no_body} short(<2000)={short}", flush=True)
+    raise SystemExit(1)
+PY
+then
+  ok "case excerpts ≥2000 (all)"
+else
+  warn "case excerpts short/missing (seed tip #118+)"
+fi
+rm -f "$CASES_AUDIT_FILE"
+
 # sitemap Content-Type（text/plain 会被部分爬虫降权/忽略）；HEAD 需 200 且 CT 正确
 echo ""
 echo "[4a] Sitemap / SEO cluster"
