@@ -8,6 +8,27 @@
       </div>
     </header>
 
+    <section
+      v-if="balance && (balance.total ?? 0) === 0 && !balance.claimed_today"
+      class="zero-balance"
+      aria-label="空余额引导"
+    >
+      <p class="zero-title">当前可用 0 点</p>
+      <p class="zero-desc">先领每日免费 5 点即可开写；生成失败自动返还，不白扣。</p>
+      <div class="zero-actions">
+        <button class="btn-claim primary" :disabled="claiming" @click="claimDaily">
+          <img :src="images.wallet.free" alt="每日免费" width="18" height="18" />
+          {{ claiming ? '领取中...' : '领取今日免费 5 点' }}
+        </button>
+        <router-link
+          to="/workspace?mode=new"
+          class="btn-create"
+          @click="trackEvent('wallet_create_click', { category: 'conversion', label: 'zero_balance' })"
+        >先去创作台看看 →</router-link>
+        <router-link to="/pricing" class="btn-next-pricing" @click="trackRecharge">查看充值套餐</router-link>
+      </div>
+    </section>
+
     <section class="balance-cards" v-if="balance">
       <div class="bal-card total">
         <img :src="images.wallet.total" alt="可用总额" class="bal-icon" width="28" height="28" />
@@ -30,20 +51,49 @@
     </section>
 
     <p v-if="balance?.first_recharge_eligible" class="first-charge-hint">
-      🎁 首次充值加赠 <strong>20%</strong> 点数 · <router-link to="/pricing">查看套餐</router-link>
+      首次充值加赠 <strong>20%</strong> 点数 · <router-link to="/pricing" @click="trackRecharge">查看套餐</router-link>
     </p>
 
     <section class="actions">
-      <button class="btn-claim" :disabled="claiming" @click="claimDaily">
+      <button class="btn-claim" :disabled="claiming || !!balance?.claimed_today" @click="claimDaily">
         <img :src="images.wallet.free" alt="每日免费" width="18" height="18" />
-        {{ claiming ? '领取中...' : '领取今日免费 5 点' }}
+        {{ claiming ? '领取中...' : (balance?.claimed_today ? '今日已领取' : '领取今日免费 5 点') }}
       </button>
-      <router-link to="/pricing" class="btn-recharge">
+      <router-link to="/pricing" class="btn-recharge" @click="trackRecharge">
         <img :src="images.pricing.gem" alt="充值" width="18" height="18" />
         充值点数
       </router-link>
     </section>
+    <p class="pay-hint" v-if="payHint">{{ payHint }}</p>
     <p v-if="claimMsg" class="claim-msg" :class="{ ok: claimOk }">{{ claimMsg }}</p>
+
+    <section v-if="balance" class="next-steps" aria-label="下一步">
+      <p v-if="justClaimed" class="next-hint ok">
+        今日免费点已到账 · 失败不扣点，可直接去创作台开写
+      </p>
+      <p v-else-if="balance.claimed_today" class="next-hint">
+        今日免费点已领完 · 明天再来；现在可去创作台用现有点数开写
+      </p>
+      <p v-else-if="(balance.total ?? 0) < 10" class="next-hint warn">
+        可用点数偏低（{{ balance.total }} 点）· 先领每日免费，或充值后续写
+      </p>
+      <p v-else class="next-hint">
+        点数就绪 · 去创作台开写第一章；生成失败自动返还
+      </p>
+      <div class="next-actions">
+        <router-link
+          to="/workspace?mode=new"
+          class="btn-create"
+          @click="trackEvent('wallet_create_click', { category: 'conversion', label: justClaimed ? 'after_claim' : 'wallet' })"
+        >去创作台开写 →</router-link>
+        <router-link
+          v-if="(balance.total ?? 0) < 10 || balance.claimed_today"
+          to="/pricing"
+          class="btn-next-pricing"
+          @click="trackRecharge"
+        >查看充值套餐</router-link>
+      </div>
+    </section>
 
     <section class="transactions">
       <h2>消费记录</h2>
@@ -54,7 +104,28 @@
         title="暂无消费记录"
         description="开始创作或领取每日免费点数后，记录会显示在这里"
         :image-width="140"
-      />
+      >
+        <div class="txn-empty-actions">
+          <router-link
+            to="/workspace?mode=new"
+            class="btn-create"
+            @click="trackEvent('wallet_create_click', { category: 'conversion', label: 'txn_empty' })"
+          >去创作台开写 →</router-link>
+          <button
+            v-if="balance && !balance.claimed_today"
+            type="button"
+            class="btn-claim"
+            :disabled="claiming"
+            @click="claimDaily"
+          >{{ claiming ? '领取中...' : '先领今日免费 5 点' }}</button>
+          <router-link
+            v-else
+            to="/pricing"
+            class="btn-next-pricing"
+            @click="trackRecharge"
+          >查看充值套餐</router-link>
+        </div>
+      </EmptyState>
       <ul v-else class="txn-list">
         <li v-for="(t, i) in txns" :key="i" class="txn-item">
           <img :src="txnIcon(t.type)" :alt="typeLabel(t.type)" class="txn-icon" width="32" height="32" />
@@ -76,9 +147,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { creditsApi } from '../api'
+import { creditsApi, ordersApi } from '../api'
 import { IMAGES } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
+import { trackEvent } from '../utils/analytics'
 
 const images = IMAGES
 const balance = ref(null)
@@ -87,6 +159,12 @@ const loading = ref(true)
 const claiming = ref(false)
 const claimMsg = ref('')
 const claimOk = ref(false)
+const payHint = ref('')
+const justClaimed = ref(false)
+
+function trackRecharge() {
+  trackEvent('wallet_recharge_click', { category: 'monetization', label: 'wallet' })
+}
 
 const TYPE_LABELS = {
   signup_bonus: '注册赠送',
@@ -119,12 +197,20 @@ function formatTime(s) {
 async function load() {
   loading.value = true
   try {
-    const [bal, hist] = await Promise.all([
+    const [bal, hist, pkgs] = await Promise.all([
       creditsApi.balance(),
       creditsApi.transactions(40),
+      ordersApi.packages().catch(() => null),
     ])
     if (bal?.success) balance.value = bal
     if (hist?.success) txns.value = hist.transactions || []
+    if (pkgs?.payment_mode === 'sandbox') {
+      payHint.value = '充值页当前为体验沙箱：确认后模拟到账，点数可正常用于创作。'
+    } else if (pkgs && !pkgs.alipay_ready) {
+      payHint.value = '正式支付宝即将开通。可先领取每日免费点，或使用注册赠送额度继续创作。'
+    } else {
+      payHint.value = ''
+    }
   } finally {
     loading.value = false
   }
@@ -133,25 +219,36 @@ async function load() {
 async function claimDaily() {
   claiming.value = true
   claimMsg.value = ''
+  trackEvent('wallet_claim_click', { category: 'monetization', label: 'daily_5' })
   try {
     const res = await creditsApi.dailyClaim()
     if (res?.success) {
       claimOk.value = !!res.claimed
       claimMsg.value = res.message || (res.claimed ? '领取成功' : '今日已领取')
+      justClaimed.value = !!res.claimed
+      trackEvent('wallet_claim_result', {
+        category: 'monetization',
+        label: res.claimed ? 'claimed' : 'already',
+      })
       if (res.balance) balance.value = { ...balance.value, ...res.balance, total: res.balance.free + res.balance.paid }
       await load()
     } else {
       claimMsg.value = res?.detail || '领取失败'
       claimOk.value = false
+      trackEvent('wallet_claim_result', { category: 'monetization', label: 'fail' })
     }
   } catch (e) {
     claimMsg.value = '领取失败，请稍后再试'
+    trackEvent('wallet_claim_result', { category: 'monetization', label: 'error' })
   } finally {
     claiming.value = false
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  trackEvent('wallet_view', { category: 'monetization', label: 'page_load' })
+  load()
+})
 </script>
 
 <style scoped>
@@ -165,6 +262,35 @@ onMounted(load)
 .wallet-hero h1 { font-size: 28px; color: #1e2a3a; margin: 0 0 6px; }
 .wallet-hero p { color: #5a6a7a; font-size: 14px; margin: 0; }
 
+.zero-balance {
+  margin: 0 0 20px;
+  padding: 18px 18px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fff7ed, #fff);
+  border: 1px solid #fed7aa;
+}
+.zero-title {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #9a3412;
+}
+.zero-desc {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: #7c2d12;
+  line-height: 1.55;
+}
+.zero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.btn-claim.primary {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #fff;
+  border: none;
+}
 .balance-cards { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; margin-bottom: 24px; }
 .bal-card {
   position: relative; background: #fff; border-radius: 14px; padding: 20px;
@@ -203,10 +329,69 @@ onMounted(load)
 .btn-recharge {
   background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
 }
-.claim-msg { font-size: 13px; margin-bottom: 24px; color: #ef4444; }
+.claim-msg { font-size: 13px; margin-bottom: 16px; color: #ef4444; }
 .claim-msg.ok { color: #16a34a; }
+.pay-hint {
+  font-size: 13px; color: #5a6a7a; line-height: 1.55; margin: 0 0 16px;
+  padding: 10px 12px; border-radius: 10px; background: #f8fafc; border: 1px solid #e8f0fa;
+}
+.next-steps {
+  margin: 0 0 28px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f0f9ff, #fff);
+  border: 1px solid #dbeafe;
+}
+.next-hint {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.55;
+}
+.next-hint.ok { color: #166534; }
+.next-hint.warn { color: #9a3412; }
+.next-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.btn-create {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 18px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0d9488, #0f766e);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+}
+.btn-next-pricing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  border: 1px solid #bfdbfe;
+}
 
 .transactions h2 { font-size: 20px; margin-bottom: 16px; color: #1e2a3a; }
+.txn-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+.txn-empty-actions .btn-claim {
+  width: auto;
+}
 .empty { text-align: center; color: #94a3b8; padding: 40px; background: #fff; border-radius: 12px; }
 .txn-list { list-style: none; background: #fff; border-radius: 14px; overflow: hidden; border: 1px solid #e8f0fa; }
 .txn-item {
@@ -228,5 +413,11 @@ onMounted(load)
   .balance-cards { grid-template-columns: 1fr; }
   .actions { flex-direction: column; }
   .btn-claim, .btn-recharge { width: 100%; }
+  .zero-actions { flex-direction: column; }
+  .zero-actions .btn-claim,
+  .zero-actions .btn-create,
+  .zero-actions .btn-next-pricing { width: 100%; text-align: center; }
+  .next-actions { flex-direction: column; }
+  .btn-create, .btn-next-pricing { width: 100%; text-align: center; }
 }
 </style>
