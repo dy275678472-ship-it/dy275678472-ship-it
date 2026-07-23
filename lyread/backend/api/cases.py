@@ -79,7 +79,8 @@ def list_cases(limit: int = 20, category: str = None):
                     "heat": int(r.get("heat") or 0),
                     "score": float(r.get("score") or 0),
                     "url": f"/case/{r['id']}",
-                    "excerpt": _clean_preview(r.get("preview_body") or "")[:120],
+                    # 列表卡可读性：约 280 字 ≈ Trending 三行节选，避免 120 字砍到半句
+                    "excerpt": _clean_preview(r.get("preview_body") or "")[:280],
                     "has_body": bool(r.get("preview_body")),
                     "created_at": str(r.get("created_at") or ""),
                     **_excerpt_meta(r.get("preview_body") or ""),
