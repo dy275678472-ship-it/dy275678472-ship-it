@@ -1289,8 +1289,9 @@ async def seo_pricing_page(request: Request):
 
 @router.api_route("/trending", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_trending_page(request: Request):
-    """案例阅读页 SSR"""
-    cases = _fetch_public_cases(40)
+    """案例阅读页 SSR（拉满公开 showcase，CTA 与 Vue 游客漏斗对齐 register-first）。"""
+    # 与 /api/cases?limit=120 / Trending.vue 对齐，避免爬虫只索引前 40 部
+    cases = _fetch_public_cases(120)
     items_html = ""
     for row in cases:
         safe_title = escape(str(row.get("title") or "作品"))
@@ -1304,15 +1305,18 @@ async def seo_trending_page(request: Request):
     if not items_html:
         items_html = '<li style="text-align:center;color:#7a8ba8;padding:40px;">暂无公开案例</li>'
 
+    register_href = _register_workspace_href()
     body_html = f"""
-    <p>平台真实生成案例，点击阅读详情，或用相同风格开始创作。</p>
+    <p>平台真实生成案例，点击阅读详情；游客请先注册（送 30 点），再用同风格开写。</p>
     <ul class="seo-list">{items_html}</ul>
     <div class="seo-cta">
-      <a href="{SITE_BASE}/workspace">用这个风格开始创作 →</a>
+      <a href="{register_href}">免费注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/story">试试短故事 →</a>
     </div>
     """
     title = "案例阅读 - LyRead AI 智能小说创作"
-    desc = "浏览 LyRead AI 平台公开案例，都市、仙侠、重生等题材 AI 生成小说作品。"
+    desc = "浏览 LyRead AI 平台公开案例，都市、仙侠、重生等题材 AI 生成小说作品。注册送 30 点，可用同风格开写。"
     url = "/trending"
     return _seo_html(
         title=title,
@@ -1377,12 +1381,17 @@ async def seo_story_page(request: Request):
     if not items_html:
         items_html = '<li style="text-align:center;color:#7a8ba8;padding:24px;">暂无公开节选，注册后即可生成短篇</li>'
 
+    from urllib.parse import quote as _quote
+
+    story_register_href = (
+        f"{SITE_BASE}/login?mode=register&amp;redirect={_quote('/story', safe='')}"
+    )
     body_html = f"""
     <p>选题材、写灵感，AI 一键生成完整短篇（约 3000 字，消耗 15 点）。游客可自由预览题材与灵感；生成需注册（送 30 点）。</p>
     <h2 style="font-size:18px;margin:8px 0 12px">先读一段真实生成节选</h2>
     <ul class="seo-list">{items_html}</ul>
     <div class="seo-cta">
-      <a href="{SITE_BASE}/login?mode=register&redirect=/story">免费注册并生成短篇 →</a>
+      <a href="{story_register_href}">免费注册并生成短篇 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/trending">浏览更多案例 →</a>
     </div>
