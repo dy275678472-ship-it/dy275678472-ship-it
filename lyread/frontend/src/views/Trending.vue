@@ -3,7 +3,12 @@
     <header class="hero">
       <img :src="images.features.novel" alt="案例阅读" class="hero-icon" width="40" height="40" />
       <h1>案例阅读</h1>
-      <p>平台真实生成案例，点击阅读全文，或用这个风格开始创作</p>
+      <p>{{ heroSubtitle }}</p>
+      <router-link
+        v-if="!isLoggedIn"
+        class="hero-register"
+        :to="guestRegisterLink"
+      >免费注册，送 30 点 →</router-link>
     </header>
 
     <div class="filters" v-if="categories.length">
@@ -47,13 +52,14 @@
     </div>
 
     <div class="cta">
-      <router-link :to="{ path: '/workspace', query: { mode: 'new' } }" class="btn-cta">用这个风格开始创作 →</router-link>
+      <p v-if="!isLoggedIn" class="guest-cta-hint">注册送 30 点，约可 AI 续写 3 章</p>
+      <router-link :to="footerCtaLink" class="btn-cta">{{ footerCtaLabel }}</router-link>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { casesApi } from '../api'
 import { IMAGES } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
@@ -67,6 +73,29 @@ const categories = ref([])
 const activeCategory = ref('')
 const totalCount = ref(0)
 const loading = ref(true)
+const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
+
+/** 游客首屏强调注册赠点，缩短案例浏览 → 注册路径 */
+const heroSubtitle = computed(() =>
+  isLoggedIn.value
+    ? '平台真实生成案例，点击阅读全文，或用这个风格开始创作'
+    : '平台真实生成案例。注册送 30 点，约可 AI 续写 3 章；读完即可用同风格开写',
+)
+
+const guestRegisterLink = {
+  path: '/login',
+  query: { mode: 'register', redirect: '/workspace?mode=new' },
+}
+
+const footerCtaLink = computed(() =>
+  isLoggedIn.value
+    ? { path: '/workspace', query: { mode: 'new' } }
+    : guestRegisterLink,
+)
+
+const footerCtaLabel = computed(() =>
+  isLoggedIn.value ? '用这个风格开始创作 →' : '免费注册，用同题材开写（送 30 点）→',
+)
 
 async function loadCases() {
   loading.value = true
@@ -105,6 +134,13 @@ onMounted(async () => {
 .hero-icon { display: block; margin: 0 auto 12px; }
 .hero h1 { font-size: 28px; color: #1e2a3a; margin-bottom: 8px; }
 .hero p { color: #5a6a7a; }
+.hero-register {
+  display: inline-block; margin-top: 14px; padding: 10px 18px; border-radius: 10px;
+  background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
+  font-weight: 600; font-size: 14px; text-decoration: none;
+}
+.hero-register:hover { filter: brightness(1.05); }
+.guest-cta-hint { color: #64748b; font-size: 13px; margin-bottom: 10px; }
 .filters {
   display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
   margin-bottom: 28px; max-width: 900px; margin-left: auto; margin-right: auto;
