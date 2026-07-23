@@ -12,22 +12,26 @@ OUT_DIR = SCRIPT_DIR / "seed_data" / "showcase_excerpts"
 
 # 手写高质量节选，生成器不覆盖
 HANDCRAFTED_IDS = {
-    "showcase_urban_01", "showcase_urban_02",
-    "showcase_warrior_01", "showcase_warrior_02",
+    "showcase_urban_01", "showcase_urban_02", "showcase_urban_03",
+    "showcase_warrior_01", "showcase_warrior_02", "showcase_warrior_03",
     "showcase_reborn_01", "showcase_reborn_02",
     "showcase_xianxia_01", "showcase_xianxia_02",
     "showcase_romance_01", "showcase_romance_02",
     "showcase_scifi_01", "showcase_scifi_02",
     "showcase_suspense_01", "showcase_suspense_02",
     "showcase_history_01", "showcase_history_02",
-    "showcase_system_01", "showcase_system_02",
+    "showcase_system_01", "showcase_system_02", "showcase_system_03",
     "showcase_apocalypse_01", "showcase_apocalypse_02",
     "showcase_campus_01", "showcase_campus_02",
     "showcase_game_01", "showcase_game_02",
     "showcase_palace_01", "showcase_palace_02",
+    "showcase_palace_05", "showcase_palace_06",
     "showcase_soninlaw_01", "showcase_soninlaw_02",
+    "showcase_soninlaw_05", "showcase_soninlaw_06",
     "showcase_baby_01", "showcase_baby_02",
+    "showcase_baby_05", "showcase_baby_06",
     "showcase_horror_01", "showcase_horror_02",
+    "showcase_horror_05", "showcase_horror_06",
 }
 
 GENRE_OPENINGS = {

@@ -98,5 +98,13 @@
   {"content_id": "showcase_palace_04", "title": "选秀入宫，我靠厨艺征服太后", "category": "宫廷权谋", "word_count": 155000, "heat": 5000, "score": 8.0, "genre": "palace", "protagonist": "苏棠", "hook": "无背景秀女，一碗羹汤改变命运"},
   {"content_id": "showcase_soninlaw_04", "title": "被赶出岳家，我转身娶了大小姐", "category": "赘婿逆袭", "word_count": 120000, "heat": 6900, "score": 8.0, "genre": "soninlaw", "protagonist": "裴言", "hook": "岳家退婚当天，豪门千金主动联姻"},
   {"content_id": "showcase_baby_04", "title": "萌宝直播喊爸爸，热搜爆了", "category": "萌宝甜宠", "word_count": 84000, "heat": 6300, "score": 7.9, "genre": "baby", "protagonist": "夏可可", "hook": "三岁萌宝误开直播，全网寻找孩子他爸"},
-  {"content_id": "showcase_horror_04", "title": "电梯停在十三层，门开了", "category": "灵异悬疑", "word_count": 94000, "heat": 4700, "score": 7.7, "genre": "horror", "protagonist": "赵琳", "hook": "大楼没有十三层，电梯却停了"}
+  {"content_id": "showcase_horror_04", "title": "电梯停在十三层，门开了", "category": "灵异悬疑", "word_count": 94000, "heat": 4700, "score": 7.7, "genre": "horror", "protagonist": "赵琳", "hook": "大楼没有十三层，电梯却停了"},
+  {"content_id": "showcase_palace_05", "title": "掌宫太监竟是前朝太子", "category": "宫廷权谋", "word_count": 162000, "heat": 4900, "score": 8.1, "genre": "palace", "protagonist": "李珩", "hook": "净身入宫十年，无人知他是亡国太子"},
+  {"content_id": "showcase_palace_06", "title": "替嫁宫女成了皇后", "category": "宫廷权谋", "word_count": 148000, "heat": 4700, "score": 8.0, "genre": "palace", "protagonist": "阿蛮", "hook": "嫡姐逃婚，她戴上凤冠入宫"},
+  {"content_id": "showcase_soninlaw_05", "title": "岳家破产，我随手填了十个亿", "category": "赘婿逆袭", "word_count": 118000, "heat": 6700, "score": 8.0, "genre": "soninlaw", "protagonist": "萧然", "hook": "被赶出门那天，岳氏账户多了十亿"},
+  {"content_id": "showcase_soninlaw_06", "title": "上门女婿竟是隐世医仙", "category": "赘婿逆袭", "word_count": 125000, "heat": 6400, "score": 7.9, "genre": "soninlaw", "protagonist": "叶青", "hook": "岳母病危，他一针救活全场"},
+  {"content_id": "showcase_baby_05", "title": "四岁萌宝会读心术", "category": "萌宝甜宠", "word_count": 80000, "heat": 6100, "score": 7.9, "genre": "baby", "protagonist": "小团", "hook": "萌宝听见爸妈心里话，助攻追妻"},
+  {"content_id": "showcase_baby_06", "title": "萌宝把离婚协议藏起来了", "category": "萌宝甜宠", "word_count": 83000, "heat": 5900, "score": 7.8, "genre": "baby", "protagonist": "糖糖", "hook": "爸妈要离婚，四岁女儿急了"},
+  {"content_id": "showcase_horror_05", "title": "夜班公交多了个终点站", "category": "灵异悬疑", "word_count": 90000, "heat": 4500, "score": 7.7, "genre": "horror", "protagonist": "方迟", "hook": "末班车开向地图上不存在的站"},
+  {"content_id": "showcase_horror_06", "title": "我收到自己下个月的讣告", "category": "灵异悬疑", "word_count": 96000, "heat": 4400, "score": 7.6, "genre": "horror", "protagonist": "宋远", "hook": "报纸预告死亡，日期精确到小时"}
 ]
