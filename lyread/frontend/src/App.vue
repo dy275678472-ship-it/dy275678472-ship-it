@@ -26,7 +26,12 @@
           </router-link>
           <router-link to="/login" class="nav-link btn-logout" @click="logout">退出</router-link>
         </template>
-        <router-link v-else to="/login" class="nav-link btn-login" @click="menuOpen = false">登录 / 注册</router-link>
+        <router-link
+          v-else
+          :to="{ path: '/login', query: { mode: 'register', redirect: '/workspace?mode=new' } }"
+          class="nav-link btn-login"
+          @click="menuOpen = false"
+        >登录 / 注册</router-link>
       </div>
     </nav>
     <router-view @credits-changed="fetchCredits" />
@@ -43,6 +48,10 @@
           <a href="/guide">创作教程</a>
           <router-link to="/pricing">价格</router-link>
           <router-link to="/trending">创作案例</router-link>
+          <router-link
+            v-if="!isLoggedIn"
+            :to="{ path: '/login', query: { mode: 'register', redirect: '/workspace?mode=new' } }"
+          >免费注册</router-link>
           <a href="/privacy">隐私政策</a>
           <a href="/terms">用户协议</a>
         </nav>

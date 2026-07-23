@@ -52,6 +52,11 @@
 
     <section class="packages">
       <h2>充值套餐</h2>
+      <p v-if="!isLoggedIn" class="guest-pricing-hint">
+        游客可先
+        <router-link :to="{ path: '/login', query: { mode: 'register', redirect: '/pricing' } }" @click="trackEvent('pricing_guest_register', { category: 'funnel', label: 'packages_hint' })">免费注册领 30 点</router-link>
+        ，再选择套餐充值。
+      </p>
       <div class="pkg-grid">
         <div v-for="pkg in packages" :key="pkg.id" class="pkg-card" :class="{ popular: pkg.popular }">
           <div v-if="pkg.popular" class="badge">推荐</div>
@@ -59,8 +64,8 @@
           <div class="pkg-price">¥{{ pkg.price }}</div>
           <div class="pkg-credits">{{ pkg.credits }} 点</div>
           <p class="pkg-desc">{{ pkg.desc }}</p>
-          <button class="btn-buy" :disabled="!isLoggedIn" @click="buy(pkg)">
-            {{ isLoggedIn ? '立即充值' : '登录后充值' }}
+          <button class="btn-buy" type="button" @click="buy(pkg)">
+            {{ isLoggedIn ? '立即充值' : '注册后充值（送 30 点）' }}
           </button>
         </div>
       </div>
@@ -216,6 +221,11 @@ async function buy(pkg) {
 
 .price-table { margin-bottom: 48px; }
 .price-table h2, .packages h2, .faq h2 { font-size: 22px; margin-bottom: 20px; color: #1e2a3a; }
+.guest-pricing-hint {
+  margin: -8px 0 18px; color: #5a6a7a; font-size: 14px; text-align: center;
+}
+.guest-pricing-hint a { color: #2563eb; font-weight: 600; text-decoration: none; }
+.guest-pricing-hint a:hover { text-decoration: underline; }
 .table-wrap { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
 table { width: 100%; border-collapse: collapse; }
 th, td { padding: 14px 18px; text-align: left; border-bottom: 1px solid #f0f4f8; }
