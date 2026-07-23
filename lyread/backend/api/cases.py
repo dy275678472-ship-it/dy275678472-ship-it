@@ -22,6 +22,21 @@ def _clean_preview(text: str) -> str:
     return text.strip()
 
 
+def _excerpt_clip(text: str, limit: int = 280) -> str:
+    """列表节选：优先在句读处截断，避免砍到半句。"""
+    clean = _clean_preview(text)
+    if len(clean) <= limit:
+        return clean
+    window = clean[:limit]
+    # 优先：句号/问叹/省略；其次：分号逗号；再次：换行
+    for marks in ("。！？…", "；，、", "\n"):
+        cut = max(window.rfind(m) for m in marks)
+        if cut >= int(limit * 0.55):
+            return window[: cut + 1].rstrip()
+    # 无合适标点时退回硬截，并加省略号提示未完
+    return window.rstrip() + "…"
+
+
 def _excerpt_meta(text: str) -> dict:
     clean = _clean_preview(text)
     return {
@@ -79,8 +94,8 @@ def list_cases(limit: int = 20, category: str = None):
                     "heat": int(r.get("heat") or 0),
                     "score": float(r.get("score") or 0),
                     "url": f"/case/{r['id']}",
-                    # 列表卡可读性：约 280 字 ≈ Trending 三行节选，避免 120 字砍到半句
-                    "excerpt": _clean_preview(r.get("preview_body") or "")[:280],
+                    # 列表卡可读性：约 280 字 ≈ Trending 三行节选，句读处截断
+                    "excerpt": _excerpt_clip(r.get("preview_body") or "", 280),
                     "has_body": bool(r.get("preview_body")),
                     "created_at": str(r.get("created_at") or ""),
                     **_excerpt_meta(r.get("preview_body") or ""),

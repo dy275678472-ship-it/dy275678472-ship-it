@@ -24,7 +24,7 @@ from services.seo_content import (
 router = APIRouter()
 
 SITE_BASE = os.getenv("SITE_URL", "https://lyread.cn").rstrip("/")
-DEFAULT_OG_IMAGE = f"{SITE_BASE}/images/og-share.png"
+DEFAULT_OG_IMAGE = f"{SITE_BASE}/images/og-share.webp"
 DEFAULT_OG_SIZE_TAGS = (
     '    <meta property="og:image:width" content="1200">\n'
     '    <meta property="og:image:height" content="630">'
