@@ -48,7 +48,7 @@
             <li>按章约 1 元，失败全额返还点数</li>
             <li>{{ publicCaseLine }}</li>
           </ul>
-          <router-link to="/reader" class="btn-demo">免费体验创作流程 →</router-link>
+          <router-link :to="demoCreateLink" class="btn-demo">免费体验创作流程 →</router-link>
         </div>
         <div class="demo-visual">
           <img
@@ -93,7 +93,7 @@
       </div>
       <div v-if="casesLoading" class="hot-loading">加载案例中...</div>
       <div v-else-if="!hotCases.length" class="hot-empty">
-        <p>暂无公开案例，<router-link to="/workspace">开始创作</router-link> 并提交审核后将展示在这里</p>
+        <p>暂无公开案例，<router-link :to="demoCreateLink">开始创作</router-link> 并提交审核后将展示在这里</p>
       </div>
       <div v-else class="hot-grid">
         <router-link
@@ -107,6 +107,7 @@
           <div class="hot-body">
             <div class="hot-type">{{ c.category || '都市' }}</div>
             <h3>{{ c.title }}</h3>
+            <p v-if="c.excerpt" class="hot-excerpt">{{ c.excerpt }}</p>
             <div class="hot-tags">
               <span>{{ formatExcerptLabel(c) }}</span>
               <span>热度 {{ c.heat }}</span>
@@ -246,6 +247,15 @@ const trialResult = ref(null)
 const trialTitles = ref([])
 const trialError = ref('')
 const isLoggedIn = computed(() => !!localStorage.getItem('token'))
+
+/** 游客走注册表单并深链创作台新建向导；登录用户直接进入向导 */
+const demoCreateLink = computed(() => {
+  if (isLoggedIn.value) return { path: '/workspace', query: { mode: 'new' } }
+  return {
+    path: '/login',
+    query: { mode: 'register', redirect: '/workspace?mode=new' },
+  }
+})
 
 function pickTrialTitle(t) {
   trialResult.value = { title: t.title, description: t.hook || t.description || '' }
@@ -619,7 +629,17 @@ const startTrial = async (append = false) => {
   font-size: 12px;
   margin-bottom: 12px;
 }
-.hot-card h3 { font-size: 16px; color: var(--lyread-text-dark); margin-bottom: 12px; }
+.hot-card h3 { font-size: 16px; color: var(--lyread-text-dark); margin-bottom: 8px; }
+.hot-excerpt {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .hot-tags span {
   display: inline-block;
   padding: 2px 8px;

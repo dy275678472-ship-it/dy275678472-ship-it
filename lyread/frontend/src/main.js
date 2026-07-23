@@ -26,7 +26,13 @@ const router = createRouter({ history: createWebHistory(), routes })
 
 router.beforeEach((to, from, next) => {
   if (protectedRoutes.includes(to.path) && !localStorage.getItem('token')) {
-    next({ path: '/login', query: { redirect: to.fullPath } })
+    // 游客拦截统一 register-first；/reader 是创作台别名，回流默认打开新建向导
+    let redirect = to.fullPath
+    if (to.path === '/reader') {
+      const q = { ...to.query, mode: to.query.mode || 'new' }
+      redirect = `/workspace?${new URLSearchParams(q).toString()}`
+    }
+    next({ path: '/login', query: { redirect, mode: 'register' } })
     return
   }
   next()
