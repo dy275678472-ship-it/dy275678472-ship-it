@@ -1,0 +1,81 @@
+import { createApp } from 'vue'
+import { createRouter, createWebHistory } from 'vue-router'
+import App from './App.vue'
+import './styles/theme.css'
+import { initAnalytics, trackPageView } from './utils/analytics'
+
+initAnalytics()
+
+const protectedRoutes = ['/workspace', '/wallet', '/admin', '/reader']
+/** 创作入口未登录时默认打开注册表单，缩短试用/案例 CTA → 注册转化路径 */
+const registerPromptRoutes = ['/workspace', '/reader', '/story']
+
+const routes = [
+  { path: '/', component: () => import('./views/Home.vue'), meta: { title: 'LyRead AI - 让 AI 陪你写完一部长篇小说', desc: 'LyRead AI 智能小说创作平台，支持长篇小说、短故事、人物伏笔记忆与点数计费。' }},
+  { path: '/login', component: () => import('./views/Login.vue'), meta: { title: '登录 - LyRead AI', desc: '登录 LyRead AI，开始智能小说创作。' }},
+  { path: '/pricing', component: () => import('./views/Pricing.vue'), meta: { title: '价格 - LyRead AI', desc: 'LyRead 点数计费说明：注册送 30 点，每日免费 5 点，10 元 = 100 点。' }},
+  { path: '/wallet', component: () => import('./views/Wallet.vue'), meta: { title: '我的点数 - LyRead AI', desc: '查看点数余额、领取每日免费额度与消费记录。' }},
+  { path: '/workspace', component: () => import('./views/Workspace.vue'), meta: { title: '创作台 - LyRead AI', desc: '小说创作控制台。' }},
+  { path: '/reader', component: () => import('./views/Workspace.vue'), meta: { title: '长篇小说 - LyRead AI', desc: '开始你的长篇小说创作。' }},
+  { path: '/story', component: () => import('./views/ShortStory.vue'), meta: { title: '短故事一键生成 - LyRead AI', desc: '预览题材与灵感模板，注册后一键生成约 3000 字完整短篇；注册送 30 点。' }},
+  { path: '/case/:id', component: () => import('./views/CaseReader.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '阅读平台 AI 生成案例。' }},
+  { path: '/trending', component: () => import('./views/Trending.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '浏览 LyRead 真实 AI 生成小说案例；注册送 30 点，可用同风格开写长篇或短故事。' }},
+  { path: '/admin', component: () => import('./views/Admin.vue'), meta: { title: '运营后台 - LyRead AI', desc: '管理员控制台。' }},
+]
+
+const router = createRouter({ history: createWebHistory(), routes })
+
+router.beforeEach((to, from, next) => {
+  if (protectedRoutes.includes(to.path) && !localStorage.getItem('token')) {
+    // 裸 /workspace 默认落到 mode=new，注册后直接打开创作向导
+    let redirect = to.fullPath
+    if (to.path === '/workspace' && !Object.keys(to.query || {}).length) {
+      redirect = '/workspace?mode=new'
+    } else if (to.path === '/reader') {
+      redirect = '/workspace?mode=new'
+    }
+    const query = { redirect }
+    if (registerPromptRoutes.includes(to.path)) query.mode = 'register'
+    next({ path: '/login', query })
+    return
+  }
+  next()
+})
+
+router.afterEach((to) => {
+  const meta = to.meta || {}
+  const title = meta.title || 'LyRead AI'
+  const desc = meta.desc || 'LyRead AI 智能小说创作平台'
+  document.title = title
+  let descMeta = document.querySelector('meta[name="description"]')
+  if (!descMeta) {
+    descMeta = document.createElement('meta')
+    descMeta.name = 'description'
+    document.head.appendChild(descMeta)
+  }
+  descMeta.content = desc
+  let canonical = document.querySelector('link[rel="canonical"]')
+  if (!canonical) {
+    canonical = document.createElement('link')
+    canonical.rel = 'canonical'
+    document.head.appendChild(canonical)
+  }
+  canonical.href = `https://lyread.cn${to.path === '/' ? '/' : to.path}`
+  const setOg = (prop, content) => {
+    let el = document.querySelector(`meta[property="${prop}"]`)
+    if (!el) {
+      el = document.createElement('meta')
+      el.setAttribute('property', prop)
+      document.head.appendChild(el)
+    }
+    el.content = content
+  }
+  setOg('og:title', title)
+  setOg('og:description', desc)
+  setOg('og:url', `https://lyread.cn${to.path === '/' ? '/' : to.path}`)
+  const ogImage = document.querySelector('meta[property="og:image"]')
+  if (ogImage) ogImage.content = 'https://lyread.cn/images/og-share.png'
+  trackPageView(to.fullPath, title)
+})
+
+createApp(App).use(router).mount('#app')
