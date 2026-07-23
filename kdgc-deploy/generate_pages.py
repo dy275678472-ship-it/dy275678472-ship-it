@@ -295,7 +295,7 @@ def page(title, desc, body, canonical="", lang="zh", schema_extra=""):
 {canon}<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/style.css?v=20260721p0">
+<link rel="stylesheet" href="/assets/css/style.css?v=20260723footer">
 <link rel="icon" href="/assets/images/favicon.ico?v=20260720e">
 {schema_tags}
 </head><body>{nav}<main>{body}</main>{footer}</body></html>"""

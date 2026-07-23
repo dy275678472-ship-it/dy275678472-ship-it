@@ -133,7 +133,6 @@ section{padding:64px 24px}
 .values-cards{grid-template-columns:1fr;max-width:420px}
 .values-poster{max-width:100%}
 .case-metrics-box{grid-template-columns:1fr}
-.footer-grid{grid-template-columns:1fr 1fr;gap:24px}
 }
 @media(max-width:767px){
 .nav-inner{height:64px;padding:0 16px}
@@ -156,13 +155,6 @@ main{padding-top:64px}
 .news-list-cover{min-height:180px;max-height:200px}
 .news-list-body{padding:18px}
 .article-body{padding:20px 16px}
-.footer-grid{grid-template-columns:1fr;gap:20px}
-.footer-bottom{padding:16px 12px}
-.footer-meta{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;line-height:1.55}
-.footer-meta-line{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 8px;max-width:100%}
-.footer-meta .sep{margin:0;opacity:.45}
-.footer-meta a,.footer-meta span{margin:0;word-break:break-word}
-.footer-meta img{height:12px;width:12px;vertical-align:-1px}
 .service-rail{right:12px;top:auto;bottom:16px;transform:none;gap:10px}
 .service-rail-btn{width:48px;min-width:48px;min-height:48px;border-radius:14px;padding:6px;font-size:0;line-height:0}
 .service-rail-btn span{display:none}
@@ -316,3 +308,16 @@ footer h4{color:var(--white);font-size:13px;font-weight:700;text-transform:upper
 .wechat-placeholder{width:150px;height:150px;margin:6px auto 16px;border:1px dashed #93c5fd;border-radius:14px;background:#eff6ff;display:grid;place-items:center;color:#60a5fa}
 .wechat-placeholder svg{width:76px;height:76px;fill:none;stroke:currentColor;stroke-width:1.3}
 .wechat-panel p{font-size:13px;color:var(--muted);margin:8px 0 0}
+@media(max-width:1023px){
+.footer-grid{grid-template-columns:1fr 1fr;gap:24px}
+}
+@media(max-width:767px){
+footer{padding:40px 0 96px}
+.footer-grid{grid-template-columns:1fr;gap:20px;margin-bottom:24px}
+.footer-bottom{padding:16px 12px}
+.footer-meta{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%}
+.footer-meta-line{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 8px;width:100%;max-width:100%;text-align:center}
+.footer-meta .sep{margin:0;opacity:.45;flex-shrink:0}
+.footer-meta a,.footer-meta span{margin:0;word-break:break-word}
+.footer-meta img{height:12px;width:12px;vertical-align:-1px;margin-right:3px;flex-shrink:0}
+}
