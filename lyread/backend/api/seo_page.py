@@ -557,13 +557,13 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
     )
 
 
-@router.get("/ep/{content_id}", response_class=HTMLResponse)
+@router.api_route("/ep/{content_id}", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_content_page(content_id: int):
     """为爬虫生成内容详情页 HTML（规范 URL）。"""
     return _render_case_seo_page(content_id)
 
 
-@router.get("/case/{content_id}", response_class=HTMLResponse)
+@router.api_route("/case/{content_id}", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_case_alias_page(content_id: int):
     """SPA 路径 /case/:id 的爬虫别名：返回与 /ep/:id 相同内容，canonical 指向 /ep/。"""
     return _render_case_seo_page(content_id)
@@ -987,7 +987,7 @@ def _render_article_page(meta: dict, url: str, crumbs: list[tuple[str, str]]) ->
     )
 
 
-@router.get("/compare", response_class=HTMLResponse)
+@router.api_route("/compare", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_compare_index():
     items = "".join(
         f'<li><a href="{SITE_BASE}/compare/{slug}">{escape(p["title"])}</a></li>'
@@ -1008,7 +1008,7 @@ async def seo_compare_index():
     )
 
 
-@router.get("/compare/{slug}", response_class=HTMLResponse)
+@router.api_route("/compare/{slug}", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_compare_page(slug: str):
     meta = COMPARE_PAGES.get(slug)
     if not meta:
@@ -1020,7 +1020,7 @@ async def seo_compare_page(slug: str):
     )
 
 
-@router.get("/guide", response_class=HTMLResponse)
+@router.api_route("/guide", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_guide_index():
     items = "".join(
         f'<li><a href="{SITE_BASE}/guide/{slug}">{escape(p["title"])}</a></li>'
@@ -1041,7 +1041,7 @@ async def seo_guide_index():
     )
 
 
-@router.get("/guide/{slug}", response_class=HTMLResponse)
+@router.api_route("/guide/{slug}", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_guide_page(slug: str):
     meta = GUIDE_PAGES.get(slug)
     if not meta:
@@ -1053,7 +1053,7 @@ async def seo_guide_page(slug: str):
     )
 
 
-@router.get("/genre/{slug}", response_class=HTMLResponse)
+@router.api_route("/genre/{slug}", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_genre_page(slug: str):
     genre = GENRE_PAGES.get(slug)
     if not genre:
@@ -1113,7 +1113,7 @@ async def seo_genre_page(slug: str):
 # 注意：后端 main.py 已占用 GET / 返回 JSON，首页 HTML 走 /ssr/home，由 nginx 对爬虫反代。
 
 
-@router.get("/ssr/home", response_class=HTMLResponse)
+@router.api_route("/ssr/home", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_home_page(request: Request):
     """首页 SSR：供爬虫与 ?ssr=1 预览；人类用户仍由 nginx 返回 Vue SPA。"""
     cases = _fetch_public_cases(8)
@@ -1238,7 +1238,7 @@ def _fetch_public_cases(limit: int = 30) -> list:
     return rows
 
 
-@router.get("/pricing", response_class=HTMLResponse)
+@router.api_route("/pricing", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_pricing_page(request: Request):
     """价格页 SSR"""
     rows_html = "".join(
@@ -1287,7 +1287,7 @@ async def seo_pricing_page(request: Request):
     )
 
 
-@router.get("/trending", response_class=HTMLResponse)
+@router.api_route("/trending", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_trending_page(request: Request):
     """案例阅读页 SSR"""
     cases = _fetch_public_cases(40)
@@ -1359,7 +1359,7 @@ def _json_ld_story() -> str:
     }, ensure_ascii=False)
 
 
-@router.get("/story", response_class=HTMLResponse)
+@router.api_route("/story", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_story_page(request: Request):
     """短故事匿名预览落地页 SSR（人类仍走 Vue ShortStory）。"""
     samples = _fetch_public_case_excerpts(6)[:3]
@@ -1554,7 +1554,7 @@ async def ping_search_engines(_user: dict = Depends(get_current_user)):
     return {"sitemap": sitemap_url, "results": results}
 
 
-@router.get("/ep", response_class=HTMLResponse)
+@router.api_route("/ep", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_content_list(request: Request):
     """生成内容列表页 HTML（供爬虫索引）"""
     items_html = ""
@@ -1608,6 +1608,6 @@ async def seo_content_list(request: Request):
         json_ld=_json_ld_list(list_title, list_desc, list_path),
     )
 
-@router.get("/ep/", response_class=HTMLResponse)
+@router.api_route("/ep/", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_content_list_trailing(request: Request):
     return await seo_content_list(request)

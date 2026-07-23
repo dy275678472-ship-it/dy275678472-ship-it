@@ -168,6 +168,14 @@ if [[ "$SITEMAP_CT" == application/xml* ]]; then ok "sitemap Content-Type ($SITE
 GUIDE_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/guide")
 COMPARE_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/compare")
 if [[ "$GUIDE_CODE" == "200" && "$COMPARE_CODE" == "200" ]]; then ok "SEO cluster /guide /compare"; else bad "SEO cluster guide=$GUIDE_CODE compare=$COMPARE_CODE"; fi
+GUIDE_HEAD=$(curl -sI "$BASE_URL/guide" | tr -d '\r' | awk 'NR==1{print $2; exit}')
+COMPARE_HEAD=$(curl -sI "$BASE_URL/compare" | tr -d '\r' | awk 'NR==1{print $2; exit}')
+GENRE_HEAD=$(curl -sI "$BASE_URL/genre/xianxia" | tr -d '\r' | awk 'NR==1{print $2; exit}')
+if [[ "$GUIDE_HEAD" == "200" && "$COMPARE_HEAD" == "200" && "$GENRE_HEAD" == "200" ]]; then
+  ok "HEAD /guide /compare /genre"
+else
+  bad "HEAD SEO cluster guide=$GUIDE_HEAD compare=$COMPARE_HEAD genre=$GENRE_HEAD (expect 200)"
+fi
 
 # 题材 OG / 封面光栅资源（社交爬虫不吃 SVG；缺文件时 nginx SPA 也会 200 HTML，需验 Content-Type）
 echo ""
