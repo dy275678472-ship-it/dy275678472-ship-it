@@ -52,6 +52,11 @@ HANDCRAFTED_IDS = {
     "showcase_game_08", "showcase_game_09",
     "showcase_palace_07", "showcase_soninlaw_07",
     "showcase_baby_07", "showcase_horror_07",
+    # 140 扩容新增 12 案（手写开篇 + ≥2000 收束）
+    "showcase_urban_12", "showcase_warrior_11", "showcase_reborn_10",
+    "showcase_xianxia_09", "showcase_game_10", "showcase_system_09",
+    "showcase_romance_09", "showcase_apocalypse_09", "showcase_campus_08",
+    "showcase_scifi_08", "showcase_suspense_08", "showcase_history_09",
 }
 
 GENRE_OPENINGS = {

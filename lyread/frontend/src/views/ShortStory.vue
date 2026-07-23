@@ -4,12 +4,26 @@
       <img :src="images.features.short" alt="短故事" width="40" height="40" />
       <h1>短故事 · 快速生成</h1>
       <p>选题材、写灵感，AI 一键生成完整短篇（约 3000 字，消耗 15 点）</p>
+      <p v-if="!isLoggedIn" class="guest-hint">注册送 30 点，约可生成 2 篇短故事</p>
+      <router-link
+        v-if="!isLoggedIn"
+        :to="guestRegisterLink"
+        class="btn-register"
+        @click="trackEvent('story_guest_register', { category: 'conversion', label: 'hero' })"
+      >免费注册开写（送 30 点）→</router-link>
     </header>
 
     <div v-if="creditsLow" class="credits-banner">
       <span>点数不足</span>
-      <router-link to="/wallet">领每日免费 5 点</router-link>
-      <router-link to="/pricing">充值</router-link>
+      <template v-if="isLoggedIn">
+        <router-link to="/wallet">领每日免费 5 点</router-link>
+        <router-link to="/pricing">充值</router-link>
+      </template>
+      <router-link
+        v-else
+        :to="guestRegisterLink"
+        @click="trackEvent('story_guest_register', { category: 'conversion', label: 'credits_banner' })"
+      >注册领 30 点 →</router-link>
     </div>
 
     <section class="panel" v-if="!result">
@@ -77,6 +91,7 @@ import { IMAGES } from '../assets/images'
 import { templatesForGenre, allTemplatesForGenre } from '../constants/creation'
 import { pickRandom, mergeStringOptions } from '../utils/optionPool'
 import { withNoChargeHint } from '../utils/format'
+import { trackEvent } from '../utils/analytics'
 
 const router = useRouter()
 const images = IMAGES
@@ -93,6 +108,11 @@ const busy = ref(false)
 const error = ref('')
 const creditsLow = ref(false)
 const result = ref(null)
+const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
+const guestRegisterLink = {
+  path: '/login',
+  query: { mode: 'register', redirect: '/story' },
+}
 
 const templates = computed(() => templatesForGenre(genreId.value || 'default'))
 const genreLabel = computed(() => genreCustom.value || genreName.value || '都市')
@@ -106,6 +126,11 @@ function refreshTemplates() {
 function shuffleTemplates() { refreshTemplates() }
 
 async function generateMoreIdeas() {
+  if (!isLoggedIn.value) {
+    trackEvent('story_guest_register', { category: 'conversion', label: 'suggest_ideas' })
+    router.push(guestRegisterLink)
+    return
+  }
   busy.value = true
   error.value = ''
   try {
@@ -127,6 +152,11 @@ function pickGenre(g) {
 }
 
 async function generate() {
+  if (!isLoggedIn.value) {
+    trackEvent('story_guest_register', { category: 'conversion', label: 'generate_gate' })
+    router.push(guestRegisterLink)
+    return
+  }
   busy.value = true
   error.value = ''
   creditsLow.value = false
@@ -140,6 +170,9 @@ async function generate() {
     if (res?.success) {
       result.value = res
       window.dispatchEvent(new Event('credits-changed'))
+    } else if (res?.status === 401) {
+      trackEvent('story_guest_register', { category: 'conversion', label: '401' })
+      router.push(guestRegisterLink)
     } else if (res?.insufficient_credits || res?.status === 402) {
       creditsLow.value = true
       error.value = res.detail || '点数不足'
@@ -156,6 +189,10 @@ function reset() {
 
 async function saveToWorkspace() {
   if (!result.value) return
+  if (!isLoggedIn.value) {
+    router.push(guestRegisterLink)
+    return
+  }
   const res = await storyApi.save({
     title: result.value.title,
     genre: genreLabel.value,
@@ -178,6 +215,12 @@ onMounted(async () => {
 <style scoped>
 .short-page { max-width: 760px; margin: 0 auto; padding: 32px 20px 80px; }
 .hero { text-align: center; margin-bottom: 28px; }
+.guest-hint { color: #64748b; font-size: 13px; margin: 8px 0 12px; }
+.btn-register {
+  display: inline-block; padding: 12px 20px; border-radius: 12px;
+  background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
+  font-weight: 700; text-decoration: none; font-size: 14px;
+}
 .hero h1 { font-size: 26px; margin: 12px 0 8px; }
 .hero p { color: #5a6a7a; }
 .panel { background: #fff; border-radius: 16px; padding: 24px; border: 1px solid #e8f0fa; }

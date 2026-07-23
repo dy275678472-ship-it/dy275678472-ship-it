@@ -100,7 +100,7 @@ const footerCtaLabel = computed(() =>
 async function loadCases() {
   loading.value = true
   try {
-    const res = await casesApi.list(128, activeCategory.value)
+    const res = await casesApi.list(140, activeCategory.value)
     if (res?.success) cases.value = res.cases || []
   } finally {
     loading.value = false

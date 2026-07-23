@@ -1361,8 +1361,8 @@ async def seo_pricing_page(request: Request):
 @router.api_route("/trending", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_trending_page(request: Request):
     """案例阅读页 SSR（拉满公开 showcase，CTA 与 Vue 游客漏斗对齐 register-first）。"""
-    # 与 /api/cases?limit=128 / Trending.vue 对齐，避免爬虫只索引前 40 部
-    cases = _fetch_public_cases(128)
+    # 与 /api/cases?limit=140 / Trending.vue 对齐，避免爬虫只索引前 40 部
+    cases = _fetch_public_cases(140)
     items_html = ""
     for row in cases:
         safe_title = escape(str(row.get("title") or "作品"))
