@@ -33,9 +33,19 @@
       v-else-if="!cases.length"
       :image="images.emptyCreate"
       title="暂无案例"
-      :description="activeCategory ? `「${activeCategory}」暂无案例，试试其他题材` : '审核通过的作品将展示在这里，敬请期待'"
+      :description="activeCategory ? `「${activeCategory}」暂无案例，试试其他题材或直接开写` : '审核通过的作品将展示在这里；也可先注册开写第一篇'"
       :image-width="160"
-    />
+    >
+      <div class="empty-actions">
+        <button
+          v-if="activeCategory"
+          type="button"
+          class="btn-empty-secondary"
+          @click="setCategory('')"
+        >查看全部题材</button>
+        <router-link :to="footerCtaLink" class="btn-cta btn-empty-primary">{{ emptyCtaLabel }}</router-link>
+      </div>
+    </EmptyState>
     <div v-else class="case-grid">
       <router-link v-for="(c, i) in cases" :key="c.id" :to="`/case/${c.id}`" class="case-card">
         <CaseCover :item="c" :index="i" :alt="`${c.title} 封面`" />
@@ -97,6 +107,10 @@ const footerCtaLabel = computed(() =>
   isLoggedIn.value ? '用这个风格开始创作 →' : '免费注册，用同题材开写（送 30 点）→',
 )
 
+const emptyCtaLabel = computed(() =>
+  isLoggedIn.value ? '去创作台开写 →' : '免费注册开写（送 30 点）→',
+)
+
 async function loadCases() {
   loading.value = true
   try {
@@ -141,6 +155,15 @@ onMounted(async () => {
 }
 .hero-register:hover { filter: brightness(1.05); }
 .guest-cta-hint { color: #64748b; font-size: 13px; margin-bottom: 10px; }
+.empty-actions {
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;
+}
+.btn-empty-secondary {
+  padding: 10px 16px; border-radius: 10px; border: 1px solid #bfdbfe;
+  background: #fff; color: #2563eb; font-weight: 600; font-size: 14px; cursor: pointer;
+}
+.btn-empty-secondary:hover { background: #f0f7ff; }
+.btn-empty-primary { padding: 10px 18px; font-size: 14px; }
 .filters {
   display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
   margin-bottom: 28px; max-width: 900px; margin-left: auto; margin-right: auto;

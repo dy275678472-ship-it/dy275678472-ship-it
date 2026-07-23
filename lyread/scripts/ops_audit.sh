@@ -110,6 +110,28 @@ assert_seo_register_cta() {
 }
 assert_seo_register_cta "/faq"
 assert_seo_register_cta "/about"
+# 教程/对比集群同样应对齐 register-first（勿链到 robots Disallow 的 /workspace）
+assert_seo_register_cta "/guide"
+assert_seo_register_cta "/compare"
+
+# FAQ/Pricing 主 CTA 区不应直链 /workspace（robots Disallow；游客多一跳）
+assert_no_workspace_in_seo_cta() {
+  local path="$1"
+  local html cta
+  html=$(curl -sf "$BASE_URL$path" || true)
+  cta=$(printf '%s' "$html" | tr '\n' ' ' | grep -oE '<div class="seo-cta">.{0,900}</div>' | head -1)
+  if [[ -z "$cta" ]]; then
+    warn "seo-cta missing on $path"
+    return
+  fi
+  if echo "$cta" | grep -qE '/workspace'; then
+    bad "seo-cta bare /workspace on $path (use register or /trending|/story|/pricing)"
+  else
+    ok "seo-cta no /workspace $path"
+  fi
+}
+assert_no_workspace_in_seo_cta "/faq"
+assert_no_workspace_in_seo_cta "/pricing"
 
 # HEAD 可达性（tip 起 /faq /about 应 200，旧版 405）
 echo ""

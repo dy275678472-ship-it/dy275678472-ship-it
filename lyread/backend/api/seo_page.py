@@ -786,7 +786,7 @@ async def seo_faq_page(request: Request):
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/pricing">查看价格 →</a>
       &nbsp;&nbsp;
-      <a href="{SITE_BASE}/workspace?mode=new">先去创作台 →</a>
+      <a href="{SITE_BASE}/story">试试短故事 →</a>
     </div>
     """
     title = "常见问题 - LyRead AI"
@@ -1350,7 +1350,7 @@ async def seo_pricing_page(request: Request):
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/faq">常见问题 →</a>
       &nbsp;&nbsp;
-      <a href="{SITE_BASE}/workspace?mode=new">进入创作台 →</a>
+      <a href="{SITE_BASE}/trending">浏览案例 →</a>
     </div>
     """
     title = "价格与点数计费 - LyRead AI"
