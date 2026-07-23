@@ -30,7 +30,12 @@
       </section>
       <section v-else class="body empty-body">
         <p>该案例暂无正文节选。</p>
-        <router-link :to="`/ep/${caseData.id}`" target="_blank" class="link">查看 SEO 页面 →</router-link>
+        <router-link
+          :to="creationLink"
+          class="btn-cta"
+          @click="trackEvent('case_empty_body_cta', { category: 'conversion', label: isLoggedIn ? 'logged_in' : 'register_first', value: Number(caseData.id) || 0 })"
+        >{{ ctaLabel }}</router-link>
+        <router-link to="/trending" class="link empty-link">回案例广场</router-link>
       </section>
       <nav v-if="prevCase || nextCase" class="case-nav" aria-label="同题材案例">
         <router-link v-if="prevCase" :to="`/case/${prevCase.id}`" class="nav-link nav-prev">
@@ -155,7 +160,7 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; color: #1e2a3a; }
   text-indent: 2em;
 }
 .paragraph:last-child { margin-bottom: 0; }
-.empty-body { color: #64748b; font-size: 14px; }
+.empty-body { color: #64748b; font-size: 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
 .link { color: #2563eb; }
 .case-nav {
   display: flex; justify-content: space-between; gap: 16px;

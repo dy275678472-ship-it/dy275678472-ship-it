@@ -114,17 +114,24 @@ assert_seo_register_cta "/about"
 assert_seo_register_cta "/guide"
 assert_seo_register_cta "/compare"
 
-# FAQ/Pricing 主 CTA 区不应直链 /workspace（robots Disallow；游客多一跳）
+# FAQ/Pricing/教程/对比：主 CTA 区不应直链 /workspace（robots Disallow；游客多一跳）
+# pricing 仅 bot/?ssr=1 走后端 HTML，巡检用 Googlebot 避免 SPA 壳误报 missing
 assert_no_workspace_in_seo_cta() {
   local path="$1"
+  local ua="${2:-}"
   local html cta
-  html=$(curl -sf "$BASE_URL$path" || true)
+  if [[ -n "$ua" ]]; then
+    html=$(curl -sf -A "$ua" "$BASE_URL$path" || true)
+  else
+    html=$(curl -sf "$BASE_URL$path" || true)
+  fi
   # grep 无匹配时退出码 1；配合 set -euo pipefail 必须吞掉，否则整段巡检中断
   cta=$(printf '%s' "$html" | tr '\n' ' ' | grep -oE '<div class="seo-cta">.{0,900}</div>' | head -1 || true)
   if [[ -z "$cta" ]]; then
     warn "seo-cta missing on $path"
     return
   fi
+  # register redirect 使用 %2Fworkspace，不含裸路径 /workspace
   if echo "$cta" | grep -qE '/workspace'; then
     bad "seo-cta bare /workspace on $path (use register or /trending|/story|/pricing)"
   else
@@ -132,7 +139,9 @@ assert_no_workspace_in_seo_cta() {
   fi
 }
 assert_no_workspace_in_seo_cta "/faq"
-assert_no_workspace_in_seo_cta "/pricing"
+assert_no_workspace_in_seo_cta "/pricing" "Googlebot"
+assert_no_workspace_in_seo_cta "/guide"
+assert_no_workspace_in_seo_cta "/compare"
 
 # HEAD 可达性（tip 起 /faq /about 应 200，旧版 405）
 echo ""

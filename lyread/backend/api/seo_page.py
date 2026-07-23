@@ -996,7 +996,13 @@ async def seo_compare_index():
     body = f"""
     <p>客观对比 LyRead 与主流 AI 写小说工具，帮你按创作场景选型。</p>
     <ul class="seo-list">{items}</ul>
-    <div class="seo-cta"><a href="{_register_workspace_href()}">免费试用 LyRead →</a></div>
+    <div class="seo-cta">
+      <a href="{_register_workspace_href()}">免费注册试用（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/pricing">查看价格 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">浏览案例 →</a>
+    </div>
     """
     return _seo_html(
         title="AI写小说工具对比 - LyRead AI",
@@ -1086,7 +1092,11 @@ async def seo_genre_page(slug: str):
     <h2 style="font-size:18px;margin:20px 0 12px">相关案例</h2>
     <ul class="seo-list">{items}</ul>
     <div class="seo-cta">
-      <a href="{write_href}">用此题材注册开写 →</a>
+      <a href="{write_href}">用此题材注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">浏览更多案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/story">试试短故事 →</a>
     </div>
     """
     title = genre["title"]
