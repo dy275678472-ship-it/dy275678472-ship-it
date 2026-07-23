@@ -76,6 +76,7 @@ import { storyApi } from '../api'
 import { IMAGES } from '../assets/images'
 import { templatesForGenre, allTemplatesForGenre } from '../constants/creation'
 import { pickRandom, mergeStringOptions } from '../utils/optionPool'
+import { withNoChargeHint } from '../utils/format'
 
 const router = useRouter()
 const images = IMAGES
@@ -113,7 +114,7 @@ async function generateMoreIdeas() {
       ideaPool.value = mergeStringOptions(ideaPool.value, res.ideas || [])
       displayedTemplates.value = pickRandom(ideaPool.value, 4)
       window.dispatchEvent(new Event('credits-changed'))
-    } else error.value = res?.detail || res?.error || '生成失败'
+    } else error.value = withNoChargeHint(res?.detail || res?.error, '生成失败')
   } finally { busy.value = false }
 }
 
@@ -143,7 +144,7 @@ async function generate() {
       creditsLow.value = true
       error.value = res.detail || '点数不足'
     } else {
-      error.value = res?.error || res?.detail || '生成失败'
+      error.value = withNoChargeHint(res?.error || res?.detail, '生成失败')
     }
   } finally { busy.value = false }
 }

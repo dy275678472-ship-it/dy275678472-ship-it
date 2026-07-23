@@ -158,7 +158,7 @@ async function buy(pkg) {
   payError.value = ''
   if (!isLoggedIn.value) {
     trackEvent('pricing_buy_click', { category: 'funnel', label: 'redirect_login', value: pkg.price })
-    router.push({ path: '/login', query: { redirect: '/pricing' } })
+    router.push({ path: '/login', query: { mode: 'register', redirect: '/pricing' } })
     return
   }
   trackEvent('pricing_buy_click', { category: 'funnel', label: pkg.id, value: pkg.price })

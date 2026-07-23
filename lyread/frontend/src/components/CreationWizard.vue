@@ -216,6 +216,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { storyApi, creditsApi } from '../api'
 import { HOT_POINTS, WRITE_STYLES, allTemplatesForGenre, WIZARD_STEPS } from '../constants/creation'
 import { shuffleArray, pickRandom, mergeTitleCandidates, mergeStringOptions } from '../utils/optionPool'
+import { withNoChargeHint } from '../utils/format'
 
 const props = defineProps({
   initial: { type: Object, default: () => ({}) },
@@ -312,7 +313,7 @@ function handleErr(res, fallback) {
     setMsg(res.detail || '点数不足', true)
     return true
   }
-  setMsg(res?.error || res?.detail || fallback, true)
+  setMsg(withNoChargeHint(res?.error || res?.detail, fallback), true)
   return false
 }
 

@@ -1,7 +1,15 @@
 <template>
   <div class="reader-page">
     <div v-if="loading" class="loading">加载中...</div>
-    <div v-else-if="!caseData" class="empty">案例不存在或已下架</div>
+    <div v-else-if="!caseData" class="empty">
+      <p>案例不存在或已下架</p>
+      <router-link
+        :to="{ path: '/login', query: { mode: 'register', redirect: '/workspace?mode=new' } }"
+        class="btn-cta"
+        @click="trackEvent('case_missing_register', { category: 'conversion', label: 'empty' })"
+      >免费注册，送 30 点 →</router-link>
+      <router-link to="/trending" class="link empty-link">回案例广场</router-link>
+    </div>
     <article v-else class="article">
       <header>
         <span class="cat">{{ caseData.category }}</span>
@@ -36,7 +44,11 @@
         </router-link>
       </nav>
       <footer class="cta">
-        <router-link :to="workspaceLink" class="btn-cta">用这个风格开始创作 →</router-link>
+        <router-link
+          :to="creationLink"
+          class="btn-cta"
+          @click="trackEvent('case_cta_click', { category: 'conversion', label: isLoggedIn ? 'logged_in' : 'register_first', value: Number(caseData.id) || 0 })"
+        >{{ ctaLabel }}</router-link>
       </footer>
     </article>
   </div>
@@ -48,6 +60,7 @@ import { useRoute } from 'vue-router'
 import { casesApi } from '../api'
 import { parseChapters, countChapters } from '../utils/caseContent'
 import { formatStorySettingWords } from '../utils/format'
+import { trackEvent } from '../utils/analytics'
 
 const route = useRoute()
 const loading = ref(true)
@@ -55,6 +68,7 @@ const caseData = ref(null)
 const rawBody = ref('')
 const prevCase = ref(null)
 const nextCase = ref(null)
+const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
 
 function updatePageMeta(c) {
   if (!c?.title) return
@@ -106,13 +120,26 @@ const workspaceLink = computed(() => {
   return { path: '/workspace', query: { type: cat, prompt: `参考《${caseData.value?.title}》的风格创作` } }
 })
 
+/** 游客直达注册表单并带回创作台意图，缩短案例→注册路径 */
+const creationLink = computed(() => {
+  const ws = workspaceLink.value
+  if (isLoggedIn.value) return ws
+  const q = new URLSearchParams(ws.query || {}).toString()
+  const redirect = q ? `${ws.path}?${q}` : ws.path
+  return { path: '/login', query: { mode: 'register', redirect } }
+})
+const ctaLabel = computed(() =>
+  isLoggedIn.value ? '用这个风格开始创作 →' : '免费注册，用这个风格开写（送 30 点）→',
+)
+
 onMounted(() => loadCase(route.params.id))
 watch(() => route.params.id, (id) => { if (id) loadCase(id) })
 </script>
 
 <style scoped>
 .reader-page { max-width: 720px; margin: 0 auto; padding: 32px 20px 80px; }
-.loading, .empty { text-align: center; color: #94a3b8; padding: 60px; }
+.loading, .empty { text-align: center; color: #94a3b8; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.empty-link { font-size: 14px; }
 .article { background: #fff; border-radius: 16px; padding: 28px 28px 32px; border: 1px solid #e8f0fa; }
 .cat { display: inline-block; padding: 4px 10px; background: #eff6ff; color: #2563eb; border-radius: 999px; font-size: 12px; }
 h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; color: #1e2a3a; }

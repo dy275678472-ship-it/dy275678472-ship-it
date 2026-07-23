@@ -156,6 +156,7 @@ import { IMAGES } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
 import PanelHeading from '../components/PanelHeading.vue'
 import CreationWizard from '../components/CreationWizard.vue'
+import { withNoChargeHint } from '../utils/format'
 
 const images = IMAGES
 
@@ -190,7 +191,7 @@ function handleApiError(res, fallback) {
     setMsg(res.detail || '点数不足，请先充值或领取每日免费额度', true)
     return true
   }
-  setMsg(res?.error || res?.detail || fallback, true)
+  setMsg(withNoChargeHint(res?.error || res?.detail, fallback), true)
   return false
 }
 
