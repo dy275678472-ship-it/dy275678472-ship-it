@@ -1241,10 +1241,11 @@ PRICE_ROWS = [
     ("一致性检查", 2, "人物/伏笔冲突检测"),
 ]
 
+# id 与前端 Pricing.vue / orders PACKAGES 对齐，便于游客 CTA 带回 pkg 意图
 PACKAGES = [
-    ("体验包", 10, 100, "约可生成 10 章正文"),
-    ("创作包", 30, 350, "多送 50 点，适合连载起步"),
-    ("连载包", 98, 1200, "多送 200 点，长篇连载优选"),
+    ("s", "体验包", 10, 100, "约可生成 10 章正文"),
+    ("m", "创作包", 30, 350, "多送 50 点，适合连载起步"),
+    ("l", "连载包", 98, 1200, "多送 200 点，长篇连载优选"),
 ]
 
 
@@ -1259,7 +1260,7 @@ def _json_ld_pricing() -> str:
             "description": desc,
             "url": f"{SITE_BASE}/pricing",
         }
-        for name, price, _pts, desc in PACKAGES
+        for _pid, name, price, _pts, desc in PACKAGES
     ]
     return json.dumps({
         "@context": "https://schema.org",
@@ -1316,9 +1317,18 @@ async def seo_pricing_page(request: Request):
         f"<tr><td>{escape(label)}</td><td><strong>{pts} 点</strong></td><td>{escape(note)}</td></tr>"
         for label, pts, note in PRICE_ROWS
     )
+    from urllib.parse import quote
+
+    def _pkg_register_href(pkg_id: str) -> str:
+        redirect = f"/pricing?pkg={pkg_id}"
+        return f"{SITE_BASE}/login?mode=register&amp;redirect={quote(redirect, safe='')}"
+
     pkg_html = "".join(
-        f'<div class="info-item"><strong>{escape(name)}</strong><br>¥{price} · {pts} 点<br><span style="color:#7a8ba8;font-size:13px">{escape(desc)}</span></div>'
-        for name, price, pts, desc in PACKAGES
+        f'<div class="info-item"><strong>{escape(name)}</strong><br>¥{price} · {pts} 点<br>'
+        f'<span style="color:#7a8ba8;font-size:13px">{escape(desc)}</span><br>'
+        f'<a href="{_pkg_register_href(pid)}" style="display:inline-block;margin-top:10px;font-size:14px;font-weight:600">'
+        f'注册后充值（送 30 点）→</a></div>'
+        for pid, name, price, pts, desc in PACKAGES
     )
     body_html = f"""
     <p>无订阅、无终身无限套餐。生成前显示预计消耗，失败自动全额返还。</p>

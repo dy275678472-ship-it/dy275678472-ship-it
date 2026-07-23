@@ -273,7 +273,12 @@ const handleRegister = async () => {
       localStorage.setItem('token', res.token)
       localStorage.setItem('user', JSON.stringify(res.user || {}))
       trackEvent('register_success', { category: 'auth', label: 'auto_login' })
-      success.value = '注册成功，已到账 30 点，正在进入创作台...'
+      {
+        const redirect = safeRedirectPath()
+        success.value = redirect && redirect.startsWith('/pricing')
+          ? '注册成功，已到账 30 点，正在回到充值页…'
+          : '注册成功，已到账 30 点，正在进入创作台...'
+      }
       afterAuth(true)
       return
     }

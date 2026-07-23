@@ -57,8 +57,15 @@
         <router-link :to="{ path: '/login', query: { mode: 'register', redirect: '/pricing' } }" @click="trackEvent('pricing_guest_register', { category: 'funnel', label: 'packages_hint' })">免费注册领 30 点</router-link>
         ，再选择套餐充值。
       </p>
+      <p v-if="highlightPkgId && resumeHint" class="pkg-resume-hint">{{ resumeHint }}</p>
       <div class="pkg-grid">
-        <div v-for="pkg in packages" :key="pkg.id" class="pkg-card" :class="{ popular: pkg.popular }">
+        <div
+          v-for="pkg in packages"
+          :key="pkg.id"
+          class="pkg-card"
+          :class="{ popular: pkg.popular, intent: highlightPkgId === pkg.id }"
+          :id="`pkg-${pkg.id}`"
+        >
           <div v-if="pkg.popular" class="badge">推荐</div>
           <h3>{{ pkg.name }}</h3>
           <div class="pkg-price">¥{{ pkg.price }}</div>
@@ -86,20 +93,29 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { creditsApi, ordersApi } from '../api'
 import { IMAGES } from '../assets/images'
 import { trackEvent } from '../utils/analytics'
 
 const router = useRouter()
+const route = useRoute()
 const info = ref(null)
 const sandboxMode = ref(false)
 const alipayReady = ref(false)
 const payError = ref('')
 const firstRechargeEligible = ref(false)
 const firstRechargeBonusPercent = ref(20)
+const highlightPkgId = ref('')
+const resumeHint = ref('')
 const images = IMAGES
+
+const VALID_PKG_IDS = new Set(['s', 'm', 'l'])
+
+function pricingRedirectFor(pkgId) {
+  return `/pricing?pkg=${encodeURIComponent(pkgId)}`
+}
 
 const LABELS = {
   title: ['生成 5 个书名', '含黄金钩子简介'],
@@ -157,13 +173,37 @@ onMounted(async () => {
       }
     }
   } catch (e) { /* 使用默认展示 */ }
+
+  // 游客点套餐 → 注册回流：保留 pkg 意图并自动续充
+  const rawPkg = typeof route.query.pkg === 'string' ? route.query.pkg.trim() : ''
+  if (VALID_PKG_IDS.has(rawPkg)) {
+    highlightPkgId.value = rawPkg
+    const target = packages.find((p) => p.id === rawPkg)
+    if (target) {
+      resumeHint.value = isLoggedIn.value
+        ? `已保留你选择的「${target.name}」，正在继续充值…`
+        : `已记住「${target.name}」：注册后将自动回到本套餐`
+    }
+    if (route.query.pkg != null) {
+      router.replace({ path: '/pricing' })
+    }
+    await nextTick()
+    document.getElementById(`pkg-${rawPkg}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    if (isLoggedIn.value && target) {
+      trackEvent('pricing_pkg_resume', { category: 'funnel', label: rawPkg, value: target.price })
+      await buy(target)
+    }
+  }
 })
 
 async function buy(pkg) {
   payError.value = ''
   if (!isLoggedIn.value) {
     trackEvent('pricing_buy_click', { category: 'funnel', label: 'redirect_login', value: pkg.price })
-    router.push({ path: '/login', query: { mode: 'register', redirect: '/pricing' } })
+    router.push({
+      path: '/login',
+      query: { mode: 'register', redirect: pricingRedirectFor(pkg.id) },
+    })
     return
   }
   trackEvent('pricing_buy_click', { category: 'funnel', label: pkg.id, value: pkg.price })
@@ -176,13 +216,18 @@ async function buy(pkg) {
   if (res.sandbox || !res.alipay_ready) {
     const bonusHint = firstRechargeEligible.value ? `（首充加赠 ${Math.floor(pkg.credits * firstRechargeBonusPercent.value / 100)} 点）` : ''
     const ok = confirm(`沙箱模式：模拟支付 ¥${pkg.price} 获得 ${pkg.credits} 点${bonusHint}？`)
-    if (!ok) return
+    if (!ok) {
+      resumeHint.value = `已选中「${pkg.name}」，点击按钮即可继续充值`
+      return
+    }
     const paid = await ordersApi.sandboxConfirm(res.out_trade_no)
     if (paid?.success) {
       trackEvent('recharge_complete', { category: 'funnel', label: pkg.id, value: pkg.price })
       window.dispatchEvent(new Event('credits-changed'))
       payError.value = ''
       firstRechargeEligible.value = false
+      highlightPkgId.value = ''
+      resumeHint.value = ''
       alert(paid?.message || '充值完成，点数已到账')
     } else {
       payError.value = paid?.detail || '沙箱充值失败'
@@ -234,12 +279,17 @@ th { background: #f8fafc; font-size: 13px; color: #64748b; }
 .note { color: #94a3b8; font-size: 13px; }
 .pay-error { color: #dc2626; background: #fef2f2; padding: 12px 16px; border-radius: 10px; border: 1px solid #fecaca; }
 
+.pkg-resume-hint {
+  margin: 0 0 14px; padding: 10px 14px; border-radius: 10px;
+  background: #eff6ff; color: #1e40af; font-size: 14px; line-height: 1.5;
+}
 .pkg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 16px; }
 .pkg-card {
   position: relative; background: #fff; border-radius: 16px; padding: 28px 22px;
   text-align: center; border: 2px solid #e8f0fa; transition: transform 0.2s;
 }
 .pkg-card.popular { border-color: #4da1ff; box-shadow: 0 8px 24px rgba(77,161,255,0.15); }
+.pkg-card.intent { border-color: #2563eb; box-shadow: 0 8px 28px rgba(37,99,235,0.18); }
 .badge {
   position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
   background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
