@@ -414,7 +414,8 @@ onMounted(async () => {
   await loadList()
   if (route.query.welcome === '1') welcomeBanner.value = true
   if (route.query.story) openStory(Number(route.query.story))
-  else if (route.query.generatedTitle || route.query.prompt) newStory()
+  // Trending/CaseReader 注册深链 ?mode=new → 直接进入创作向导，避免落空白欢迎页
+  else if (route.query.mode === 'new' || route.query.generatedTitle || route.query.prompt || route.query.type) newStory()
 })
 </script>
 

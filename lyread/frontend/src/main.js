@@ -6,7 +6,8 @@ import { initAnalytics, trackPageView } from './utils/analytics'
 
 initAnalytics()
 
-const protectedRoutes = ['/workspace', '/wallet', '/admin', '/reader', '/story']
+// /story 对游客开放：页内 register-first 门闩负责转化；勿在此拦截，否则 ShortStory 游客 CTA 永不可达
+const protectedRoutes = ['/workspace', '/wallet', '/admin', '/reader']
 
 const routes = [
   { path: '/', component: () => import('./views/Home.vue'), meta: { title: 'LyRead AI - AI写小说工具 | 按章约1元 长篇续写', desc: 'LyRead AI 中文 AI 写小说平台：大纲、章纲、正文续写，人物伏笔记忆。注册送30点，约1元/章，失败全额返还。' }},
