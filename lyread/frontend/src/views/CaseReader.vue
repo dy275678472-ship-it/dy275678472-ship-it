@@ -73,6 +73,27 @@
           <a :href="sharePath" class="link subtle">SEO 预览</a>
         </div>
       </section>
+      <nav v-if="prevCase || nextCase" class="case-nav" aria-label="同题材案例">
+        <router-link
+          v-if="prevCase"
+          :to="`/case/${prevCase.id}`"
+          class="nav-link nav-prev"
+          @click="trackNav('prev')"
+        >
+          <span class="nav-label">← 上一篇</span>
+          <span class="nav-title">{{ prevCase.title }}</span>
+        </router-link>
+        <span v-else class="nav-spacer" />
+        <router-link
+          v-if="nextCase"
+          :to="`/case/${nextCase.id}`"
+          class="nav-link nav-next"
+          @click="trackNav('next')"
+        >
+          <span class="nav-label">下一篇 →</span>
+          <span class="nav-title">{{ nextCase.title }}</span>
+        </router-link>
+      </nav>
       <footer class="cta">
         <div class="share-row">
           <button type="button" class="btn-share" @click="copyShareLink">{{ copyLabel }}</button>
@@ -144,6 +165,8 @@ const loading = ref(true)
 const caseData = ref(null)
 const body = ref('')
 const related = ref([])
+const prevCase = ref(null)
+const nextCase = ref(null)
 const expandedRelatedId = ref(null)
 const copyLabel = ref('复制分享链接')
 const canNativeShare = ref(typeof navigator !== 'undefined' && typeof navigator.share === 'function')
@@ -260,6 +283,14 @@ function trackCta(label) {
   })
 }
 
+function trackNav(dir) {
+  trackEvent('case_nav_click', {
+    category: 'engagement',
+    label: dir,
+    value: Number(caseData.value?.id) || 0,
+  })
+}
+
 function onRelatedClick(c) {
   trackEvent('related_case_click', {
     category: 'funnel',
@@ -351,9 +382,14 @@ async function loadCase(id) {
   caseData.value = null
   body.value = ''
   related.value = []
+  prevCase.value = null
+  nextCase.value = null
   expandedRelatedId.value = null
   try {
-    const res = await casesApi.get(id)
+    const [res, navRes] = await Promise.all([
+      casesApi.get(id),
+      casesApi.neighbors(id).catch(() => null),
+    ])
     if (res?.success) {
       caseData.value = res.case
       // Prefer full preview_body; preview_excerpt is a truncated OG/list teaser (~1500).
@@ -361,11 +397,15 @@ async function loadCase(id) {
       setCaseMeta(res.case)
       trackEvent('case_read', { category: 'funnel', label: String(res.case.id) })
       try {
-        const listRes = await casesApi.list(24)
+        const listRes = await casesApi.list(100)
         related.value = pickRelated(listRes?.cases || [], res.case.id, res.case.category, 4)
       } catch {
         related.value = []
       }
+    }
+    if (navRes?.success) {
+      prevCase.value = navRes.prev
+      nextCase.value = navRes.next
     }
   } finally {
     loading.value = false
@@ -487,7 +527,38 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; }
 }
 .link { color: #2563eb; font-weight: 600; text-decoration: none; }
 .link.subtle { color: #64748b; font-weight: 500; }
-.cta { text-align: center; margin-top: 32px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.case-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #eef2f7;
+}
+.nav-link {
+  flex: 1;
+  max-width: 48%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e8f0fa;
+  background: #f8fafc;
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s;
+  min-height: 44px;
+}
+.nav-link:hover { border-color: #93c5fd; background: #eff6ff; }
+.nav-prev { text-align: left; }
+.nav-next { text-align: right; margin-left: auto; }
+.nav-label { display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; }
+.nav-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e2a3a;
+  line-height: 1.4;
+}
+.nav-spacer { flex: 1; }
+.cta { text-align: center; margin-top: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .share-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .btn-share {
   padding: 10px 16px; border-radius: 10px; border: 1px solid #dbeafe;

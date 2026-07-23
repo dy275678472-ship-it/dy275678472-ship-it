@@ -71,6 +71,7 @@ export const casesApi = {
     return request(`/api/cases?${q}`)
   },
   get(id) { return request(`/api/cases/${id}`) },
+  neighbors(id) { return request(`/api/cases/${id}/neighbors`) },
 }
 
 export const ordersApi = {
