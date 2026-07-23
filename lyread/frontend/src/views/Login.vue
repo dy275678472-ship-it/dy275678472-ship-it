@@ -160,6 +160,24 @@ function parseRedirectIntent(redirect) {
         detail: `套餐意图已保留（${pkg}）。注册送 30 点，回到价格页将自动续下单。`,
       }
     }
+    if (u.pathname.startsWith('/story')) {
+      const g = (
+        u.searchParams.get('genreName')
+        || u.searchParams.get('genreCustom')
+        || u.searchParams.get('type')
+        || ''
+      ).trim()
+      const p = (u.searchParams.get('prompt') || '').trim()
+      const genreBit = g ? `题材「${g.slice(0, 24)}」已保留` : '注册后生成短故事'
+      const promptBit = p
+        ? `灵感已带回：${p.slice(0, 48)}${p.length > 48 ? '…' : ''} · 注册送 30 点`
+        : '注册送 30 点，约可生成 2 篇短篇'
+      return {
+        kind: 'story',
+        title: genreBit,
+        detail: promptBit,
+      }
+    }
     if (title) {
       const genreBit = type ? ` · 题材 ${type}` : ''
       return {
@@ -181,13 +199,6 @@ function parseRedirectIntent(redirect) {
         kind: 'workspace',
         title: mode === 'new' ? '注册后打开新建向导' : '注册后进入创作台',
         detail: '注册送 30 点，失败全额返还',
-      }
-    }
-    if (u.pathname.startsWith('/story')) {
-      return {
-        kind: 'story',
-        title: '注册后生成短故事',
-        detail: '注册送 30 点，约可生成 2 篇短篇',
       }
     }
     return null
@@ -295,7 +306,12 @@ function safeRedirectPath() {
 function registerSuccessMessage(redirect) {
   if (!redirect) return '注册成功，已到账 30 点，正在进入创作台...'
   if (redirect.startsWith('/pricing')) return '注册成功，已到账 30 点，正在回到充值页…'
-  if (redirect.startsWith('/story')) return '注册成功，已到账 30 点，正在打开短故事…'
+  if (redirect.startsWith('/story')) {
+    if (/[?&](prompt|genreId|genreCustom|genreName)=/.test(redirect)) {
+      return '注册成功，已到账 30 点，正在带回短故事灵感…'
+    }
+    return '注册成功，已到账 30 点，正在打开短故事…'
+  }
   if (redirect.includes('generatedTitle=') || /prompt=.*参考/.test(redirect)) {
     return '注册成功，已到账 30 点，正在带入你的创作意图…'
   }

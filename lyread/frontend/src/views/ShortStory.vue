@@ -85,7 +85,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { storyApi } from '../api'
 import { IMAGES } from '../assets/images'
 import { templatesForGenre, allTemplatesForGenre } from '../constants/creation'
@@ -93,6 +93,7 @@ import { pickRandom, mergeStringOptions } from '../utils/optionPool'
 import { withNoChargeHint } from '../utils/format'
 import { trackEvent } from '../utils/analytics'
 
+const route = useRoute()
 const router = useRouter()
 const images = IMAGES
 const genres = ref([])
@@ -109,9 +110,45 @@ const error = ref('')
 const creditsLow = ref(false)
 const result = ref(null)
 const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
-const guestRegisterLink = {
+
+/** 游客注册回流：保留题材/灵感/金手指，缩短 /story → 注册 → 再生成路径 */
+function buildStoryRedirect() {
+  const params = new URLSearchParams()
+  if (genreId.value) params.set('genreId', genreId.value)
+  if (genreName.value) params.set('genreName', genreName.value.slice(0, 40))
+  const custom = (genreCustom.value || '').trim()
+  if (custom) params.set('genreCustom', custom.slice(0, 40))
+  const p = (prompt.value || '').trim()
+  if (p) params.set('prompt', p.slice(0, 500))
+  if (godfinger.value) params.set('godfinger', String(godfinger.value).slice(0, 40))
+  const qs = params.toString()
+  return qs ? `/story?${qs}` : '/story'
+}
+
+const guestRegisterLink = computed(() => ({
   path: '/login',
-  query: { mode: 'register', redirect: '/story' },
+  query: { mode: 'register', redirect: buildStoryRedirect() },
+}))
+
+function applyDeepLinkQuery(q) {
+  if (!q || typeof q !== 'object') return
+  const gid = typeof q.genreId === 'string' ? q.genreId.trim() : ''
+  const gname = typeof q.genreName === 'string' ? q.genreName.trim() : ''
+  const gcustom = typeof q.genreCustom === 'string' ? q.genreCustom.trim() : ''
+  const type = typeof q.type === 'string' ? q.type.trim() : ''
+  const p = typeof q.prompt === 'string' ? q.prompt.trim() : ''
+  const gf = typeof q.godfinger === 'string' ? q.godfinger.trim() : ''
+  if (gid) genreId.value = gid
+  if (gname) genreName.value = gname
+  if (gcustom) {
+    genreCustom.value = gcustom
+    genreId.value = ''
+  } else if (!gid && type) {
+    genreCustom.value = type
+    genreName.value = type
+  }
+  if (p) prompt.value = p.slice(0, 500)
+  if (gf) godfinger.value = gf
 }
 
 const templates = computed(() => templatesForGenre(genreId.value || 'default'))
@@ -128,7 +165,7 @@ function shuffleTemplates() { refreshTemplates() }
 async function generateMoreIdeas() {
   if (!isLoggedIn.value) {
     trackEvent('story_guest_register', { category: 'conversion', label: 'suggest_ideas' })
-    router.push(guestRegisterLink)
+    router.push(guestRegisterLink.value)
     return
   }
   busy.value = true
@@ -154,7 +191,7 @@ function pickGenre(g) {
 async function generate() {
   if (!isLoggedIn.value) {
     trackEvent('story_guest_register', { category: 'conversion', label: 'generate_gate' })
-    router.push(guestRegisterLink)
+    router.push(guestRegisterLink.value)
     return
   }
   busy.value = true
@@ -172,7 +209,7 @@ async function generate() {
       window.dispatchEvent(new Event('credits-changed'))
     } else if (res?.status === 401) {
       trackEvent('story_guest_register', { category: 'conversion', label: '401' })
-      router.push(guestRegisterLink)
+      router.push(guestRegisterLink.value)
     } else if (res?.insufficient_credits || res?.status === 402) {
       creditsLow.value = true
       error.value = res.detail || '点数不足'
@@ -190,7 +227,7 @@ function reset() {
 async function saveToWorkspace() {
   if (!result.value) return
   if (!isLoggedIn.value) {
-    router.push(guestRegisterLink)
+    router.push(guestRegisterLink.value)
     return
   }
   const res = await storyApi.save({
@@ -205,10 +242,25 @@ async function saveToWorkspace() {
 }
 
 onMounted(async () => {
+  applyDeepLinkQuery(route.query)
   const [g, gf] = await Promise.all([storyApi.suggestGenres(), storyApi.godfingers()])
   if (g?.success) genres.value = g.genres || []
   if (gf?.success) godfingers.value = gf.godfingers || []
+  // 深链 genreId 与目录对齐；未知 id 时回退到 genreName/custom
+  if (genreId.value && genres.value.length) {
+    const matched = genres.value.find((x) => x.id === genreId.value)
+    if (matched) {
+      genreName.value = matched.name
+      genreCustom.value = ''
+    } else if (!genreCustom.value) {
+      genreCustom.value = genreName.value || genreId.value
+      genreId.value = ''
+    }
+  }
   refreshTemplates()
+  if (route.query.prompt || route.query.genreId || route.query.genreCustom || route.query.genreName) {
+    trackEvent('story_intent_resume', { category: 'funnel', label: isLoggedIn.value ? 'logged_in' : 'guest' })
+  }
 })
 </script>
 
