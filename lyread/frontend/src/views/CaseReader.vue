@@ -397,7 +397,7 @@ async function loadCase(id) {
       setCaseMeta(res.case)
       trackEvent('case_read', { category: 'funnel', label: String(res.case.id) })
       try {
-        const listRes = await casesApi.list(100)
+        const listRes = await casesApi.list(120)
         related.value = pickRelated(listRes?.cases || [], res.case.id, res.case.category, 4)
       } catch {
         related.value = []

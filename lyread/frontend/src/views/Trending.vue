@@ -218,7 +218,7 @@ function toggleExcerpt(c) {
 
 onMounted(async () => {
   try {
-    const res = await casesApi.list(100)
+    const res = await casesApi.list(120)
     if (res?.success) cases.value = res.cases || []
   } finally {
     loading.value = false
