@@ -32,6 +32,7 @@ HANDCRAFTED_IDS = {
     "showcase_campus_03", "showcase_campus_04",
     "showcase_game_01", "showcase_game_02", "showcase_game_03", "showcase_game_04",
     "showcase_game_07",
+    "showcase_warrior_06",
     "showcase_warrior_07",
     "showcase_romance_05", "showcase_romance_06", "showcase_romance_07",
     "showcase_palace_01", "showcase_palace_02",
@@ -639,7 +640,7 @@ def _core_story(text: str) -> str:
 def _unique_pad_beats(case: dict) -> list:
     """生成互不重复的长扩写段（合计约 1500+ 字），覆盖去重缺口。
 
-    禁止「三张清单 / 人物侧写·赛道元语气」模板——读起来像创作台注脚，不像正文。
+    禁止「三张清单 / 人物侧写·赛道元语气 / 冲突加码·夜间复盘」模板——读起来像创作台注脚，不像正文。
     """
     title = case["title"]
     genre = case["genre"]
@@ -658,14 +659,14 @@ def _unique_pad_beats(case: dict) -> list:
             f"有人笑他小题大做，他只回：赢可以喧哗，输不起的是说不清自己为什么赢。"
         ),
         (
-            f"冲突加码：对手换了一套更体面的打法——公开示好、私下挖坑。"
-            f"{name}接了橄榄枝，却把会面安排在有监控与证人的地方。"
-            f"离开时他只留下一句：合作可以，前提是账本公开。空气瞬间冷下来。"
+            f"换场施压：对手把战场挪到宴会、采访与「好心提醒」里，话里全是人情，刀藏在日程。"
+            f"{name}不接私下密谈，只回公开可核验的条件：谁出面、谁担保、哪笔账可查。"
+            f"对方笑容还在，眼神已经撤了——体面战比硬刚更费神。"
         ),
         (
-            f"夜间复盘：{name}把地图、通讯记录与人情账摊开，三盘棋一起下。"
-            f"他发现真正的破绽不在对手最强的一环，而在自己曾经心软的那一次。"
-            f"于是他重写规则：心软可以，但必须可撤销；承诺可以，但必须可核验。"
+            f"晨间清点：{name}天亮前把「{hook}」分成三堆——已证实、待核实、绝不能赌。"
+            f"他发现最危险的不是对手的强手，而是自己昨夜差点顺势答应的那句软话。"
+            f"于是他改口令：软话可以听，签字必须冷；人情可以欠，钥匙不能交。"
         ),
         (
             f"同盟裂痕：能共苦的人开始问分红，只能共享荣耀的人开始抢功。"
@@ -776,7 +777,7 @@ def pad_excerpt(text: str, case: dict, min_chars: int = 2000) -> str:
 
 
 def has_duplicate_padding(text: str, min_repeats: int = 3) -> bool:
-    """撞模板垫文：同句重复，或遗留夜色/手记/三张清单/赛道元语气堆字尾。"""
+    """撞模板垫文：同句重复，或遗留夜色/手记/三张清单/赛道元语气/冲突加码·夜间复盘堆字尾。"""
     from collections import Counter
 
     if "任何人不得提前走漏风声" in text or "随身手记" in text:
@@ -787,6 +788,11 @@ def has_duplicate_padding(text: str, min_repeats: int = 3) -> bool:
     if "拆成三张清单" in text or "第五章（节选加长）" in text:
         return True
     if "人物侧写：外人看" in text or "赛道最怕的不是输" in text:
+        return True
+    # 旧 pad 模板：冲突加码 / 夜间复盘（跨题材同构尾）
+    if "冲突加码：" in text or "夜间复盘：" in text:
+        return True
+    if "公开示好、私下挖坑" in text or "心软可以，但必须可撤销" in text:
         return True
     # 同行内复制粘贴堆字
     if text.count(_INLINE_REPEAT_PHRASE) >= 2:
