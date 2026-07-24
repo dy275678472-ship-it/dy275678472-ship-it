@@ -14,6 +14,19 @@
       </div>
     </section>
 
+    <div v-if="resumeBanner" class="home-resume" role="status">
+      <div class="home-resume-copy">
+        <span class="home-resume-kicker">上次读到</span>
+        <strong class="home-resume-title">{{ resumeBanner.title }}</strong>
+        <span class="home-resume-meta">已读约 {{ resumeBanner.pct }}%{{ resumeBanner.category ? ` · ${resumeBanner.category}` : '' }}</span>
+      </div>
+      <router-link
+        class="home-resume-go"
+        :to="`/case/${resumeBanner.id}`"
+        @click="onHomeResumeClick"
+      >继续读 →</router-link>
+    </div>
+
     <section class="features" aria-label="产品能力">
       <router-link
         :to="demoCreateLink"
@@ -283,6 +296,7 @@ import SectionHeading from '../components/SectionHeading.vue'
 import { statsApi, casesApi } from '../api'
 import { formatCount, formatExcerptLabel } from '../utils/format'
 import { trackEvent } from '../utils/analytics'
+import { findLatestResumeProgress } from '../utils/caseProgress'
 
 const router = useRouter()
 const images = IMAGES
@@ -362,6 +376,7 @@ function goRegisterForMoreTitles() {
 const statsLoaded = ref(false)
 const hotCases = ref([])
 const casesLoading = ref(true)
+const resumeBanner = ref(null)
 
 const stats = ref({
   users: '—',
@@ -374,6 +389,27 @@ const publicCaseLine = computed(() => {
   return `${stats.value.cases}+ 公开案例可参考风格与节奏`
 })
 
+function refreshResumeBanner(list = hotCases.value) {
+  const hit = findLatestResumeProgress(list)
+  resumeBanner.value = hit
+    ? {
+        id: hit.id,
+        title: hit.title,
+        category: hit.category,
+        pct: Math.round(hit.ratio * 100),
+      }
+    : null
+}
+
+function onHomeResumeClick() {
+  const b = resumeBanner.value
+  trackEvent('home_resume_click', {
+    category: 'engagement',
+    label: b?.title || '',
+    value: Number(b?.id) || 0,
+  })
+}
+
 function openTrial() {
   trackEvent('trial_open', { category: 'funnel', label: 'hero_cta' })
   showTrialModal.value = true
@@ -384,6 +420,7 @@ function trackCaseClick(c) {
 }
 
 onMounted(async () => {
+  refreshResumeBanner([])
   try {
     const [statsRes, casesRes] = await Promise.all([
       statsApi.public(),
@@ -398,6 +435,7 @@ onMounted(async () => {
       statsLoaded.value = true
     }
     if (casesRes?.success) hotCases.value = casesRes.cases || []
+    refreshResumeBanner(hotCases.value)
   } catch { /* 隐藏数据区 */ }
   finally { casesLoading.value = false }
 })
@@ -518,6 +556,31 @@ const startTrial = async (append = false) => {
   pointer-events: none;
 }
 .hero-content { position: relative; z-index: 1; }
+.home-resume {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  max-width: 720px; margin: -20px auto 8px; padding: 14px 18px;
+  position: relative; z-index: 2;
+  border: 1px solid #bfdbfe; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(77,161,255,0.1), rgba(255,255,255,0.95));
+  box-shadow: 0 8px 24px rgba(37,99,235,0.08);
+}
+.home-resume-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.home-resume-kicker { font-size: 12px; color: #2563eb; font-weight: 600; letter-spacing: 0.02em; }
+.home-resume-title {
+  font-size: 15px; color: #1e2a3a; font-weight: 650;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.home-resume-meta { font-size: 12px; color: #64748b; }
+.home-resume-go {
+  flex-shrink: 0; padding: 10px 16px; border-radius: 10px;
+  background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
+  font-weight: 600; font-size: 13px; text-decoration: none;
+}
+.home-resume-go:hover { filter: brightness(1.05); }
+@media (max-width: 640px) {
+  .home-resume { margin: -12px 16px 4px; flex-direction: column; align-items: stretch; }
+  .home-resume-go { text-align: center; }
+}
 .hero-tagline {
   display: inline-block; margin-bottom: 12px; padding: 6px 14px; border-radius: 999px;
   background: rgba(255,255,255,0.18); font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
