@@ -25,6 +25,12 @@
           class="btn-create"
           @click="trackEvent('wallet_create_click', { category: 'conversion', label: 'zero_balance' })"
         >先去创作台看看 →</router-link>
+        <router-link
+          v-if="resumeBanner"
+          :to="`/case/${resumeBanner.id}`"
+          class="btn-resume"
+          @click="onWalletResumeClick('zero_balance')"
+        >继续读上次案例 →</router-link>
         <router-link to="/pricing" class="btn-next-pricing" @click="trackRecharge">查看充值套餐</router-link>
       </div>
     </section>
@@ -87,6 +93,12 @@
           @click="trackEvent('wallet_create_click', { category: 'conversion', label: justClaimed ? 'after_claim' : 'wallet' })"
         >去创作台开写 →</router-link>
         <router-link
+          v-if="resumeBanner"
+          :to="`/case/${resumeBanner.id}`"
+          class="btn-resume"
+          @click="onWalletResumeClick('next_steps')"
+        >继续读 · {{ resumeBanner.title }} →</router-link>
+        <router-link
           v-if="(balance.total ?? 0) < 10 || balance.claimed_today"
           to="/pricing"
           class="btn-next-pricing"
@@ -111,6 +123,12 @@
             class="btn-create"
             @click="trackEvent('wallet_create_click', { category: 'conversion', label: 'txn_empty' })"
           >去创作台开写 →</router-link>
+          <router-link
+            v-if="resumeBanner"
+            :to="`/case/${resumeBanner.id}`"
+            class="btn-resume"
+            @click="onWalletResumeClick('txn_empty')"
+          >继续读上次案例 →</router-link>
           <button
             v-if="balance && !balance.claimed_today"
             type="button"
@@ -150,6 +168,7 @@ import { ref, onMounted } from 'vue'
 import { creditsApi, ordersApi } from '../api'
 import { IMAGES } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
+import { findLatestResumeProgress } from '../utils/caseProgress'
 import { trackEvent } from '../utils/analytics'
 
 const images = IMAGES
@@ -161,9 +180,31 @@ const claimMsg = ref('')
 const claimOk = ref(false)
 const payHint = ref('')
 const justClaimed = ref(false)
+const resumeBanner = ref(null)
 
 function trackRecharge() {
   trackEvent('wallet_recharge_click', { category: 'monetization', label: 'wallet' })
+}
+
+function refreshResumeBanner() {
+  const hit = findLatestResumeProgress()
+  resumeBanner.value = hit
+    ? {
+        id: hit.id,
+        title: hit.title,
+        category: hit.category,
+        pct: Math.round(hit.ratio * 100),
+      }
+    : null
+}
+
+function onWalletResumeClick(source = 'wallet') {
+  const b = resumeBanner.value
+  trackEvent('wallet_resume_click', {
+    category: 'engagement',
+    label: source,
+    value: Number(b?.id) || 0,
+  })
 }
 
 const TYPE_LABELS = {
@@ -247,6 +288,7 @@ async function claimDaily() {
 
 onMounted(() => {
   trackEvent('wallet_view', { category: 'monetization', label: 'page_load' })
+  refreshResumeBanner()
   load()
 })
 </script>
@@ -380,6 +422,23 @@ onMounted(() => {
   text-decoration: none;
   border: 1px solid #bfdbfe;
 }
+.btn-resume {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: #fff;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  border: 1px solid #bfdbfe;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .transactions h2 { font-size: 20px; margin-bottom: 16px; color: #1e2a3a; }
 .txn-empty-actions {
@@ -416,8 +475,9 @@ onMounted(() => {
   .zero-actions { flex-direction: column; }
   .zero-actions .btn-claim,
   .zero-actions .btn-create,
+  .zero-actions .btn-resume,
   .zero-actions .btn-next-pricing { width: 100%; text-align: center; }
   .next-actions { flex-direction: column; }
-  .btn-create, .btn-next-pricing { width: 100%; text-align: center; }
+  .btn-create, .btn-next-pricing, .btn-resume { width: 100%; text-align: center; }
 }
 </style>

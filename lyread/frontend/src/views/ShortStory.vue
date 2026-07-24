@@ -13,6 +13,19 @@
       >免费注册开写（送 30 点）→</router-link>
     </header>
 
+    <div v-if="resumeBanner" class="resume-banner" role="status">
+      <div class="resume-copy">
+        <span class="resume-kicker">上次读到</span>
+        <strong class="resume-title">{{ resumeBanner.title }}</strong>
+        <span class="resume-meta">已读约 {{ resumeBanner.pct }}%{{ resumeBanner.category ? ` · ${resumeBanner.category}` : '' }}</span>
+      </div>
+      <router-link
+        class="resume-go"
+        :to="`/case/${resumeBanner.id}`"
+        @click="onStoryResumeClick"
+      >继续读 →</router-link>
+    </div>
+
     <div v-if="creditsLow" class="credits-banner">
       <span>点数不足</span>
       <template v-if="isLoggedIn">
@@ -91,6 +104,7 @@ import { IMAGES } from '../assets/images'
 import { templatesForGenre, allTemplatesForGenre } from '../constants/creation'
 import { pickRandom, mergeStringOptions } from '../utils/optionPool'
 import { withNoChargeHint } from '../utils/format'
+import { findLatestResumeProgress } from '../utils/caseProgress'
 import { trackEvent } from '../utils/analytics'
 
 const route = useRoute()
@@ -109,7 +123,29 @@ const busy = ref(false)
 const error = ref('')
 const creditsLow = ref(false)
 const result = ref(null)
+const resumeBanner = ref(null)
 const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
+
+function refreshResumeBanner() {
+  const hit = findLatestResumeProgress()
+  resumeBanner.value = hit
+    ? {
+        id: hit.id,
+        title: hit.title,
+        category: hit.category,
+        pct: Math.round(hit.ratio * 100),
+      }
+    : null
+}
+
+function onStoryResumeClick() {
+  const b = resumeBanner.value
+  trackEvent('story_resume_click', {
+    category: 'engagement',
+    label: b?.title || '',
+    value: Number(b?.id) || 0,
+  })
+}
 
 /** 游客注册回流：保留题材/灵感/金手指，缩短 /story → 注册 → 再生成路径 */
 function buildStoryRedirect() {
@@ -243,6 +279,7 @@ async function saveToWorkspace() {
 
 onMounted(async () => {
   applyDeepLinkQuery(route.query)
+  refreshResumeBanner()
   const [g, gf] = await Promise.all([storyApi.suggestGenres(), storyApi.godfingers()])
   if (g?.success) genres.value = g.genres || []
   if (gf?.success) godfingers.value = gf.godfingers || []
@@ -275,6 +312,29 @@ onMounted(async () => {
 }
 .hero h1 { font-size: 26px; margin: 12px 0 8px; }
 .hero p { color: #5a6a7a; }
+.resume-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  margin: 0 0 20px; padding: 14px 18px;
+  border: 1px solid #bfdbfe; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(77,161,255,0.08), rgba(37,99,235,0.04));
+}
+.resume-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.resume-kicker { font-size: 12px; color: #2563eb; font-weight: 600; letter-spacing: 0.02em; }
+.resume-title {
+  font-size: 15px; color: #1e2a3a; font-weight: 650;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.resume-meta { font-size: 12px; color: #64748b; }
+.resume-go {
+  flex-shrink: 0; padding: 10px 16px; border-radius: 10px;
+  background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
+  font-weight: 600; font-size: 13px; text-decoration: none;
+}
+.resume-go:hover { filter: brightness(1.05); }
+@media (max-width: 640px) {
+  .resume-banner { flex-direction: column; align-items: stretch; text-align: left; }
+  .resume-go { text-align: center; }
+}
 .panel { background: #fff; border-radius: 16px; padding: 24px; border: 1px solid #e8f0fa; }
 .panel h2 { font-size: 16px; margin: 20px 0 10px; color: #334155; }
 .panel h2:first-child { margin-top: 0; }
