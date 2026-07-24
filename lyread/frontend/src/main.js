@@ -20,6 +20,8 @@ const routes = [
   { path: '/case/:id', component: () => import('./views/CaseReader.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '阅读平台 AI 生成案例。' }},
   { path: '/trending', component: () => import('./views/Trending.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '浏览平台生成案例。' }},
   { path: '/admin', component: () => import('./views/Admin.vue'), meta: { title: '运营后台 - LyRead AI', desc: '管理员控制台。' }},
+  // SPA 软 404：未知路径仍 200 壳，但页内 register-first + 继续读，避免空白 router-view
+  { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('./views/NotFound.vue'), meta: { title: '页面未找到 - LyRead AI', desc: '页面不存在。可回首页、读案例，或免费注册领 30 点开写。' }},
 ]
 
 const router = createRouter({ history: createWebHistory(), routes })
