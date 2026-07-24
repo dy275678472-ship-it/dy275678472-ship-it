@@ -452,10 +452,10 @@ onMounted(async () => {
 .welcome-banner { width: min(480px, 90%); border-radius: 16px; box-shadow: 0 8px 24px rgba(37,99,235,0.12); margin-bottom: 8px; }
 .welcome h2 { color: #1e2a3a; font-size: 24px; margin: 0; }
 .editor { flex: 1; display: flex; flex-direction: column; }
-.editor-toolbar { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #e8f0fa; }
+.editor-toolbar { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #e8f0fa; flex-wrap: wrap; }
 .btn-back { border: none; background: none; color: #2563eb; cursor: pointer; font-weight: 600; }
-.toolbar-title { flex: 1; font-weight: 700; }
-.toolbar-actions { display: flex; gap: 8px; }
+.toolbar-title { flex: 1; font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .btn-sm { padding: 6px 12px; border-radius: 8px; border: 1px solid #dbeafe; background: #fff; cursor: pointer; font-size: 13px; }
 .btn-sm.danger { color: #dc2626; border-color: #fecaca; }
 .editor-body { padding: 20px; max-width: 900px; margin: 0 auto; width: 100%; }
@@ -502,5 +502,9 @@ onMounted(async () => {
   .workspace { flex-direction: column; }
   .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #e8f0fa; }
   .action-grid { grid-template-columns: 1fr; }
+  .editor-toolbar { padding: 10px 12px; gap: 8px; }
+  .toolbar-title { flex: 1 1 100%; order: -1; margin-left: 0; }
+  .toolbar-actions { width: 100%; }
+  .toolbar-actions .btn-sm { flex: 1 1 auto; min-width: calc(33.33% - 6px); text-align: center; }
 }
 </style>

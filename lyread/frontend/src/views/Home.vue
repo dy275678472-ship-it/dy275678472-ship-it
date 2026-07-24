@@ -14,27 +14,47 @@
       </div>
     </section>
 
-    <section class="features">
-      <div class="feature-card">
+    <section class="features" aria-label="产品能力">
+      <router-link
+        :to="demoCreateLink"
+        class="feature-card feature-card-link"
+        @click="trackEvent('feature_card_click', { category: 'funnel', label: 'brain' })"
+      >
         <img :src="images.features.brain" alt="小说大脑功能图标" class="icon-img" width="56" height="56" />
         <h3>小说大脑</h3>
         <p>人物档案、伏笔、章节摘要自动记忆，写到第 50 章也不乱</p>
-      </div>
-      <div class="feature-card">
+        <span class="feature-cta">{{ isLoggedIn ? '打开创作台 →' : '注册体验 →' }}</span>
+      </router-link>
+      <router-link
+        :to="demoCreateLink"
+        class="feature-card feature-card-link"
+        @click="trackEvent('feature_card_click', { category: 'funnel', label: 'novel' })"
+      >
         <img :src="images.features.novel" alt="长篇连载功能图标" class="icon-img" width="56" height="56" />
         <h3>长篇连载</h3>
         <p>大纲 → 章纲 → 正文续写，专为日更作者设计</p>
-      </div>
-      <div class="feature-card">
+        <span class="feature-cta">{{ isLoggedIn ? '新建长篇 →' : '注册开书 →' }}</span>
+      </router-link>
+      <router-link
+        to="/story"
+        class="feature-card feature-card-link"
+        @click="trackEvent('feature_card_click', { category: 'funnel', label: 'short' })"
+      >
         <img :src="images.features.short" alt="短故事功能图标" class="icon-img" width="56" height="56" />
         <h3>短故事</h3>
         <p>输入想法，几分钟生成完整短篇，适合盐选/公众号</p>
-      </div>
-      <div class="feature-card">
+        <span class="feature-cta">去写短故事 →</span>
+      </router-link>
+      <router-link
+        to="/pricing"
+        class="feature-card feature-card-link"
+        @click="trackEvent('feature_card_click', { category: 'funnel', label: 'credits' })"
+      >
         <img :src="images.features.credits" alt="点数计费功能图标" class="icon-img" width="56" height="56" />
         <h3>点数计费</h3>
         <p>用多少付多少，注册送 30 点，每日免费 5 点</p>
-      </div>
+        <span class="feature-cta">查看套餐 →</span>
+      </router-link>
     </section>
 
     <section class="product-demo">
@@ -536,9 +556,31 @@ const startTrial = async (append = false) => {
   backdrop-filter: blur(8px);
   background-color: rgba(255,255,255,0.9); /* 兜底 */
 }
+.feature-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+.feature-card-link:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.16);
+}
+.feature-card-link:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
+}
 .feature-card .icon-img { display: block; margin: 0 auto 16px; object-fit: contain; }
 .feature-card h3 { color: var(--lyread-text-dark); margin-bottom: 8px; }
 .feature-card p { color: var(--lyread-text-secondary); font-size: 14px; }
+.feature-cta {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+}
 
 .product-demo {
   max-width: 1200px;
