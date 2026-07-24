@@ -1,0 +1,10 @@
+:root {
+  --lyread-bg-light: #f1f6fa;
+  --lyread-primary-blue-start: #4da1ff;
+  --lyread-primary-blue-end: #2563eb;
+  --lyread-text-dark: #1e2a3a;
+  --lyread-text-secondary: #5a6a7a;
+  --lyread-card-bg: #ffffff;
+  --lyread-shadow-light: rgba(0, 0, 0, 0.06);
+  --lyread-shadow-medium: rgba(0, 0, 0, 0.08);
+}
