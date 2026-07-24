@@ -8,6 +8,19 @@
       <p v-if="firstRechargeEligible" class="first-recharge-banner">🎁 首充加赠 <strong>20%</strong> 点数（限时活动）</p>
     </header>
 
+    <div v-if="caseResumeBanner" class="case-resume-banner" role="status">
+      <div class="case-resume-copy">
+        <span class="case-resume-kicker">上次读到</span>
+        <strong class="case-resume-title">{{ caseResumeBanner.title }}</strong>
+        <span class="case-resume-meta">已读约 {{ caseResumeBanner.pct }}%{{ caseResumeBanner.category ? ` · ${caseResumeBanner.category}` : '' }}</span>
+      </div>
+      <router-link
+        class="case-resume-go"
+        :to="`/case/${caseResumeBanner.id}`"
+        @click="onCaseResumeClick"
+      >继续读 →</router-link>
+    </div>
+
     <section class="highlights" v-if="info">
       <div class="highlight-card">
         <img :src="images.pricing.gift" alt="注册赠送点数" class="hl-icon-img" width="40" height="40" />
@@ -97,6 +110,7 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { creditsApi, ordersApi } from '../api'
 import { IMAGES } from '../assets/images'
+import { findLatestResumeProgress } from '../utils/caseProgress'
 import { trackEvent } from '../utils/analytics'
 
 const router = useRouter()
@@ -109,7 +123,29 @@ const firstRechargeEligible = ref(false)
 const firstRechargeBonusPercent = ref(20)
 const highlightPkgId = ref('')
 const resumeHint = ref('')
+const caseResumeBanner = ref(null)
 const images = IMAGES
+
+function refreshCaseResumeBanner() {
+  const hit = findLatestResumeProgress()
+  caseResumeBanner.value = hit
+    ? {
+        id: hit.id,
+        title: hit.title,
+        category: hit.category,
+        pct: Math.round(hit.ratio * 100),
+      }
+    : null
+}
+
+function onCaseResumeClick() {
+  const b = caseResumeBanner.value
+  trackEvent('pricing_resume_click', {
+    category: 'engagement',
+    label: b?.title || '',
+    value: Number(b?.id) || 0,
+  })
+}
 
 const VALID_PKG_IDS = new Set(['s', 'm', 'l'])
 
@@ -154,6 +190,7 @@ const isLoggedIn = computed(() => !!localStorage.getItem('token'))
 
 onMounted(async () => {
   trackEvent('pricing_view', { category: 'funnel', label: 'page_load' })
+  refreshCaseResumeBanner()
   try {
     const [prices, pkgs, bal] = await Promise.all([
       creditsApi.prices(),
@@ -254,6 +291,23 @@ async function buy(pkg) {
   background: linear-gradient(135deg, #fff7e6, #ffe9c7); color: #ad6800; font-size: 14px;
 }
 
+.case-resume-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  margin: -16px 0 28px; padding: 14px 18px; border-radius: 14px;
+  background: linear-gradient(135deg, #eff6ff, #f8fbff); border: 1px solid #dbeafe;
+}
+.case-resume-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.case-resume-kicker { font-size: 12px; color: #2563eb; font-weight: 600; letter-spacing: 0.02em; }
+.case-resume-title {
+  font-size: 15px; color: #1e2a3a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.case-resume-meta { font-size: 12px; color: #64748b; }
+.case-resume-go {
+  flex-shrink: 0; padding: 10px 16px; border-radius: 10px; text-decoration: none;
+  background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff; font-weight: 600; font-size: 14px;
+}
+.case-resume-go:hover { filter: brightness(1.05); }
+
 .highlights { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 48px; }
 .highlight-card {
   display: flex; gap: 14px; align-items: flex-start;
@@ -316,5 +370,7 @@ th { background: #f8fafc; font-size: 13px; color: #64748b; }
 @media (max-width: 768px) {
   .highlights, .pkg-grid { grid-template-columns: 1fr; }
   .page-hero h1 { font-size: 26px; }
+  .case-resume-banner { flex-direction: column; align-items: stretch; text-align: left; }
+  .case-resume-go { text-align: center; }
 }
 </style>
