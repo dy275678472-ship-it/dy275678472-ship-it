@@ -13,7 +13,15 @@
         description="创建第一部小说，开始 AI 辅助创作"
         :image-width="160"
       >
-        <button class="btn-new" @click="newStory">+ 新建作品</button>
+        <div class="empty-actions">
+          <button class="btn-new" @click="newStory">+ 新建作品</button>
+          <router-link
+            v-if="resumeCase"
+            class="empty-resume"
+            :to="`/case/${resumeCase.id}`"
+            @click="onWorkspaceResumeClick"
+          >继续读「{{ resumeCase.title }}」→</router-link>
+        </div>
       </EmptyState>
       <ul v-else class="story-list">
         <li v-for="s in stories" :key="s.id" @click="openStory(s.id)" class="story-item">
@@ -144,6 +152,12 @@
       <h2>创作台</h2>
       <p>从左侧选择作品，或新建一部小说开始 AI 辅助创作。</p>
       <button class="btn-new large" @click="newStory">+ 新建作品</button>
+      <router-link
+        v-if="!stories.length && resumeCase"
+        class="welcome-resume"
+        :to="`/case/${resumeCase.id}`"
+        @click="onWorkspaceResumeClick"
+      >还没想好开书？继续读上次案例「{{ resumeCase.title }}」→</router-link>
     </div>
   </div>
 </template>
@@ -157,6 +171,8 @@ import EmptyState from '../components/EmptyState.vue'
 import PanelHeading from '../components/PanelHeading.vue'
 import CreationWizard from '../components/CreationWizard.vue'
 import { withNoChargeHint } from '../utils/format'
+import { findLatestResumeProgress } from '../utils/caseProgress'
+import { trackEvent } from '../utils/analytics'
 
 const images = IMAGES
 
@@ -164,6 +180,23 @@ const route = useRoute()
 const stories = ref([])
 const loading = ref(true)
 const editing = ref(false)
+const resumeCase = ref(null)
+
+function refreshResumeCase() {
+  const hit = findLatestResumeProgress()
+  resumeCase.value = hit
+    ? { id: hit.id, title: hit.title, pct: Math.round(hit.ratio * 100) }
+    : null
+}
+
+function onWorkspaceResumeClick() {
+  const b = resumeCase.value
+  trackEvent('workspace_resume_click', {
+    category: 'engagement',
+    label: b?.title || '',
+    value: Number(b?.id) || 0,
+  })
+}
 const wizardMode = ref(false)
 const wizardInitial = ref({})
 const busy = ref(false)
@@ -417,6 +450,7 @@ function exportStory(format) {
 
 onMounted(async () => {
   await loadList()
+  refreshResumeCase()
   if (route.query.welcome === '1') welcomeBanner.value = true
   if (route.query.story) openStory(Number(route.query.story))
   // Trending/CaseReader 注册深链 ?mode=new → 直接进入创作向导，避免落空白欢迎页
@@ -448,9 +482,22 @@ onMounted(async () => {
 .s-title { display: block; font-weight: 600; font-size: 14px; color: #1e2a3a; }
 .s-meta { font-size: 12px; color: #94a3b8; }
 .empty { color: #94a3b8; font-size: 14px; padding: 20px 0; }
+.empty-actions {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.empty-resume {
+  font-size: 13px; color: #2563eb; text-decoration: none; font-weight: 600;
+  max-width: 220px; line-height: 1.4;
+}
+.empty-resume:hover { text-decoration: underline; }
 .welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #5a6a7a; padding: 40px 24px; }
 .welcome-banner { width: min(480px, 90%); border-radius: 16px; box-shadow: 0 8px 24px rgba(37,99,235,0.12); margin-bottom: 8px; }
 .welcome h2 { color: #1e2a3a; font-size: 24px; margin: 0; }
+.welcome-resume {
+  margin-top: 4px; font-size: 14px; color: #2563eb; text-decoration: none; font-weight: 600;
+  max-width: 420px; text-align: center; line-height: 1.5;
+}
+.welcome-resume:hover { text-decoration: underline; }
 .editor { flex: 1; display: flex; flex-direction: column; }
 .editor-toolbar { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #e8f0fa; flex-wrap: wrap; }
 .btn-back { border: none; background: none; color: #2563eb; cursor: pointer; font-weight: 600; }
