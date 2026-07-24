@@ -16,6 +16,10 @@
         <strong>{{ intentBanner.title }}</strong>
         <p>{{ intentBanner.detail }}</p>
       </div>
+      <div v-else-if="resumeOffer" class="resume-banner" role="status">
+        <strong>上次读到 · {{ resumeOffer.title }}</strong>
+        <p>已读约 {{ resumeOffer.pct }}%{{ resumeOffer.category ? ` · ${resumeOffer.category}` : '' }} · 登录后可继续读</p>
+      </div>
       
       <!-- 注册表单 -->
       <form v-if="showRegister" @submit.prevent="handleRegister">
@@ -126,6 +130,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { authApi } from '../api'
 import { IMAGES } from '../assets/images'
 import { trackEvent } from '../utils/analytics'
+import { findLatestResumeProgress } from '../utils/caseProgress'
 
 const router = useRouter()
 const route = useRoute()
@@ -212,6 +217,22 @@ const intentBanner = computed(() => {
   return parseRedirectIntent(typeof raw === 'string' ? raw : null)
 })
 
+const resumeOffer = ref(null)
+
+function refreshResumeOffer() {
+  const hit = findLatestResumeProgress()
+  if (!hit) {
+    resumeOffer.value = null
+    return
+  }
+  resumeOffer.value = {
+    id: hit.id,
+    title: hit.title,
+    category: hit.category || '',
+    pct: Math.round(hit.ratio * 100),
+  }
+}
+
 const registerCtaLabel = computed(() => {
   const kind = intentBanner.value?.kind
   if (kind === 'pricing') return '注册并继续充值（送 30 点）'
@@ -283,10 +304,17 @@ onMounted(async () => {
   if (route.query.mode === 'register') {
     showRegister.value = true
   }
+  refreshResumeOffer()
   if (intentBanner.value) {
     trackEvent('login_intent_resume', {
       category: 'funnel',
       label: intentBanner.value.kind,
+    })
+  } else if (resumeOffer.value) {
+    trackEvent('login_resume_offer', {
+      category: 'engagement',
+      label: resumeOffer.value.title || '',
+      value: Number(resumeOffer.value.id) || 0,
     })
   }
   try {
@@ -327,6 +355,19 @@ function afterAuth(isRegister = false) {
   }
   if (isRegister) {
     router.push('/workspace?welcome=1')
+    return
+  }
+  // 登录无深链时：若有未读完案例进度，轻量承接「继续读」
+  refreshResumeOffer()
+  const offer = resumeOffer.value
+  if (offer?.id != null) {
+    trackEvent('login_resume_redirect', {
+      category: 'engagement',
+      label: offer.title || '',
+      value: Number(offer.id) || 0,
+    })
+    success.value = `登录成功，继续读《${offer.title}》…`
+    router.push(`/case/${offer.id}`)
     return
   }
   router.push('/workspace')
@@ -519,6 +560,31 @@ const handleRegister = async () => {
   font-size: 12px;
   line-height: 1.5;
   color: #047857;
+}
+
+.resume-banner {
+  margin: -20px 0 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e3a8a;
+  text-align: left;
+}
+.resume-banner strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 4px;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.resume-banner p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #2563eb;
 }
 
 .login-card form {
