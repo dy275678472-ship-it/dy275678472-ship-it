@@ -327,6 +327,51 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
             color: #5a6a7a;
             line-height: 1.6;
         }}
+        .seo-resume-banner {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 12px 14px;
+            background: rgba(255,255,255,0.9);
+            border: 1px solid rgba(37, 99, 235, 0.18);
+            border-radius: 12px;
+            box-shadow: 0 1px 6px rgba(77, 163, 255, 0.06);
+        }}
+        .seo-resume-banner[hidden] {{ display: none !important; }}
+        .seo-resume-copy {{
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }}
+        .seo-resume-kicker {{
+            font-size: 12px;
+            color: #2563eb;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }}
+        .seo-resume-title {{
+            font-size: 14px;
+            color: #1e2a3a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }}
+        .seo-resume-meta {{ font-size: 12px; color: #64748b; }}
+        .seo-resume-go {{
+            flex-shrink: 0;
+            display: inline-block;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%);
+            color: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }}
+        .seo-resume-go:hover {{ filter: brightness(1.05); }}
         @media (max-width: 600px) {{
             .seo-container {{ padding: 20px 12px; }}
             .info-grid {{ grid-template-columns: 1fr; }}
@@ -336,6 +381,12 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
                 line-height: 44px;
                 padding: 0 8px;
             }}
+            .seo-resume-banner {{
+                flex-direction: column;
+                align-items: stretch;
+                text-align: left;
+            }}
+            .seo-resume-go {{ text-align: center; min-height: 44px; line-height: 28px; }}
         }}
     </style>
 </head>
@@ -345,6 +396,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
             <a href="{site_base}" class="brand">🧠 LyRead</a>
             <p class="seo-meta">{meta_info}</p>
         </div>
+        <div id="seo-resume-root" class="seo-resume-banner" hidden role="status"></div>
         <div class="seo-card">
             <h1>{title}</h1>
             <div class="content">
@@ -368,6 +420,72 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
             <p>© LyRead AI 智能小说创作平台</p>
         </div>
     </div>
+    <script>
+    (function () {{
+      try {{
+        var PREFIX = "lyread_case_progress:";
+        var MIN = 0.12, MAX = 0.92, DONE = 0.96;
+        var best = null;
+        for (var i = 0; i < localStorage.length; i++) {{
+          var key = localStorage.key(i);
+          if (!key || key.indexOf(PREFIX) !== 0) continue;
+          var id = key.slice(PREFIX.length);
+          if (!id) continue;
+          var data;
+          try {{ data = JSON.parse(localStorage.getItem(key) || ""); }}
+          catch (e) {{ continue; }}
+          if (!data || typeof data.ratio !== "number") continue;
+          if (data.ratio >= DONE) {{
+            try {{ localStorage.removeItem(key); }} catch (e) {{}}
+            continue;
+          }}
+          if (data.ratio < MIN || data.ratio > MAX) continue;
+          var updatedAt = Number(data.updatedAt) || 0;
+          if (best && updatedAt <= best.updatedAt) continue;
+          best = {{
+            id: id,
+            ratio: data.ratio,
+            updatedAt: updatedAt,
+            title: data.title || ("案例 #" + id),
+            category: data.category || ""
+          }};
+        }}
+        if (!best) return;
+        var root = document.getElementById("seo-resume-root");
+        if (!root) return;
+        var pct = Math.round(best.ratio * 100);
+        var meta = "已读约 " + pct + "%" + (best.category ? (" · " + best.category) : "");
+        var title = String(best.title || "").replace(/[<>&"]/g, "");
+        root.innerHTML =
+          '<div class="seo-resume-copy">' +
+            '<span class="seo-resume-kicker">上次读到</span>' +
+            '<strong class="seo-resume-title"></strong>' +
+            '<span class="seo-resume-meta"></span>' +
+          "</div>" +
+          '<a class="seo-resume-go" href="/case/' + encodeURIComponent(best.id) + '">继续读 →</a>';
+        root.querySelector(".seo-resume-title").textContent = title;
+        root.querySelector(".seo-resume-meta").textContent = meta;
+        root.hidden = false;
+        var link = root.querySelector("a.seo-resume-go");
+        if (link) {{
+          link.addEventListener("click", function () {{
+            try {{
+              if (window._hmt) {{
+                window._hmt.push(["_trackEvent", "engagement", "seo_resume_click", title, Number(best.id) || 0]);
+              }}
+              if (typeof window.gtag === "function") {{
+                window.gtag("event", "seo_resume_click", {{
+                  category: "engagement",
+                  label: title,
+                  value: Number(best.id) || 0
+                }});
+              }}
+            }} catch (e) {{}}
+          }});
+        }}
+      }} catch (e) {{}}
+    }})();
+    </script>
 </body>
 </html>"""
 
