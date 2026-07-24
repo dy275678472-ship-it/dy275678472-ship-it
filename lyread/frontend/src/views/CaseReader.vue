@@ -78,6 +78,23 @@
         >{{ ctaLabel }}</router-link>
         <router-link to="/trending" class="link empty-link">回案例广场</router-link>
       </section>
+      <!-- 读完软引导：清进度后推下一篇，缩短案例连读路径 -->
+      <div v-if="finishedOffer" class="finished-cta" role="status">
+        <p class="finished-text">本节选读完了</p>
+        <div class="finished-actions">
+          <router-link
+            v-if="nextCase"
+            :to="`/case/${nextCase.id}`"
+            class="finished-next"
+            @click="trackEvent('case_finished_next', { category: 'engagement', label: 'next', value: Number(nextCase.id) || 0 })"
+          >下一篇 · {{ nextCase.title }} →</router-link>
+          <router-link
+            :to="creationLink"
+            class="finished-write"
+            @click="trackEvent('case_finished_cta', { category: 'conversion', label: isLoggedIn ? 'logged_in' : 'register_first', value: Number(caseData.id) || 0 })"
+          >{{ isLoggedIn ? '用同题材开写 →' : '注册送 30 点开写 →' }}</router-link>
+        </div>
+      </div>
       <nav v-if="prevCase || nextCase" class="case-nav" aria-label="同题材案例">
         <router-link v-if="prevCase" :to="`/case/${prevCase.id}`" class="nav-link nav-prev">
           <span class="nav-label">← 上一篇</span>
@@ -112,6 +129,9 @@ import { workspaceWizardQuery } from '../utils/wizardGenre'
 const PROGRESS_KEY = 'lyread_case_progress'
 const RESUME_MIN_RATIO = 0.12
 const RESUME_MAX_RATIO = 0.92
+const DONE_RATIO = 0.96
+/** 相邻篇正文内存预取，连读时跳过一次网络往返 */
+const casePrefetchCache = new Map()
 
 const route = useRoute()
 const loading = ref(true)
@@ -121,6 +141,8 @@ const prevCase = ref(null)
 const nextCase = ref(null)
 const scrollPct = ref(0)
 const resumeOffer = ref(null)
+const finishedOffer = ref(false)
+let completeTrackedFor = null
 const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
 
 function progressStorageKey(id) {
@@ -139,14 +161,43 @@ function readSavedProgress(id) {
   }
 }
 
+function clearProgress(id) {
+  try {
+    localStorage.removeItem(progressStorageKey(id))
+  } catch { /* ignore */ }
+}
+
 function saveProgress(id, ratio, chapterIndex) {
   try {
+    // 读完不再保留进度，避免下次误出「继续读」
+    if (ratio >= DONE_RATIO) {
+      clearProgress(id)
+      return
+    }
     localStorage.setItem(progressStorageKey(id), JSON.stringify({
       ratio: Math.min(1, Math.max(0, ratio)),
       chapterIndex: Number.isFinite(chapterIndex) ? chapterIndex : 0,
       updatedAt: Date.now(),
     }))
   } catch { /* ignore quota */ }
+}
+
+function prefetchNeighbor(id) {
+  const key = Number(id)
+  if (!key || casePrefetchCache.has(key)) return
+  casePrefetchCache.set(
+    key,
+    casesApi.get(key).catch(() => null),
+  )
+}
+
+function takePrefetch(id) {
+  const key = Number(id)
+  if (!key) return null
+  const hit = casePrefetchCache.get(key)
+  if (!hit) return null
+  casePrefetchCache.delete(key)
+  return hit
 }
 
 function shortChapterLabel(ch, i) {
@@ -175,6 +226,19 @@ function measureScroll() {
   nodes.forEach((node) => {
     if (node.offsetTop <= anchorY) chapterIndex = Number(node.dataset.ch) || 0
   })
+  const done = scrollPct.value >= DONE_RATIO
+  finishedOffer.value = done && !!chapters.value.length
+  if (done) {
+    resumeOffer.value = null
+    if (completeTrackedFor !== id) {
+      completeTrackedFor = id
+      trackEvent('case_read_complete', {
+        category: 'engagement',
+        label: String(chapterIndex),
+        value: Number(id) || 0,
+      })
+    }
+  }
   saveProgress(id, scrollPct.value, chapterIndex)
 }
 
@@ -189,8 +253,14 @@ function onScroll() {
 
 function prepareResume(id) {
   resumeOffer.value = null
+  finishedOffer.value = false
   const saved = readSavedProgress(id)
   if (!saved) return
+  // 历史脏数据：已读完仍留在 localStorage 时直接清掉
+  if (saved.ratio >= DONE_RATIO) {
+    clearProgress(id)
+    return
+  }
   if (saved.ratio < RESUME_MIN_RATIO || saved.ratio > RESUME_MAX_RATIO) return
   const ch = Number.isFinite(saved.chapterIndex) ? saved.chapterIndex : 0
   resumeOffer.value = {
@@ -244,9 +314,16 @@ async function loadCase(id) {
   nextCase.value = null
   scrollPct.value = 0
   resumeOffer.value = null
+  finishedOffer.value = false
+  completeTrackedFor = null
+  window.scrollTo(0, 0)
   try {
+    const cached = takePrefetch(id)
+    const detailPromise = cached
+      ? Promise.resolve(cached).then((res) => res)
+      : casesApi.get(id)
     const [res, navRes] = await Promise.all([
-      casesApi.get(id),
+      detailPromise,
       casesApi.neighbors(id).catch(() => null),
     ])
     if (res?.success) {
@@ -257,6 +334,9 @@ async function loadCase(id) {
     if (navRes?.success) {
       prevCase.value = navRes.prev
       nextCase.value = navRes.next
+      // 预取相邻篇正文，点「下一篇」时几乎秒开
+      if (navRes.next?.id) prefetchNeighbor(navRes.next.id)
+      if (navRes.prev?.id) prefetchNeighbor(navRes.prev.id)
     }
   } finally {
     loading.value = false
@@ -381,6 +461,33 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; color: #1e2a3a; }
   white-space: nowrap;
 }
 .mid-cta-link:hover { text-decoration: underline; }
+.finished-cta {
+  margin: 8px 0 0;
+  padding: 16px 0 4px;
+  border-top: 1px dashed #bbf7d0;
+}
+.finished-text {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f766e;
+}
+.finished-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+}
+.finished-next, .finished-write {
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  line-height: 1.4;
+}
+.finished-next { color: #2563eb; }
+.finished-next:hover { text-decoration: underline; }
+.finished-write { color: #0f766e; }
+.finished-write:hover { text-decoration: underline; }
 .case-nav {
   display: flex; justify-content: space-between; gap: 16px;
   margin-top: 28px; padding-top: 24px; border-top: 1px solid #eef2f7;
