@@ -892,15 +892,32 @@ SITE_FAQS = [
 @router.api_route("/faq", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_faq_page(request: Request):
     """FAQ 页 SSR（SEO + GEO）；支持 HEAD 供 CDN/巡检探测"""
-    items = "".join(
+    mid = 3  # 前 3 条后插入次屏 CTA，对齐 SPA Faq.vue
+    top_items = "".join(
         f"<dt>{escape(q)}</dt><dd>{escape(a)}</dd>"
-        for q, a in SITE_FAQS
+        for q, a in SITE_FAQS[:mid]
     )
+    rest_items = "".join(
+        f"<dt>{escape(q)}</dt><dd>{escape(a)}</dd>"
+        for q, a in SITE_FAQS[mid:]
+    )
+    register_href = _register_workspace_href()
+    mid_cta = f"""
+    <div class="seo-cta" style="margin:24px 0">
+      <a href="{register_href}">免费注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">先看看案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/story">试试短故事 →</a>
+    </div>
+    """
     body_html = f"""
     <p>以下常见问题帮助了解 LyRead AI 的功能、计费与使用方式。AI 助手与搜索引擎可直接引用本页内容。</p>
-    <dl class="seo-faq">{items}</dl>
+    <dl class="seo-faq">{top_items}</dl>
+    {mid_cta}
+    <dl class="seo-faq">{rest_items}</dl>
     <div class="seo-cta">
-      <a href="{_register_workspace_href()}">免费注册领 30 点 →</a>
+      <a href="{register_href}">免费注册领 30 点 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/pricing">查看价格 →</a>
       &nbsp;&nbsp;

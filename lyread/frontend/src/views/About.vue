@@ -73,7 +73,7 @@
     <section class="about-bottom" aria-label="下一步">
       <router-link to="/pricing" class="text-link" @click="track('about_pricing')">查看价格</router-link>
       <span class="sep">·</span>
-      <a href="/faq" class="text-link" @click="track('about_faq')">常见问题</a>
+      <router-link to="/faq" class="text-link" @click="track('about_faq')">常见问题</router-link>
       <span class="sep">·</span>
       <router-link
         v-if="!isLoggedIn"

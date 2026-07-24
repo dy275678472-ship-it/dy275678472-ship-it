@@ -20,7 +20,8 @@ const routes = [
   { path: '/case/:id', component: () => import('./views/CaseReader.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '阅读平台 AI 生成案例。' }},
   { path: '/trending', component: () => import('./views/Trending.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '浏览平台生成案例。' }},
   { path: '/admin', component: () => import('./views/Admin.vue'), meta: { title: '运营后台 - LyRead AI', desc: '管理员控制台。' }},
-  // 人类走 SPA（次屏 register CTA）；爬虫 / ?ssr=1 仍由 nginx 反代后端 SSR
+  // 人类走 SPA（次屏 register CTA）；完整刷新仍由 nginx 反代后端 SSR
+  { path: '/faq', component: () => import('./views/Faq.vue'), meta: { title: '常见问题 - LyRead AI', desc: 'LyRead AI 常见问题：计费方式、免费试用、长篇创作、点数返还与案例说明。' }},
   { path: '/about', component: () => import('./views/About.vue'), meta: { title: '关于 LyRead AI - 智能中文小说创作平台', desc: '了解 LyRead AI：中文 AI 长篇小说创作平台，支持大纲、续写、人物伏笔记忆与按量点数计费。' }},
   // SPA 软 404：未知路径仍 200 壳，但页内 register-first + 继续读，避免空白 router-view
   { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('./views/NotFound.vue'), meta: { title: '页面未找到 - LyRead AI', desc: '页面不存在。可回首页、读案例，或免费注册领 30 点开写。' }},

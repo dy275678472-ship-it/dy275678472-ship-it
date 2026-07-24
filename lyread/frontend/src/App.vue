@@ -42,7 +42,7 @@
           <span>LyRead AI · AI 写小说平台</span>
         </div>
         <nav class="footer-links">
-          <a href="/faq">常见问题</a>
+          <router-link to="/faq">常见问题</router-link>
           <router-link to="/about">关于我们</router-link>
           <a href="/compare">工具对比</a>
           <a href="/guide">创作教程</a>
