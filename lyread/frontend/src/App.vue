@@ -12,7 +12,7 @@
       </div>
       <div class="nav-links" :class="{ open: menuOpen }">
         <router-link to="/" class="nav-link" @click="menuOpen = false">首页</router-link>
-        <router-link to="/workspace?mode=new" class="nav-link" @click="menuOpen = false">长篇小说</router-link>
+        <router-link :to="novelNavLink" class="nav-link" @click="menuOpen = false">长篇小说</router-link>
         <router-link to="/story" class="nav-link" @click="menuOpen = false">短故事</router-link>
         <router-link to="/trending" class="nav-link" @click="menuOpen = false">案例阅读</router-link>
         <router-link to="/pricing" class="nav-link" @click="menuOpen = false">价格</router-link>
@@ -73,7 +73,15 @@ export default {
   computed: {
     isLoggedIn() {
       return !!localStorage.getItem('token')
-    }
+    },
+    /** 游客 register-first，避免先撞 /workspace 守卫再回跳 */
+    novelNavLink() {
+      if (this.isLoggedIn) return { path: '/workspace', query: { mode: 'new' } }
+      return {
+        path: '/login',
+        query: { mode: 'register', redirect: '/workspace?mode=new' },
+      }
+    },
   },
   watch: {
     $route() {

@@ -137,16 +137,23 @@
       </div>
     </section>
 
-    <!-- 用户评价 -->
+    <!-- 用户评价：可点击深链，对齐功能卡漏斗 -->
     <section class="testimonials">
       <SectionHeading class="testimonials-title" :icon="images.pricing.gem" center>创作者场景反馈</SectionHeading>
       <p class="testimonials-note">以下为典型使用场景描述，不代表个别用户承诺效果</p>
       <div class="testimonial-grid">
-        <div v-for="t in testimonials" :key="t.name" class="testimonial-card">
+        <router-link
+          v-for="t in testimonials"
+          :key="t.id"
+          :to="testimonialLink(t)"
+          class="testimonial-card testimonial-card-link"
+          @click="trackEvent('testimonial_click', { category: 'funnel', label: t.id })"
+        >
           <AvatarBadge :label="t.initial" :color="t.color" :alt-color="t.altColor" />
           <div class="name">{{ t.name }}</div>
           <p>{{ t.quote }}</p>
-        </div>
+          <span class="testimonial-cta">{{ testimonialCta(t) }}</span>
+        </router-link>
       </div>
     </section>
 
@@ -277,11 +284,25 @@ const router = useRouter()
 const images = IMAGES
 
 const testimonials = [
-  { initial: '日', name: '日更作者 · 长篇连载', color: '#2563eb', altColor: '#60a5fa', quote: '「章纲批量出完再续写，日更 6000 字成本约 3 元，比请人代写划算太多。」' },
-  { initial: '盐', name: '盐选作者 · 短篇试错', color: '#db2777', altColor: '#f9a8d4', quote: '「短故事流程 15 点一篇，先批量试梗，命中再扩成长篇。」' },
-  { initial: '工', name: '内容工作室 · 批量产出', color: '#0f766e', altColor: '#2dd4bf', quote: '「标准化大纲模板 + 人工质检，团队日产出提升明显。」' },
-  { initial: '新', name: '新手作者 · 开书入门', color: '#7c3aed', altColor: '#a78bfa', quote: '「免费书名生成降低开书门槛，7 步向导不用自己搭 Prompt。」' },
+  { id: 'longform', target: 'create', initial: '日', name: '日更作者 · 长篇连载', color: '#2563eb', altColor: '#60a5fa', quote: '「章纲批量出完再续写，日更 6000 字成本约 3 元，比请人代写划算太多。」' },
+  { id: 'short', target: 'story', initial: '盐', name: '盐选作者 · 短篇试错', color: '#db2777', altColor: '#f9a8d4', quote: '「短故事流程 15 点一篇，先批量试梗，命中再扩成长篇。」' },
+  { id: 'studio', target: 'create', initial: '工', name: '内容工作室 · 批量产出', color: '#0f766e', altColor: '#2dd4bf', quote: '「标准化大纲模板 + 人工质检，团队日产出提升明显。」' },
+  { id: 'newbie', target: 'create', initial: '新', name: '新手作者 · 开书入门', color: '#7c3aed', altColor: '#a78bfa', quote: '「免费书名生成降低开书门槛，7 步向导不用自己搭 Prompt。」' },
 ]
+
+function testimonialLink(t) {
+  if (t.target === 'story') return '/story'
+  if (t.target === 'pricing') return '/pricing'
+  if (t.target === 'trending') return '/trending'
+  return demoCreateLink.value
+}
+
+function testimonialCta(t) {
+  if (t.target === 'story') return '去写短故事 →'
+  if (t.target === 'pricing') return '查看套餐 →'
+  if (t.target === 'trending') return '看真实案例 →'
+  return isLoggedIn.value ? '打开创作台 →' : '注册开写 →'
+}
 
 const showTrialModal = ref(false)
 const trialType = ref('')
@@ -753,6 +774,21 @@ const startTrial = async (append = false) => {
   backdrop-filter: blur(8px);
   background-color: rgba(255,255,255,0.9);
 }
+.testimonial-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+.testimonial-card-link:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.14);
+}
+.testimonial-card-link:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
+}
 .testimonial-card .avatar-img {
   display: block;
   width: 56px;
@@ -764,6 +800,13 @@ const startTrial = async (append = false) => {
 .testimonial-card :deep(.avatar-badge) { margin: 0 auto 12px; }
 .testimonial-card .name { font-weight: 600; color: var(--lyread-text-dark); margin-bottom: 8px; }
 .testimonial-card p { color: var(--lyread-text-secondary); font-size: 14px; }
+.testimonial-cta {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+}
 
 .modal-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
