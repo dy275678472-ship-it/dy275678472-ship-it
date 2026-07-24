@@ -27,7 +27,26 @@
 
       <section v-if="tab === 'reviews'" class="panel">
         <h2>待审核 ({{ reviews.length }})</h2>
-        <div v-if="!reviews.length" class="empty">暂无待审核内容</div>
+        <EmptyState
+          v-if="!reviews.length"
+          :image="images.emptyCreate"
+          title="暂无待审核内容"
+          description="用户提交公开后会出现在这里。可先核对已上架案例，或到创作台自检种子内容。"
+          :image-width="140"
+        >
+          <div class="empty-actions">
+            <router-link
+              to="/trending"
+              class="btn-empty-secondary"
+              @click="trackEmpty('reviews_trending')"
+            >去案例广场</router-link>
+            <router-link
+              to="/workspace"
+              class="btn-empty-primary"
+              @click="trackEmpty('reviews_workspace')"
+            >打开创作台</router-link>
+          </div>
+        </EmptyState>
         <div v-for="r in reviews" :key="r.id" class="row-card">
           <div>
             <strong>{{ r.title || '未命名' }}</strong>
@@ -57,14 +76,40 @@
                 <pre>{{ ch.excerpt || '（无正文）' }}</pre>
               </div>
             </div>
-            <p v-else class="empty">暂无章节正文，请提醒作者先 AI 续写并保存。</p>
+            <div v-else class="preview-empty">
+              <p class="empty">暂无章节正文，请提醒作者先 AI 续写并保存。</p>
+              <router-link
+                to="/workspace"
+                class="btn-empty-primary"
+                @click="trackEmpty('preview_workspace')"
+              >打开创作台自检</router-link>
+            </div>
           </div>
         </div>
       </div>
 
       <section v-if="tab === 'users'" class="panel">
         <h2>用户</h2>
-        <table>
+        <EmptyState
+          v-if="!users.length"
+          title="暂无用户"
+          description="注册用户会出现在这里。可先走一遍注册→创作主链路做冒烟。"
+          :image-width="120"
+        >
+          <div class="empty-actions">
+            <router-link
+              to="/login?mode=register"
+              class="btn-empty-secondary"
+              @click="trackEmpty('users_register')"
+            >打开注册页</router-link>
+            <router-link
+              to="/workspace"
+              class="btn-empty-primary"
+              @click="trackEmpty('users_workspace')"
+            >去创作台</router-link>
+          </div>
+        </EmptyState>
+        <table v-else>
           <thead><tr><th>ID</th><th>用户名</th><th>点数</th><th>操作</th></tr></thead>
           <tbody>
             <tr v-for="u in users" :key="u.id">
@@ -79,7 +124,21 @@
 
       <section v-if="tab === 'orders'" class="panel">
         <h2>订单</h2>
-        <table>
+        <EmptyState
+          v-if="!orders.length"
+          title="暂无订单"
+          description="用户在价格页下单后会出现在这里。可先核对套餐与沙箱收款链路。"
+          :image-width="120"
+        >
+          <div class="empty-actions">
+            <router-link
+              to="/pricing"
+              class="btn-empty-primary"
+              @click="trackEmpty('orders_pricing')"
+            >打开价格页</router-link>
+          </div>
+        </EmptyState>
+        <table v-else>
           <thead><tr><th>订单号</th><th>用户</th><th>点数</th><th>金额</th><th>状态</th></tr></thead>
           <tbody>
             <tr v-for="o in orders" :key="o.out_trade_no">
@@ -95,7 +154,21 @@
 
       <section v-if="tab === 'jobs'" class="panel">
         <h2>生成任务</h2>
-        <table>
+        <EmptyState
+          v-if="!jobs.length"
+          title="暂无生成任务"
+          description="AI 续写/大纲等任务会列在这里。可到创作台跑一次生成做巡检。"
+          :image-width="120"
+        >
+          <div class="empty-actions">
+            <router-link
+              to="/workspace"
+              class="btn-empty-primary"
+              @click="trackEmpty('jobs_workspace')"
+            >打开创作台</router-link>
+          </div>
+        </EmptyState>
+        <table v-else>
           <thead><tr><th>ID</th><th>用户</th><th>类型</th><th>点数</th><th>状态</th></tr></thead>
           <tbody>
             <tr v-for="j in jobs" :key="j.id">
@@ -116,9 +189,12 @@
 import { ref, onMounted } from 'vue'
 import { adminApi } from '../api'
 import { IMAGES } from '../assets/images'
+import EmptyState from '../components/EmptyState.vue'
+import { trackEvent } from '../utils/analytics'
 
 const banner = IMAGES.adminBanner
 const deniedImg = IMAGES.adminDenied
+const images = IMAGES
 
 const denied = ref(false)
 const tab = ref('reviews')
@@ -130,6 +206,10 @@ const jobs = ref([])
 const previewOpen = ref(false)
 const previewLoading = ref(false)
 const previewData = ref(null)
+
+function trackEmpty(label) {
+  trackEvent('admin_empty_cta', { category: 'engagement', label })
+}
 
 const tabs = [
   { id: 'reviews', label: '审核' },
@@ -216,6 +296,20 @@ onMounted(loadAll)
 .panel { background: #fff; border-radius: 14px; padding: 20px; border: 1px solid #e8f0fa; }
 .panel h2 { font-size: 16px; margin-bottom: 16px; }
 .empty { color: #94a3b8; padding: 20px 0; }
+.empty-actions {
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;
+}
+.btn-empty-secondary, .btn-empty-primary {
+  display: inline-block; padding: 10px 16px; border-radius: 10px; font-size: 14px;
+  font-weight: 600; text-decoration: none; border: 1px solid #dbeafe;
+}
+.btn-empty-secondary { background: #fff; color: #2563eb; }
+.btn-empty-secondary:hover { background: #f0f7ff; }
+.btn-empty-primary {
+  background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff; border-color: transparent;
+}
+.preview-empty { text-align: center; padding: 8px 0 4px; }
+.preview-empty .empty { padding-bottom: 12px; }
 .row-card { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f0f4f8; gap: 12px; }
 .meta { display: block; font-size: 12px; color: #94a3b8; margin-top: 4px; }
 .row-actions { display: flex; gap: 8px; flex-shrink: 0; }
