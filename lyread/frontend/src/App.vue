@@ -52,8 +52,8 @@
             v-if="!isLoggedIn"
             :to="{ path: '/login', query: { mode: 'register', redirect: '/workspace?mode=new' } }"
           >免费注册</router-link>
-          <a href="/privacy">隐私政策</a>
-          <a href="/terms">用户协议</a>
+          <router-link to="/privacy">隐私政策</router-link>
+          <router-link to="/terms">用户协议</router-link>
         </nav>
         <p class="footer-note">按章计费 · 失败全额返还 · 注册送 30 点</p>
       </div>
