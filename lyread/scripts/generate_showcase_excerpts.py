@@ -25,11 +25,15 @@ HANDCRAFTED_IDS = {
     "showcase_history_01", "showcase_history_02",
     "showcase_history_03", "showcase_history_04",
     "showcase_system_01", "showcase_system_02", "showcase_system_03", "showcase_system_04",
+    "showcase_system_05",
     "showcase_apocalypse_01", "showcase_apocalypse_02",
     "showcase_apocalypse_03", "showcase_apocalypse_04",
     "showcase_campus_01", "showcase_campus_02",
     "showcase_campus_03", "showcase_campus_04",
     "showcase_game_01", "showcase_game_02", "showcase_game_03", "showcase_game_04",
+    "showcase_game_07",
+    "showcase_warrior_07",
+    "showcase_romance_05", "showcase_romance_06", "showcase_romance_07",
     "showcase_palace_01", "showcase_palace_02",
     "showcase_palace_03", "showcase_palace_04",
     "showcase_palace_05", "showcase_palace_06",
@@ -662,14 +666,14 @@ def _unique_pad_beats(case: dict) -> list:
             f"当对手试图激怒他时，他偏偏笑着把话题拐回数据与时间表——笑比吼更吓人。"
         ),
         (
-            f"题材注脚：{genre_line}"
-            f"放到《{title}》里，这句话变成{name}的行动原则："
-            f"少喊口号，多留后手；少晒结果，多修系统。"
+            f"代价清单：围绕「{hook}」，{name}第一次算清账单——能花的钱、能押的人、能赌的时间。"
+            f"有一项见底，他就停手重排；三项都紧，他就换战场。"
+            f"{genre_line}在《{title}》里不再是口号，而是他夜里反复核对的三条红线。"
         ),
         (
-            f"读者视角：如果这是你在 LyRead 创作台用「{category}」开的大纲，"
-            f"下一章最该写的不是更大的打脸，而是{name}为打脸付费的过程——"
-            f"钱、人、时间、名誉，哪一项先见底，故事就从哪里转向。"
+            f"证人席：{name}把关键对话挪到有第三人的场合，录音键亮着，却从不拿出来晃。"
+            f"对手越急着私下了结，他越慢，慢到对方自己露出破绽。"
+            f"他只要一个可核验的节点：时间、地点、谁在场。"
         ),
         (
             f"收束前夜：{name}站在路口，明白胜利不是打脸一次，而是让对手不敢再来第二次，"
@@ -677,8 +681,9 @@ def _unique_pad_beats(case: dict) -> list:
             f"风停之后，计划写得更短，短到容不下一句废话。"
         ),
         (
-            f"创作台提示：若你喜欢《{title}》这个开篇，可用「{category}」题材继续大纲与续写；"
-            f"把{name}的后手、代价与同盟裂痕写成真正长篇，而不是停在打脸名场面。"
+            f"下一章钩子：{name}没有把「{hook}」写成终局，只写成入口。"
+            f"门外还有未回的消息、未拆的信封、未到齐的人。"
+            f"他锁上门，灯只留一盏——够写下一步，不够给人看底牌。"
         ),
     ]
     uniq, seen = [], set()
@@ -703,31 +708,47 @@ def pad_excerpt(text: str, case: dict, min_chars: int = 2000) -> str:
             continue
         text += f"\n\n{beat}"
         used.add(beat)
-    chapter_seeds = [
-        ("账房", "对账", "差额"),
-        ("夜路", "脚步", "回声"),
-        ("雨棚", "证人", "伞骨"),
-        ("码头", "货单", "潮汛"),
-        ("屋顶", "天线", "信号"),
-        ("地窖", "存粮", "霉味"),
-        ("车里", "录音", "红灯"),
-        ("后巷", "暗号", "门环"),
-        ("会议室", "投影", "冷气"),
-        ("旧庙", "香灰", "石阶"),
+    # 叙事边角补笔：禁止「夜色/随身手记/走漏风声」同模板堆字
+    name = case["protagonist"]
+    hook = case.get("hook", "")
+    scene_pads = [
+        (
+            f"雨棚对质：{name}把「{hook}」相关的证人约到雨棚下，伞骨滴水声盖过旁人耳语。"
+            f"对方想把话题扯远，他只重复一个时间点，逼对方自己改口。"
+        ),
+        (
+            f"码头夜班：货单上的潮汛记号与「{hook}」对不上号。"
+            f"{name}没有声张，只把差异抄进内页，天亮前换人守仓。"
+        ),
+        (
+            f"屋顶信号：天线噪声里混进半句旧暗号。{name}调低功率，确认不是巧合后切断外联，"
+            f"只留一条可撤回的短讯给真正该知道的人。"
+        ),
+        (
+            f"车里红灯：录音键亮着，红灯未变。{name}让对方把「{hook}」再说一遍，"
+            f"每一次措辞偏移，都变成下一章可用的把柄。"
+        ),
+        (
+            f"后巷门环：暗号对了，门环却是新换的。{name}退半步，改走亮处，把伏击留给愿意逞强的人。"
+        ),
+        (
+            f"会议室冷气：投影停在某一页，冷气开到让人说不出场面话。"
+            f"{name}把账本推到正中：合作可以，前提是每一笔都可核验。"
+        ),
+        (
+            f"旧庙石阶：香灰未冷，石阶上有两行脚印一深一浅。"
+            f"{name}蹲下比对，确认来人不是盟友，起身时已改了撤退路线。"
+        ),
+        (
+            f"账房灯下：差额只差一个零，却差出一个阵营。{name}合上册子，"
+            f"决定先救该救的人，再算该算的账——顺序错了，赢也会变成输。"
+        ),
     ]
-    n = 1
+    n = 0
     while len(text) + len(closing) < min_chars:
-        place, obj, clue = chapter_seeds[(n - 1) % len(chapter_seeds)]
-        name = case["protagonist"]
-        title = case["title"]
-        hook = case.get("hook", "")
-        round_i = (n - 1) // len(chapter_seeds) + 1
-        # 叙事边角补笔：禁止「加长草稿/私密附录」元语气；round 保证多轮不撞 used
-        line = (
-            f"{place}夜色·{round_i}：{name}在{place}核对与「{hook}」有关的{obj}，意外发现{clue}对不上。"
-            f"他没有声张，只把照片与时间写进《{title}》随身手记，并约定："
-            f"在下一章真正落笔之前，任何人不得提前走漏风声。"
-        )
+        line = scene_pads[n % len(scene_pads)]
+        if n >= len(scene_pads):
+            line = f"{line}（续·{n // len(scene_pads) + 1}）"
         if line not in used:
             text += f"\n\n{line}"
             used.add(line)
@@ -738,9 +759,13 @@ def pad_excerpt(text: str, case: dict, min_chars: int = 2000) -> str:
 
 
 def has_duplicate_padding(text: str, min_repeats: int = 3) -> bool:
-    """仅在同句重复 ≥ min_repeats 时判定为撞模板垫文（避免误伤优质手写）。"""
+    """撞模板垫文：同句重复，或遗留「夜色/随身手记/走漏风声」堆字尾。"""
     from collections import Counter
 
+    if "任何人不得提前走漏风声" in text or "随身手记" in text:
+        return True
+    if "题材注脚：" in text or "创作台提示：" in text or "读者视角：" in text:
+        return True
     counts = Counter(ln.strip() for ln in text.splitlines() if ln.strip())
     return any(n >= min_repeats and len(line) >= 20 for line, n in counts.items())
 
@@ -772,12 +797,20 @@ def main() -> None:
         # 例外：检测到重复垫文（同句 ≥3 次）则去重并唯一扩写补齐
         if path.is_file():
             existing = path.read_text(encoding="utf-8")
+            # 手写名单优先保留，避免 repair 冲掉题材定制正文
+            if cid in HANDCRAFTED_IDS:
+                cleaned = _strip_boilerplate(existing)
+                if "（节选完" not in cleaned:
+                    cleaned += "\n\n（节选完，共三章）"
+                path.write_text(cleaned, encoding="utf-8")
+                print(f"kept handcrafted {path.name} ({len(cleaned)} chars)")
+                continue
             if has_duplicate_padding(existing):
                 repaired = repair_excerpt(existing, case)
                 path.write_text(repaired, encoding="utf-8")
                 print(f"repaired dup-pad {path.name} ({len(repaired)} chars)")
                 continue
-            if cid in HANDCRAFTED_IDS or len(existing.strip()) >= 2000:
+            if len(existing.strip()) >= 2000:
                 cleaned = _strip_boilerplate(existing)
                 if "（节选完" not in cleaned:
                     cleaned += "\n\n（节选完，共三章）"
