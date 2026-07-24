@@ -722,11 +722,11 @@ def pad_excerpt(text: str, case: dict, min_chars: int = 2000) -> str:
         title = case["title"]
         hook = case.get("hook", "")
         round_i = (n - 1) // len(chapter_seeds) + 1
-        # 叙事边角补笔：禁止「加长草稿/私密附录」元语气；round 保证多轮不撞 used
+        # 叙事边角补笔：禁止「加长草稿/私密附录/收束补记」元语气；场景句避免「夜色·N」模板
         line = (
-            f"{place}夜色·{round_i}：{name}在{place}核对与「{hook}」有关的{obj}，意外发现{clue}对不上。"
-            f"他没有声张，只把照片与时间写进《{title}》随身手记，并约定："
-            f"在下一章真正落笔之前，任何人不得提前走漏风声。"
+            f"续场·{place}{round_i}：{name}在{place}复查与「{hook}」相关的{obj}，发现{clue}对不上。"
+            f"他没有声张，只把时间与证据写进《{title}》随身手记，并约定："
+            f"下一章落笔前，任何人不得提前走漏风声。"
         )
         if line not in used:
             text += f"\n\n{line}"

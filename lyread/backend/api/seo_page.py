@@ -1111,10 +1111,32 @@ def _sections_html(sections: list) -> str:
     return "".join(parts)
 
 
+def _article_mid_cta_html() -> str:
+    """compare/guide 长文次屏 CTA：前几节后插入，对齐 FAQ/About mid CTA。"""
+    register_href = _register_workspace_href()
+    return f"""
+    <div class="seo-cta" style="margin:24px 0" data-seo-mid-cta="1">
+      <a href="{register_href}">免费注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">先看看案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/pricing">查看价格 →</a>
+    </div>
+    """
+
+
 def _render_article_page(meta: dict, url: str, crumbs: list[tuple[str, str]]) -> str:
     h1 = meta.get("h1") or meta["title"]
+    sections = meta.get("sections") or []
     body_html = f"<h2 style='font-size:20px;margin-bottom:16px'>{escape(h1)}</h2>"
-    body_html += _sections_html(meta["sections"])
+    # ≥3 节时，前 2 节后插入次屏 register-first，避免只在页底 CTA
+    if len(sections) >= 3:
+        mid = 2
+        body_html += _sections_html(sections[:mid])
+        body_html += _article_mid_cta_html()
+        body_html += _sections_html(sections[mid:])
+    else:
+        body_html += _sections_html(sections)
     if meta.get("faqs"):
         body_html += '<h2 style="font-size:18px;margin:24px 0 12px">常见问题</h2><dl class="seo-faq">'
         for q, a in meta["faqs"]:
