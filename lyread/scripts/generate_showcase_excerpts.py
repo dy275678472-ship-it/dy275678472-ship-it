@@ -550,6 +550,9 @@ GENRE_EXTRA = {
 }
 
 
+_INLINE_REPEAT_PHRASE = "他知道故事还长，但开头必须不同，细节必须站得住，读者才愿意往下翻。"
+
+
 def _strip_boilerplate(text: str) -> str:
     if "【阅读提示】" in text:
         text = text.split("【阅读提示】")[0]
@@ -558,8 +561,17 @@ def _strip_boilerplate(text: str) -> str:
     return text.rstrip()
 
 
+def _collapse_inline_repeats(text: str) -> str:
+    """折叠已知堆字句（如「他知道故事还长…」连贴十余次）。"""
+    phrase = _INLINE_REPEAT_PHRASE
+    while phrase + phrase in text:
+        text = text.replace(phrase + phrase, phrase)
+    return text
+
+
 def _dedupe_lines(text: str) -> str:
     """去掉重复垫文行，保留首次出现顺序（空行压缩）。"""
+    text = _collapse_inline_repeats(text)
     seen = set()
     out = []
     for line in text.splitlines():
@@ -580,6 +592,7 @@ def _dedupe_lines(text: str) -> str:
 def _core_story(text: str) -> str:
     """保留章节正文，裁掉历次重复垫文（延伸节选/创作手记/通用埋点句）。"""
     text = _strip_boilerplate(text)
+    text = _collapse_inline_repeats(text)
     cut_markers = [
         "（节选完",
         "延伸节选",
@@ -609,6 +622,8 @@ def _core_story(text: str) -> str:
         "在这一章埋下伏笔",
         "没有急着亮底牌",
         "日志补记：风停之后，故事才真正起笔",
+        "拆成三张清单",
+        "赛道最怕的不是输",
     ]
     cut_at = None
     for marker in cut_markers:
@@ -622,23 +637,25 @@ def _core_story(text: str) -> str:
 
 
 def _unique_pad_beats(case: dict) -> list:
-    """生成互不重复的长扩写段（合计约 1500+ 字），覆盖去重缺口。"""
+    """生成互不重复的长扩写段（合计约 1500+ 字），覆盖去重缺口。
+
+    禁止「三张清单 / 人物侧写·赛道元语气」模板——读起来像创作台注脚，不像正文。
+    """
     title = case["title"]
     genre = case["genre"]
     name = case["protagonist"]
     hook = case.get("hook", "")
-    category = case.get("category", "")
     genre_line = GENRE_EXTRA.get(genre, GENRE_EXTRA["default"])
     beats = [
         (
-            f"第五章（节选加长）：{name}没有急着庆祝。他把「{hook}」拆成三张清单——能立刻验证的、需要盟友的、只能赌的。"
-            f"第一张当晚就划掉一半；第二张他连夜约人；第三张他锁进抽屉，钥匙别在腰间。"
-            f"《{title}》的节奏从这里开始变沉：爽点还在，但每一下都带着代价。"
+            f"现场补笔：围绕「{hook}」，{name}没有开庆功宴，只把时间表又压短一格。"
+            f"能立刻验证的，他当晚就派人去验；需要盟友的，他连夜约到有监控的地方谈；"
+            f"只能赌的，他锁进抽屉，钥匙别在腰间。《{title}》从这里开始变沉——爽点还在，但每一下都带着代价。"
         ),
         (
-            f"人物侧写：外人看{name}像突然开挂，近处的人却发现他睡得更少、问得更细。"
-            f"他开始记录每一次让步与每一次拒绝，像在给未来的自己留证据。"
-            f"有人笑他小题大做，他只说：{category}赛道最怕的不是输，是赢完之后说不清自己为什么赢。"
+            f"近景：外人只看见{name}翻盘，近处的人却发现他睡得更少、问得更细。"
+            f"他开始记下每一次让步与每一次拒绝，像给未来的自己留证据。"
+            f"有人笑他小题大做，他只回：赢可以喧哗，输不起的是说不清自己为什么赢。"
         ),
         (
             f"冲突加码：对手换了一套更体面的打法——公开示好、私下挖坑。"
@@ -759,12 +776,20 @@ def pad_excerpt(text: str, case: dict, min_chars: int = 2000) -> str:
 
 
 def has_duplicate_padding(text: str, min_repeats: int = 3) -> bool:
-    """撞模板垫文：同句重复，或遗留「夜色/随身手记/走漏风声」堆字尾。"""
+    """撞模板垫文：同句重复，或遗留夜色/手记/三张清单/赛道元语气堆字尾。"""
     from collections import Counter
 
     if "任何人不得提前走漏风声" in text or "随身手记" in text:
         return True
     if "题材注脚：" in text or "创作台提示：" in text or "读者视角：" in text:
+        return True
+    # 旧 pad 模板：清单体 + 「赛道」元语气（读起来像注脚）
+    if "拆成三张清单" in text or "第五章（节选加长）" in text:
+        return True
+    if "人物侧写：外人看" in text or "赛道最怕的不是输" in text:
+        return True
+    # 同行内复制粘贴堆字
+    if text.count(_INLINE_REPEAT_PHRASE) >= 2:
         return True
     counts = Counter(ln.strip() for ln in text.splitlines() if ln.strip())
     return any(n >= min_repeats and len(line) >= 20 for line, n in counts.items())
@@ -797,21 +822,16 @@ def main() -> None:
         # 例外：检测到重复垫文（同句 ≥3 次）则去重并唯一扩写补齐
         if path.is_file():
             existing = path.read_text(encoding="utf-8")
-            # 手写名单优先保留，避免 repair 冲掉题材定制正文
-            if cid in HANDCRAFTED_IDS:
-                cleaned = _strip_boilerplate(existing)
-                if "（节选完" not in cleaned:
-                    cleaned += "\n\n（节选完，共三章）"
-                path.write_text(cleaned, encoding="utf-8")
-                print(f"kept handcrafted {path.name} ({len(cleaned)} chars)")
-                continue
+            # 撞模板（含手写名单里残留的三张清单/赛道元语气）一律去尾重垫
             if has_duplicate_padding(existing):
                 repaired = repair_excerpt(existing, case)
                 path.write_text(repaired, encoding="utf-8")
                 print(f"repaired dup-pad {path.name} ({len(repaired)} chars)")
                 continue
-            if len(existing.strip()) >= 2000:
+            # 手写名单 / 已达 2000+：保留正文，只剥阅读提示
+            if cid in HANDCRAFTED_IDS or len(existing.strip()) >= 2000:
                 cleaned = _strip_boilerplate(existing)
+                cleaned = _collapse_inline_repeats(cleaned)
                 if "（节选完" not in cleaned:
                     cleaned += "\n\n（节选完，共三章）"
                 path.write_text(cleaned, encoding="utf-8")
