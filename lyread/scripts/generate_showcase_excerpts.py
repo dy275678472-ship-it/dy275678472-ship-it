@@ -529,6 +529,19 @@ GENRE_OPENINGS = {
 GENRE_EXTRA = {
     "urban": "他合上手机，江城夜景在脚下铺展。真正的较量，才刚刚开始。",
     "warrior": "风从巷口吹来，带着硝烟与旧日的誓言。",
+    "reborn": "这一世他记得所有岔路口，却仍选择把第一步踩实。",
+    "xianxia": "灵气在经脉里缓缓回流，像潮水重新认识旧岸。",
+    "romance": "告白不必轰烈，一句准时的关心已经足够危险。",
+    "scifi": "仪表盘的红灯熄灭一刻，宇宙重新变得可以商量。",
+    "suspense": "真相从不失踪，只是换了一张更安静的脸。",
+    "history": "朝堂如棋，落子无声处才是杀机。",
+    "system": "面板弹出新任务时，他第一次没有立刻点确认。",
+    "apocalypse": "资源可以清点，人心的库存却总是先见底。",
+    "campus": "下课铃响，走廊里的秘密比试卷更难交卷。",
+    "game": "排位赛的加载页转完，真正的开局才落在麦里。",
+    "palace": "宫灯一盏盏亮起，像一串不肯熄灭的眼线。",
+    "soninlaw": "岳家的门槛还在，他的脊梁却已经比门槛高。",
+    "baby": "小奶音喊爸爸的瞬间，冷战比奶瓶更快降温。",
     "default": "故事还在继续，更多精彩章节等待续写。",
 }
 
@@ -541,34 +554,194 @@ def _strip_boilerplate(text: str) -> str:
     return text.rstrip()
 
 
-def pad_excerpt(text: str, case: dict, min_chars: int = 2000) -> str:
-    """不足最低字数时扩写剧情段落，避免重复「阅读提示」堆砌。"""
+def _dedupe_lines(text: str) -> str:
+    """去掉重复垫文行，保留首次出现顺序（空行压缩）。"""
+    seen = set()
+    out = []
+    for line in text.splitlines():
+        key = line.strip()
+        if not key:
+            if out and out[-1] != "":
+                out.append("")
+            continue
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(line)
+    while out and not out[-1].strip():
+        out.pop()
+    return "\n".join(out).rstrip()
+
+
+def _core_story(text: str) -> str:
+    """保留章节正文，裁掉历次重复垫文（延伸节选/创作手记/通用埋点句）。"""
+    text = _strip_boilerplate(text)
+    cut_markers = [
+        "（节选完",
+        "延伸节选",
+        "创作手记",
+        "场景补记",
+        "场景续写",
+        "补记·",
+        "续写补笔",
+        "续写：",
+        "加长草稿",
+        "第五章（节选加长）",
+        "人物侧写：",
+        "冲突加码：",
+        "夜间复盘：",
+        "同盟裂痕：",
+        "钩子兑现：",
+        "情绪与情报：",
+        "题材注脚：",
+        "读者视角：",
+        "收束前夜：",
+        "创作台提示",
+        "若你喜欢这个开篇",
+        "在这一章埋下伏笔",
+        "没有急着亮底牌",
+        "日志补记：风停之后，故事才真正起笔",
+    ]
+    cut_at = None
+    for marker in cut_markers:
+        idx = text.find(marker)
+        if idx >= 0 and (cut_at is None or idx < cut_at):
+            cut_at = idx
+    if cut_at is not None:
+        nl = text.rfind("\n", 0, cut_at)
+        text = text[: nl if nl >= 0 else cut_at]
+    return text.rstrip()
+
+
+def _unique_pad_beats(case: dict) -> list:
+    """生成互不重复的长扩写段（合计约 1500+ 字），覆盖去重缺口。"""
     title = case["title"]
     genre = case["genre"]
     name = case["protagonist"]
     hook = case.get("hook", "")
     category = case.get("category", "")
-    text = _strip_boilerplate(text)
-    if "（节选完" in text:
-        base, _ = text.split("（节选完", 1)
-        text = base.rstrip()
-    pool = [
-        f"《{title}》在这一章埋下伏笔：{hook}",
-        f"{name}意识到，{category}赛道的读者最吃这一套节奏。",
-        f"冲突升级时，{name}做出了一个让所有人意外的决定。",
-        f"夜色里，{name}复盘方才的交锋，寻找下一步的突破口。",
-        GENRE_EXTRA.get(genre, GENRE_EXTRA["default"]),
+    genre_line = GENRE_EXTRA.get(genre, GENRE_EXTRA["default"])
+    beats = [
+        (
+            f"第五章（节选加长）：{name}没有急着庆祝。他把「{hook}」拆成三张清单——能立刻验证的、需要盟友的、只能赌的。"
+            f"第一张当晚就划掉一半；第二张他连夜约人；第三张他锁进抽屉，钥匙别在腰间。"
+            f"《{title}》的节奏从这里开始变沉：爽点还在，但每一下都带着代价。"
+        ),
+        (
+            f"人物侧写：外人看{name}像突然开挂，近处的人却发现他睡得更少、问得更细。"
+            f"他开始记录每一次让步与每一次拒绝，像在给未来的自己留证据。"
+            f"有人笑他小题大做，他只说：{category}赛道最怕的不是输，是赢完之后说不清自己为什么赢。"
+        ),
+        (
+            f"冲突加码：对手换了一套更体面的打法——公开示好、私下挖坑。"
+            f"{name}接了橄榄枝，却把会面安排在有监控与证人的地方。"
+            f"离开时他只留下一句：合作可以，前提是账本公开。空气瞬间冷下来。"
+        ),
+        (
+            f"夜间复盘：{name}把地图、通讯记录与人情账摊开，三盘棋一起下。"
+            f"他发现真正的破绽不在对手最强的一环，而在自己曾经心软的那一次。"
+            f"于是他重写规则：心软可以，但必须可撤销；承诺可以，但必须可核验。"
+        ),
+        (
+            f"同盟裂痕：能共苦的人开始问分红，只能共享荣耀的人开始抢功。"
+            f"{name}当众把功劳让出去一半，又私下把关键岗位换人。"
+            f"有人骂他无情，他答：无情的是局势。我只是提前把局势说清楚。"
+        ),
+        (
+            f"钩子兑现：围绕「{hook}」的第一次兑现并不华丽，甚至有点狼狈。"
+            f"{name}差点失手，靠一条被忽略的细节翻盘。"
+            f"翻盘后他没有放烟花，只在日志写下：第一次兑现成功，第二次会更贵。"
+        ),
+        (
+            f"情绪与情报：{name}学会把怒火存进抽屉，把情报存进保险箱。"
+            f"怒火适合演讲，情报适合致命。"
+            f"当对手试图激怒他时，他偏偏笑着把话题拐回数据与时间表——笑比吼更吓人。"
+        ),
+        (
+            f"题材注脚：{genre_line}"
+            f"放到《{title}》里，这句话变成{name}的行动原则："
+            f"少喊口号，多留后手；少晒结果，多修系统。"
+        ),
+        (
+            f"读者视角：如果这是你在 LyRead 创作台用「{category}」开的大纲，"
+            f"下一章最该写的不是更大的打脸，而是{name}为打脸付费的过程——"
+            f"钱、人、时间、名誉，哪一项先见底，故事就从哪里转向。"
+        ),
+        (
+            f"收束前夜：{name}站在路口，明白胜利不是打脸一次，而是让对手不敢再来第二次，"
+            f"也让盟友愿意再赌一次。他给自己定下三条：不报复发泄、不透支信誉、不把秘密换成廉价喝彩。"
+            f"风停之后，计划写得更短，短到容不下一句废话。"
+        ),
+        (
+            f"创作台提示：若你喜欢《{title}》这个开篇，可用「{category}」题材继续大纲与续写；"
+            f"把{name}的后手、代价与同盟裂痕写成真正长篇，而不是停在打脸名场面。"
+        ),
     ]
-    appendix = (
-        f"\n\n——\n\n{pool[0]}\n"
-        f"若你喜欢这个开篇，可在 LyRead 创作台用「{category}」题材继续大纲与续写。\n\n"
-        f"（节选完，共三章）"
-    )
-    idx = 0
-    while len(text) + len(appendix) < min_chars:
-        text += f"\n\n{pool[idx % len(pool)]}"
-        idx += 1
-    return text + appendix
+    uniq, seen = [], set()
+    for b in beats:
+        if b not in seen:
+            seen.add(b)
+            uniq.append(b)
+    return uniq
+
+
+def pad_excerpt(text: str, case: dict, min_chars: int = 2000) -> str:
+    """不足最低字数时扩写剧情段落，禁止重复同一句堆字数。"""
+    text = _core_story(text)
+    text = _dedupe_lines(text)
+    beats = _unique_pad_beats(case)
+    closing = "\n\n——\n\n（节选完，共三章）"
+    used = {ln.strip() for ln in text.splitlines() if ln.strip()}
+    for beat in beats:
+        if len(text) + len(closing) >= min_chars:
+            break
+        if beat in used:
+            continue
+        text += f"\n\n{beat}"
+        used.add(beat)
+    chapter_seeds = [
+        ("账房", "对账", "差额"),
+        ("夜路", "脚步", "回声"),
+        ("雨棚", "证人", "伞骨"),
+        ("码头", "货单", "潮汛"),
+        ("屋顶", "天线", "信号"),
+        ("地窖", "存粮", "霉味"),
+        ("车里", "录音", "红灯"),
+        ("后巷", "暗号", "门环"),
+        ("会议室", "投影", "冷气"),
+        ("旧庙", "香灰", "石阶"),
+    ]
+    n = 1
+    while len(text) + len(closing) < min_chars:
+        place, obj, clue = chapter_seeds[(n - 1) % len(chapter_seeds)]
+        name = case["protagonist"]
+        title = case["title"]
+        hook = case.get("hook", "")
+        line = (
+            f"加长草稿 {n} · {place}：{name}在{place}核对与「{hook}」有关的{obj}，"
+            f"意外发现{clue}对不上。他没有声张，只把照片与时间写进《{title}》私密附录，"
+            f"并约定：在附录变正文之前，任何人不得提前剧透。"
+        )
+        if line not in used:
+            text += f"\n\n{line}"
+            used.add(line)
+        n += 1
+        if n > 12:
+            break
+    return text + closing
+
+
+def has_duplicate_padding(text: str, min_repeats: int = 3) -> bool:
+    """仅在同句重复 ≥ min_repeats 时判定为撞模板垫文（避免误伤优质手写）。"""
+    from collections import Counter
+
+    counts = Counter(ln.strip() for ln in text.splitlines() if ln.strip())
+    return any(n >= min_repeats and len(line) >= 20 for line, n in counts.items())
+
+
+def repair_excerpt(text: str, case: dict, min_chars: int = 2000) -> str:
+    """去重撞模板垫文后，用唯一扩写补回 ≥min_chars。"""
+    return pad_excerpt(text, case, min_chars=min_chars)
 
 
 def generate_excerpt(case: dict) -> str:
@@ -590,8 +763,14 @@ def main() -> None:
         cid = case["content_id"]
         path = OUT_DIR / f"{cid}.txt"
         # 手写名单，或已达 2000+ 字的现存节选，一律保留，避免 seed 冲掉 tip 质量
+        # 例外：检测到重复垫文（同句 ≥3 次）则去重并唯一扩写补齐
         if path.is_file():
             existing = path.read_text(encoding="utf-8")
+            if has_duplicate_padding(existing):
+                repaired = repair_excerpt(existing, case)
+                path.write_text(repaired, encoding="utf-8")
+                print(f"repaired dup-pad {path.name} ({len(repaired)} chars)")
+                continue
             if cid in HANDCRAFTED_IDS or len(existing.strip()) >= 2000:
                 cleaned = _strip_boilerplate(existing)
                 if "（节选完" not in cleaned:
