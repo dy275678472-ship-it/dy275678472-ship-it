@@ -11,6 +11,19 @@
       >免费注册，送 30 点 →</router-link>
     </header>
 
+    <div v-if="resumeBanner" class="resume-banner" role="status">
+      <div class="resume-copy">
+        <span class="resume-kicker">上次读到</span>
+        <strong class="resume-title">{{ resumeBanner.title }}</strong>
+        <span class="resume-meta">已读约 {{ resumeBanner.pct }}%{{ resumeBanner.category ? ` · ${resumeBanner.category}` : '' }}</span>
+      </div>
+      <router-link
+        class="resume-go"
+        :to="`/case/${resumeBanner.id}`"
+        @click="onResumeBannerClick"
+      >继续读 →</router-link>
+    </div>
+
     <div class="filters" v-if="categories.length">
       <button
         type="button"
@@ -75,6 +88,8 @@ import { IMAGES } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
 import CaseCover from '../components/CaseCover.vue'
 import { formatExcerptLabel } from '../utils/format'
+import { findLatestResumeProgress } from '../utils/caseProgress'
+import { trackEvent } from '../utils/analytics'
 
 const images = IMAGES
 
@@ -83,7 +98,29 @@ const categories = ref([])
 const activeCategory = ref('')
 const totalCount = ref(0)
 const loading = ref(true)
+const resumeBanner = ref(null)
 const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
+
+function refreshResumeBanner(list = cases.value) {
+  const hit = findLatestResumeProgress(list)
+  resumeBanner.value = hit
+    ? {
+        id: hit.id,
+        title: hit.title,
+        category: hit.category,
+        pct: Math.round(hit.ratio * 100),
+      }
+    : null
+}
+
+function onResumeBannerClick() {
+  const b = resumeBanner.value
+  trackEvent('trending_resume_click', {
+    category: 'engagement',
+    label: b?.title || '',
+    value: Number(b?.id) || 0,
+  })
+}
 
 /** 游客首屏强调注册赠点，缩短案例浏览 → 注册路径 */
 const heroSubtitle = computed(() =>
@@ -116,6 +153,7 @@ async function loadCases() {
   try {
     const res = await casesApi.list(140, activeCategory.value)
     if (res?.success) cases.value = res.cases || []
+    refreshResumeBanner(cases.value)
   } finally {
     loading.value = false
   }
@@ -127,6 +165,7 @@ function setCategory(name) {
 }
 
 onMounted(async () => {
+  refreshResumeBanner([])
   try {
     const [catRes] = await Promise.all([
       casesApi.categories(),
@@ -154,7 +193,30 @@ onMounted(async () => {
   font-weight: 600; font-size: 14px; text-decoration: none;
 }
 .hero-register:hover { filter: brightness(1.05); }
+.resume-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  max-width: 720px; margin: 0 auto 24px; padding: 14px 18px;
+  border: 1px solid #bfdbfe; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(77,161,255,0.08), rgba(37,99,235,0.04));
+}
+.resume-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.resume-kicker { font-size: 12px; color: #2563eb; font-weight: 600; letter-spacing: 0.02em; }
+.resume-title {
+  font-size: 15px; color: #1e2a3a; font-weight: 650;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.resume-meta { font-size: 12px; color: #64748b; }
+.resume-go {
+  flex-shrink: 0; padding: 10px 16px; border-radius: 10px;
+  background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
+  font-weight: 600; font-size: 13px; text-decoration: none;
+}
+.resume-go:hover { filter: brightness(1.05); }
 .guest-cta-hint { color: #64748b; font-size: 13px; margin-bottom: 10px; }
+@media (max-width: 640px) {
+  .resume-banner { flex-direction: column; align-items: stretch; text-align: left; }
+  .resume-go { text-align: center; }
+}
 .empty-actions {
   display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;
 }

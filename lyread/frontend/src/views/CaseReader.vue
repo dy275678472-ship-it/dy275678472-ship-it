@@ -125,11 +125,14 @@ import { parseChapters, countChapters } from '../utils/caseContent'
 import { formatStorySettingWords } from '../utils/format'
 import { trackEvent } from '../utils/analytics'
 import { workspaceWizardQuery } from '../utils/wizardGenre'
+import {
+  caseProgressStorageKey,
+  readCaseProgress,
+  RESUME_MIN_RATIO,
+  RESUME_MAX_RATIO,
+  DONE_RATIO,
+} from '../utils/caseProgress'
 
-const PROGRESS_KEY = 'lyread_case_progress'
-const RESUME_MIN_RATIO = 0.12
-const RESUME_MAX_RATIO = 0.92
-const DONE_RATIO = 0.96
 /** 相邻篇正文内存预取，连读时跳过一次网络往返 */
 const casePrefetchCache = new Map()
 
@@ -145,25 +148,9 @@ const finishedOffer = ref(false)
 let completeTrackedFor = null
 const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
 
-function progressStorageKey(id) {
-  return `${PROGRESS_KEY}:${id}`
-}
-
-function readSavedProgress(id) {
-  try {
-    const raw = localStorage.getItem(progressStorageKey(id))
-    if (!raw) return null
-    const data = JSON.parse(raw)
-    if (!data || typeof data.ratio !== 'number') return null
-    return data
-  } catch {
-    return null
-  }
-}
-
 function clearProgress(id) {
   try {
-    localStorage.removeItem(progressStorageKey(id))
+    localStorage.removeItem(caseProgressStorageKey(id))
   } catch { /* ignore */ }
 }
 
@@ -174,10 +161,12 @@ function saveProgress(id, ratio, chapterIndex) {
       clearProgress(id)
       return
     }
-    localStorage.setItem(progressStorageKey(id), JSON.stringify({
+    localStorage.setItem(caseProgressStorageKey(id), JSON.stringify({
       ratio: Math.min(1, Math.max(0, ratio)),
       chapterIndex: Number.isFinite(chapterIndex) ? chapterIndex : 0,
       updatedAt: Date.now(),
+      title: caseData.value?.title || undefined,
+      category: caseData.value?.category || undefined,
     }))
   } catch { /* ignore quota */ }
 }
@@ -254,7 +243,7 @@ function onScroll() {
 function prepareResume(id) {
   resumeOffer.value = null
   finishedOffer.value = false
-  const saved = readSavedProgress(id)
+  const saved = readCaseProgress(id)
   if (!saved) return
   // 历史脏数据：已读完仍留在 localStorage 时直接清掉
   if (saved.ratio >= DONE_RATIO) {
