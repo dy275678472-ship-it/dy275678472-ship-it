@@ -93,10 +93,14 @@
         <h3>{{ stats.works }}</h3>
         <p>平台作品</p>
       </div>
-      <div class="data-item">
+      <router-link
+        to="/trending"
+        class="data-item data-item-link"
+        @click="trackEvent('data_proof_cases_click', { category: 'funnel', label: 'public_cases' })"
+      >
         <h3>{{ stats.cases }}</h3>
         <p>公开案例</p>
-      </div>
+      </router-link>
     </section>
     <p class="stats-note" v-if="statsLoaded">数据来自平台实时统计，每日更新</p>
 
@@ -688,6 +692,23 @@ const startTrial = async (append = false) => {
 .data-item p {
   font-size: 16px;
   color: var(--lyread-text-secondary);
+}
+.data-item-link {
+  text-decoration: none;
+  color: inherit;
+  border-radius: 12px;
+  padding: 4px 8px;
+  transition: background 0.15s ease;
+}
+.data-item-link:hover {
+  background: rgba(37, 99, 235, 0.06);
+}
+.data-item-link:hover p {
+  color: var(--lyread-primary-blue-end);
+}
+.data-item-link:focus-visible {
+  outline: 2px solid var(--lyread-primary-blue-end);
+  outline-offset: 2px;
 }
 
 
