@@ -1113,8 +1113,26 @@ def _sections_html(sections: list) -> str:
 
 def _render_article_page(meta: dict, url: str, crumbs: list[tuple[str, str]]) -> str:
     h1 = meta.get("h1") or meta["title"]
+    register_href = _register_workspace_href()
+    mid_cta = f"""
+    <div class="seo-cta" style="margin:24px 0">
+      <a href="{register_href}">免费注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">先看看案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/story">试试短故事 →</a>
+    </div>
+    """
     body_html = f"<h2 style='font-size:20px;margin-bottom:16px'>{escape(h1)}</h2>"
-    body_html += _sections_html(meta["sections"])
+    sections = meta.get("sections") or []
+    # 首节后插次屏 CTA，对齐 FAQ/法律页：读完开场即转化，不等页底
+    if len(sections) >= 2:
+        body_html += _sections_html(sections[:1])
+        body_html += mid_cta
+        body_html += _sections_html(sections[1:])
+    else:
+        body_html += _sections_html(sections)
+        body_html += mid_cta
     if meta.get("faqs"):
         body_html += '<h2 style="font-size:18px;margin:24px 0 12px">常见问题</h2><dl class="seo-faq">'
         for q, a in meta["faqs"]:
@@ -1122,7 +1140,7 @@ def _render_article_page(meta: dict, url: str, crumbs: list[tuple[str, str]]) ->
         body_html += "</dl>"
     body_html += f"""
     <div class="seo-cta">
-      <a href="{_register_workspace_href()}">免费注册领 30 点 →</a>
+      <a href="{register_href}">免费注册领 30 点 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/pricing">查看价格 →</a>
       &nbsp;&nbsp;
@@ -1150,11 +1168,22 @@ async def seo_compare_index():
         f'<li><a href="{SITE_BASE}/compare/{slug}">{escape(p["title"])}</a></li>'
         for slug, p in COMPARE_PAGES.items()
     )
+    register_href = _register_workspace_href()
+    mid_cta = f"""
+    <div class="seo-cta" style="margin:24px 0">
+      <a href="{register_href}">免费注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">先看看案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/story">试试短故事 →</a>
+    </div>
+    """
     body = f"""
     <p>客观对比 LyRead 与主流 AI 写小说工具，帮你按创作场景选型。</p>
+    {mid_cta}
     <ul class="seo-list">{items}</ul>
     <div class="seo-cta">
-      <a href="{_register_workspace_href()}">免费注册试用（送 30 点）→</a>
+      <a href="{register_href}">免费注册试用（送 30 点）→</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/pricing">查看价格 →</a>
       &nbsp;&nbsp;
@@ -1189,10 +1218,27 @@ async def seo_guide_index():
         f'<li><a href="{SITE_BASE}/guide/{slug}">{escape(p["title"])}</a></li>'
         for slug, p in GUIDE_PAGES.items()
     )
+    register_href = _register_workspace_href()
+    mid_cta = f"""
+    <div class="seo-cta" style="margin:24px 0">
+      <a href="{register_href}">免费注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">先看看案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/story">试试短故事 →</a>
+    </div>
+    """
     body = f"""
     <p>AI 写小说教程：从入门、大纲章纲到日更续写实操。</p>
+    {mid_cta}
     <ul class="seo-list">{items}</ul>
-    <div class="seo-cta"><a href="{_register_workspace_href()}">注册开写（送 30 点）→</a></div>
+    <div class="seo-cta">
+      <a href="{register_href}">注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/pricing">查看价格 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">浏览案例 →</a>
+    </div>
     """
     return _seo_html(
         title="AI写小说教程 - LyRead AI 创作指南",
