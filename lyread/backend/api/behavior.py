@@ -12,8 +12,9 @@ import time
 
 router = APIRouter()
 
-# 行为数据存储 (生产环境应使用数据库)
+# 行为数据存储 (生产环境应使用数据库)；环缓冲避免一方埋点兜底撑爆内存
 USER_BEHAVIOR_DB = []
+_BEHAVIOR_CAP = 5000
 
 
 # 数据模型
@@ -67,7 +68,9 @@ def track_view(
         "timestamp": datetime.now().isoformat()
     }
     USER_BEHAVIOR_DB.append(entry)
-    
+    if len(USER_BEHAVIOR_DB) > _BEHAVIOR_CAP:
+        del USER_BEHAVIOR_DB[: len(USER_BEHAVIOR_DB) - _BEHAVIOR_CAP]
+
     return {
         "status": "ok",
         "tracked": True,

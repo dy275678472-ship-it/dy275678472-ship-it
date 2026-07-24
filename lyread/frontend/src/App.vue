@@ -43,7 +43,7 @@
         </div>
         <nav class="footer-links">
           <a href="/faq">常见问题</a>
-          <a href="/about">关于我们</a>
+          <router-link to="/about">关于我们</router-link>
           <a href="/compare">工具对比</a>
           <a href="/guide">创作教程</a>
           <router-link to="/pricing">价格</router-link>

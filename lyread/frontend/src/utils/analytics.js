@@ -1,9 +1,21 @@
-/** 站点分析：百度统计 + GA4（通过环境变量注入 ID） */
+/** 站点分析：百度统计 + GA4（通过环境变量注入 ID）；无 ID 时一方 /behavior/track 兜底 */
 
-const BAIDU_ID = import.meta.env.VITE_BAIDU_TONGJI_ID || ''
-const GA4_ID = import.meta.env.VITE_GA4_MEASUREMENT_ID || ''
+const BAIDU_ID = (import.meta.env.VITE_BAIDU_TONGJI_ID || '').trim()
+const GA4_ID = (import.meta.env.VITE_GA4_MEASUREMENT_ID || '').trim()
+
+const FIRST_PARTY_CATEGORIES = new Set([
+  'conversion',
+  'funnel',
+  'auth',
+  'monetization',
+  'engagement',
+])
 
 let loaded = false
+
+function hasThirdParty() {
+  return !!(BAIDU_ID || GA4_ID)
+}
 
 function loadScripts() {
   if (loaded || typeof window === 'undefined') return
@@ -29,8 +41,37 @@ function loadScripts() {
   }
 }
 
+/** 无第三方 ID 时，把关键转化事件落到一方行为接口（占位友好，不丢漏斗信号） */
+function trackFirstParty(name, params = {}) {
+  if (typeof window === 'undefined') return
+  if (hasThirdParty()) return
+  const category = String(params.category || 'site')
+  if (!FIRST_PARTY_CATEGORIES.has(category)) return
+  try {
+    const q = new URLSearchParams({
+      content_id: String(name || 'event').slice(0, 120),
+      content_type: 'event',
+      action: category.slice(0, 40),
+      from_source: String(params.label || params.page_path || '').slice(0, 120),
+      stay_time: String(Number(params.value) || 0),
+    })
+    const url = `/behavior/track?${q}`
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(url)
+    } else {
+      fetch(url, { method: 'POST', keepalive: true }).catch(() => {})
+    }
+  } catch {
+    /* ignore beacon errors */
+  }
+}
+
 export function initAnalytics() {
   loadScripts()
+}
+
+export function analyticsConfigured() {
+  return hasThirdParty()
 }
 
 export function trackPageView(path, title) {
@@ -44,6 +85,7 @@ export function trackPageView(path, title) {
       page_title: title || document.title,
     })
   }
+  trackFirstParty('page_view', { category: 'engagement', label: path, page_path: path })
 }
 
 export function trackEvent(name, params = {}) {
@@ -54,4 +96,5 @@ export function trackEvent(name, params = {}) {
   if (GA4_ID && window.gtag) {
     window.gtag('event', name, params)
   }
+  trackFirstParty(name, params)
 }
