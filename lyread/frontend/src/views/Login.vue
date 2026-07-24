@@ -57,9 +57,17 @@
 
       <!-- 找回密码 -->
       <form v-else-if="showForgot" @submit.prevent="handleForgot">
+        <p v-if="recoveryHint" class="recovery-hint" role="status">{{ recoveryHint }}</p>
         <input v-model="form.username" type="text" class="input" placeholder="用户名" required />
         <input v-model="form.email" type="email" class="input" placeholder="注册邮箱" required />
-        <button type="submit" class="btn btn-primary" :disabled="loading">{{ loading ? '提交中...' : '获取重置链接' }}</button>
+        <button type="submit" class="btn btn-primary" :disabled="loading || recoveryBlocked">
+          {{ loading ? '提交中...' : (recoveryBlocked ? '邮件找回暂不可用' : '获取重置链接') }}
+        </button>
+        <p v-if="recoveryBlocked" class="recovery-alt">
+          <a href="#" @click.prevent="goRegisterInstead">注册新账号继续创作（送 30 点）</a>
+          ·
+          <a href="#" @click.prevent="$router.push('/')">先看看案例</a>
+        </p>
       </form>
 
       <!-- 重置密码 -->
@@ -99,12 +107,12 @@
           {{ showRegister ? '已有账号？登录' : '没有账号？注册' }}
         </a>
         <span class="divider">|</span>
-        <a href="#" @click.prevent="showForgot = true">忘记密码</a>
+        <a href="#" @click.prevent="openForgot">忘记密码</a>
         <span class="divider">|</span>
         <a href="#" @click.prevent="$router.push('/')">先看看</a>
       </div>
       <div class="footer" v-else>
-        <a href="#" @click.prevent="showForgot = false; showReset = false">返回登录</a>
+        <a href="#" @click.prevent="closeForgot">返回登录</a>
       </div>
 
       <div class="social-login" v-if="!showForgot && !showReset">
@@ -145,6 +153,50 @@ const showForgot = ref(false)
 const showReset = ref(false)
 const resetToken = ref('')
 const oauth = ref({ wechat: false, qq: false })
+/** SMTP / 令牌回显能力：来自公开 /health/config，不含密钥 */
+const recoveryHint = ref('')
+const recoveryBlocked = ref(false)
+
+async function refreshRecoveryStatus() {
+  recoveryHint.value = ''
+  recoveryBlocked.value = false
+  try {
+    const cfg = await fetch('/health/config').then((r) => r.json()).catch(() => null)
+    if (!cfg) return
+    const smtpOk = !!cfg?.smtp?.configured
+    const inlineOk = !!cfg?.expose_reset_token
+    if (smtpOk) {
+      recoveryHint.value = '将向注册邮箱发送重置链接（1 小时内有效）。'
+      return
+    }
+    if (inlineOk) {
+      recoveryHint.value = '邮件服务未配置：匹配成功后将在本页直接进入重置（令牌不经邮箱）。'
+      return
+    }
+    recoveryBlocked.value = true
+    recoveryHint.value =
+      '邮件服务暂未开通，暂时无法发送重置邮件。可注册新账号继续创作，或联系客服协助找回。'
+  } catch {
+    /* 配置不可用时仍允许提交，由接口 delivery 字段兜底 */
+  }
+}
+
+function goRegisterInstead() {
+  trackEvent('forgot_register_fallback', { category: 'auth', label: 'smtp_unavailable' })
+  showForgot.value = false
+  showRegister.value = true
+  error.value = ''
+  success.value = ''
+}
+
+function closeForgot() {
+  showForgot.value = false
+  showReset.value = false
+  recoveryHint.value = ''
+  recoveryBlocked.value = false
+  error.value = ''
+  success.value = ''
+}
 
 /** 解析 redirect 深链：试用书名 / 案例风格 / 充值套餐 / 创作台 */
 function parseRedirectIntent(redirect) {
@@ -263,23 +315,51 @@ const toggleMode = () => {
   showReset.value = false
   error.value = ''
   success.value = ''
+  recoveryHint.value = ''
+  recoveryBlocked.value = false
+}
+
+const openForgot = () => {
+  showForgot.value = true
+  showRegister.value = false
+  showReset.value = false
+  error.value = ''
+  success.value = ''
+  trackEvent('forgot_open', { category: 'auth', label: 'login_footer' })
+  refreshRecoveryStatus()
 }
 
 const handleForgot = async () => {
+  if (recoveryBlocked.value) {
+    error.value = '邮件找回暂不可用，请注册新账号或联系客服'
+    trackEvent('forgot_blocked', { category: 'auth', label: 'smtp_unavailable' })
+    return
+  }
   loading.value = true
   error.value = ''
+  success.value = ''
   try {
     const res = await authApi.forgot(form.username, form.email)
-    if (res?.token) {
+    const delivery = res?.delivery || (res?.token ? 'inline' : 'opaque')
+    trackEvent('forgot_result', { category: 'auth', label: delivery })
+    if (delivery === 'inline' && res?.token) {
       resetToken.value = res.token
       showForgot.value = false
       showReset.value = true
       success.value = res.message || '请设置新密码'
+    } else if (delivery === 'unavailable') {
+      recoveryBlocked.value = true
+      recoveryHint.value = res.message || recoveryHint.value
+      error.value = res.message || '邮件服务暂未开通，暂时无法发送重置邮件'
+      success.value = ''
+    } else if (delivery === 'email') {
+      success.value = res.message || '重置链接已发送至您的邮箱'
     } else {
       success.value = res?.message || '若账号匹配将收到重置指引'
     }
   } catch (e) {
     error.value = '请求失败'
+    trackEvent('forgot_result', { category: 'auth', label: 'error' })
   } finally { loading.value = false }
 }
 
@@ -560,6 +640,31 @@ const handleRegister = async () => {
   font-size: 12px;
   line-height: 1.5;
   color: #047857;
+}
+
+.recovery-hint {
+  margin: -12px 0 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 12px;
+  line-height: 1.55;
+  text-align: left;
+}
+.recovery-alt {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #5a6a7a;
+  line-height: 1.5;
+}
+.recovery-alt a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.recovery-alt a:hover {
+  text-decoration: underline;
 }
 
 .resume-banner {

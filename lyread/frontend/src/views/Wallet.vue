@@ -246,7 +246,7 @@ async function load() {
     if (bal?.success) balance.value = bal
     if (hist?.success) txns.value = hist.transactions || []
     if (pkgs?.payment_mode === 'sandbox') {
-      payHint.value = '充值页当前为体验沙箱：确认后模拟到账，点数可正常用于创作。'
+      payHint.value = '充值页当前为体验沙箱：确认后模拟到账，点数可正常用于创作。正式支付宝需配置商户密钥（仅读环境变量）。'
     } else if (pkgs && !pkgs.alipay_ready) {
       payHint.value = '正式支付宝即将开通。可先领取每日免费点，或使用注册赠送额度继续创作。'
     } else {

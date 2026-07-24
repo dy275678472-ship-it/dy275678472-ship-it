@@ -34,7 +34,13 @@ print('expose_reset_token', d.get('expose_reset_token'))
 " > /tmp/lyread_cfg_$$.txt 2>/dev/null || true
 
 if grep -q "deepseek True" /tmp/lyread_cfg_$$.txt 2>/dev/null; then ok "DeepSeek API key set"; else bad "DeepSeek API key missing"; fi
-if grep -q "smtp_configured True" /tmp/lyread_cfg_$$.txt 2>/dev/null; then ok "SMTP configured"; else warn "SMTP not configured (password reset uses token fallback)"; fi
+if grep -q "smtp_configured True" /tmp/lyread_cfg_$$.txt 2>/dev/null; then ok "SMTP configured"; else
+  if grep -q "expose_reset_token True" /tmp/lyread_cfg_$$.txt 2>/dev/null; then
+    warn "SMTP not configured (inline token fallback via EXPOSE_RESET_TOKEN)"
+  else
+    warn "SMTP not configured and EXPOSE_RESET_TOKEN=0 (forgot must show unavailable UX, not fake email sent)"
+  fi
+fi
 if grep -q "alipay_configured True" /tmp/lyread_cfg_$$.txt 2>/dev/null; then ok "Alipay keys configured"; else
   if grep -q "alipay_sandbox True" /tmp/lyread_cfg_$$.txt 2>/dev/null; then warn "Alipay: sandbox mode only (no merchant keys)"; else bad "Alipay not configured"; fi
 fi

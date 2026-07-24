@@ -222,7 +222,14 @@ class ResetPasswordRequest(BaseModel):
 
 @router.post("/forgot")
 async def forgot_password(req: ForgotPasswordRequest):
-    """申请重置密码（验证用户名+邮箱匹配）。"""
+    """申请重置密码（验证用户名+邮箱匹配）。
+
+    delivery 字段供前端诚实展示（不泄露账号是否存在）：
+    - opaque: 账号/邮箱未匹配（通用话术）
+    - email: 已发邮件
+    - inline: SMTP 未就绪且 EXPOSE_RESET_TOKEN=1，令牌随响应返回
+    - unavailable: SMTP 未就绪且不允许回显令牌（避免假称「已发邮件」）
+    """
     conn = get_db()
     if not conn:
         raise HTTPException(status_code=503, detail="服务暂时不可用")
@@ -233,7 +240,11 @@ async def forgot_password(req: ForgotPasswordRequest):
         )
         user = cursor.fetchone()
         if not user or not user.get("email") or str(user["email"]).lower() != str(req.email).lower():
-            return {"success": True, "message": "若账号与邮箱匹配，将生成重置令牌"}
+            return {
+                "success": True,
+                "delivery": "opaque",
+                "message": "若账号与邮箱匹配，将按可用方式发送重置指引",
+            }
         token = secrets.token_urlsafe(32)
         from datetime import datetime, timedelta
         expires = datetime.utcnow() + timedelta(hours=1)
@@ -247,18 +258,28 @@ async def forgot_password(req: ForgotPasswordRequest):
         if smtp_configured():
             try:
                 send_password_reset_email(str(req.email), reset_path, token)
-                return {"success": True, "message": "重置链接已发送至您的邮箱"}
+                return {
+                    "success": True,
+                    "delivery": "email",
+                    "message": "重置链接已发送至您的邮箱",
+                }
             except Exception as mail_exc:
                 print(f"[Forgot] 邮件发送失败: {mail_exc}")
         expose = os.getenv("EXPOSE_RESET_TOKEN", "0") == "1"
         if expose:
             return {
                 "success": True,
-                "message": "重置令牌已生成（邮件服务未配置时请保存下方链接）",
+                "delivery": "inline",
+                "message": "邮件服务未配置：请在本页直接设置新密码（令牌已填入）",
                 "reset_path": reset_path,
                 "token": token,
             }
-        return {"success": True, "message": "若账号与邮箱匹配，将发送重置邮件"}
+        # 生产常见：SMTP 未配且不允许回显 → 不可再假称「已发邮件」
+        return {
+            "success": True,
+            "delivery": "unavailable",
+            "message": "邮件服务暂未开通，暂时无法发送重置邮件。可注册新账号继续创作（点数独立），或联系客服协助找回。",
+        }
     finally:
         if conn.is_connected():
             conn.close()

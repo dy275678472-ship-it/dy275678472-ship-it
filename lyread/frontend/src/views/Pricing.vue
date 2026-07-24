@@ -90,9 +90,9 @@
         </div>
       </div>
       <p class="pay-note pay-error" v-if="payError">{{ payError }}</p>
-      <p class="pay-note" v-if="sandboxMode">当前为<strong>沙箱充值模式</strong>：点击充值后确认即可模拟到账。配置支付宝商户密钥后将跳转真实支付。</p>
+      <p class="pay-note" v-if="sandboxMode">当前为<strong>沙箱充值模式</strong>：点击充值后确认即可模拟到账，点数可正常用于创作。配置支付宝商户密钥后将跳转真实支付（密钥仅读环境变量，不写死在前端）。</p>
       <p class="pay-note" v-else-if="alipayReady">支持支付宝扫码/网页支付，支付成功后点数自动到账。</p>
-      <p class="pay-note" v-else>支付宝参数配置中。可先使用注册赠送与每日免费额度，或联系管理员开通沙箱测试充值。</p>
+      <p class="pay-note" v-else>支付宝商户参数配置中。可先使用注册赠送与每日免费额度继续创作；需要测试充值请联系管理员开启沙箱。</p>
     </section>
 
     <section class="faq">
@@ -184,6 +184,7 @@ const faqs = [
   { q: '生成失败会扣点吗？', a: '不会。任务失败会自动全额返还已冻结的点数。' },
   { q: '可以先免费试用吗？', a: '可以。首页支持游客免费生成书名；注册后再领 30 点 + 每日 5 点，约可续写 3 章。' },
   { q: '首充加赠怎么算？', a: '首次充值任意套餐，额外赠送套餐点数的 20%。例如体验包 100 点，首充实得 120 点。' },
+  { q: '现在能用支付宝正式付款吗？', a: '正式商户密钥配置完成后将跳转支付宝收银台。当前若为沙箱/体验模式，确认后模拟到账，点数可正常用于创作；也可先用注册赠送与每日免费点开写。' },
 ]
 
 const isLoggedIn = computed(() => !!localStorage.getItem('token'))
