@@ -997,6 +997,16 @@ async def seo_about_page(request: Request):
 @router.api_route("/privacy", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_privacy_page(request: Request):
     """隐私政策 SSR"""
+    register_href = _register_workspace_href()
+    mid_cta = f"""
+    <div class="seo-cta" style="margin:24px 0">
+      <a href="{register_href}">免费注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">先看看案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/story">试试短故事 →</a>
+    </div>
+    """
     body_html = f"""
     <p>更新日期：2026-07-21。LyRead AI（https://lyread.cn）重视用户隐私保护。使用本平台即表示您同意本政策。</p>
     <h2 style="font-size:18px;margin:20px 0 12px">我们收集的信息</h2>
@@ -1006,6 +1016,7 @@ async def seo_privacy_page(request: Request):
       <li><strong>交易信息：</strong>充值订单、点数变动记录（支付由支付宝等第三方处理，我们不存储完整支付密码）</li>
       <li><strong>技术日志：</strong>IP、浏览器类型、访问时间，用于安全与故障排查</li>
     </ul>
+    {mid_cta}
     <h2 style="font-size:18px;margin:20px 0 12px">信息如何使用</h2>
     <ul style="line-height:1.8;color:#3a4a5e;padding-left:20px">
       <li>提供、维护与改进 AI 创作服务（含小说大脑记忆功能）</li>
@@ -1040,10 +1051,21 @@ async def seo_privacy_page(request: Request):
 @router.api_route("/terms", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_terms_page(request: Request):
     """用户协议 SSR"""
+    register_href = _register_workspace_href()
+    mid_cta = f"""
+    <div class="seo-cta" style="margin:24px 0">
+      <a href="{register_href}">免费注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">先看看案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/pricing">查看价格 →</a>
+    </div>
+    """
     body_html = f"""
     <p>更新日期：2026-07-21。欢迎使用 LyRead AI。请在使用前仔细阅读本协议。</p>
     <h2 style="font-size:18px;margin:20px 0 12px">服务说明</h2>
     <p>LyRead AI 提供 AI 辅助小说创作服务，包括书名生成、大纲、章纲、正文续写、短故事生成等。生成内容由 AI 模型产出，平台不对内容的文学质量、版权归属或商业结果作保证。</p>
+    {mid_cta}
     <h2 style="font-size:18px;margin:20px 0 12px">账号与点数</h2>
     <ul style="line-height:1.8;color:#3a4a5e;padding-left:20px">
       <li>注册即获赠体验点数；充值点数不可转让、不可兑换现金（法律另有规定除外）</li>

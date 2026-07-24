@@ -586,6 +586,10 @@ def _core_story(text: str) -> str:
         "续写补笔",
         "续写：",
         "加长草稿",
+        "私密附录",
+        "夜色·",
+        "夜色：",
+        "收束补记：",
         "第五章（节选加长）",
         "人物侧写：",
         "冲突加码：",
@@ -717,16 +721,18 @@ def pad_excerpt(text: str, case: dict, min_chars: int = 2000) -> str:
         name = case["protagonist"]
         title = case["title"]
         hook = case.get("hook", "")
+        round_i = (n - 1) // len(chapter_seeds) + 1
+        # 叙事边角补笔：禁止「加长草稿/私密附录」元语气；round 保证多轮不撞 used
         line = (
-            f"加长草稿 {n} · {place}：{name}在{place}核对与「{hook}」有关的{obj}，"
-            f"意外发现{clue}对不上。他没有声张，只把照片与时间写进《{title}》私密附录，"
-            f"并约定：在附录变正文之前，任何人不得提前剧透。"
+            f"{place}夜色·{round_i}：{name}在{place}核对与「{hook}」有关的{obj}，意外发现{clue}对不上。"
+            f"他没有声张，只把照片与时间写进《{title}》随身手记，并约定："
+            f"在下一章真正落笔之前，任何人不得提前走漏风声。"
         )
         if line not in used:
             text += f"\n\n{line}"
             used.add(line)
         n += 1
-        if n > 12:
+        if n > 40:
             break
     return text + closing
 
