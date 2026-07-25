@@ -34,6 +34,8 @@ HANDCRAFTED_IDS = {
     "showcase_game_07",
     "showcase_warrior_06",
     "showcase_warrior_07",
+    "showcase_urban_06",
+    "showcase_system_07",
     "showcase_romance_05", "showcase_romance_06", "showcase_romance_07",
     "showcase_palace_01", "showcase_palace_02",
     "showcase_palace_03", "showcase_palace_04",
@@ -612,6 +614,7 @@ def _core_story(text: str) -> str:
         "人物侧写：",
         "冲突加码：",
         "夜间复盘：",
+        "现场补笔：",
         "同盟裂痕：",
         "钩子兑现：",
         "情绪与情报：",
@@ -640,7 +643,7 @@ def _core_story(text: str) -> str:
 def _unique_pad_beats(case: dict) -> list:
     """生成互不重复的长扩写段（合计约 1500+ 字），覆盖去重缺口。
 
-    禁止「三张清单 / 人物侧写·赛道元语气 / 冲突加码·夜间复盘」模板——读起来像创作台注脚，不像正文。
+    禁止「三张清单 / 人物侧写·赛道元语气 / 冲突加码·夜间复盘 / 现场补笔·同盟裂痕·钩子兑现」模板——读起来像创作台注脚，不像正文。
     """
     title = case["title"]
     genre = case["genre"]
@@ -649,9 +652,8 @@ def _unique_pad_beats(case: dict) -> list:
     genre_line = GENRE_EXTRA.get(genre, GENRE_EXTRA["default"])
     beats = [
         (
-            f"现场补笔：围绕「{hook}」，{name}没有开庆功宴，只把时间表又压短一格。"
-            f"能立刻验证的，他当晚就派人去验；需要盟友的，他连夜约到有监控的地方谈；"
-            f"只能赌的，他锁进抽屉，钥匙别在腰间。《{title}》从这里开始变沉——爽点还在，但每一下都带着代价。"
+            f"落地核对：围绕「{hook}」，{name}当晚不庆功，只把能验的验完——人证、物证、时间戳各一份。"
+            f"验得通的推进，验不通的搁置，不能赌的封存。《{title}》从这里开始变沉——爽点还在，但每一下都带着代价。"
         ),
         (
             f"近景：外人只看见{name}翻盘，近处的人却发现他睡得更少、问得更细。"
@@ -669,14 +671,14 @@ def _unique_pad_beats(case: dict) -> list:
             f"于是他改口令：软话可以听，签字必须冷；人情可以欠，钥匙不能交。"
         ),
         (
-            f"同盟裂痕：能共苦的人开始问分红，只能共享荣耀的人开始抢功。"
-            f"{name}当众把功劳让出去一半，又私下把关键岗位换人。"
-            f"有人骂他无情，他答：无情的是局势。我只是提前把局势说清楚。"
+            f"席位重排：能共苦的人开始要名分，只能共享荣耀的人开始占坑。"
+            f"{name}公开把一半功劳让出去，又在夜里换掉两个关键席位。"
+            f"有人骂他翻脸，他答：翻的不是脸，是座位表——谁坐得住，谁留下。"
         ),
         (
-            f"钩子兑现：围绕「{hook}」的第一次兑现并不华丽，甚至有点狼狈。"
-            f"{name}差点失手，靠一条被忽略的细节翻盘。"
-            f"翻盘后他没有放烟花，只在日志写下：第一次兑现成功，第二次会更贵。"
+            f"首响回扣：围绕「{hook}」的第一次回响并不华丽，甚至有点狼狈。"
+            f"{name}差点翻车，靠一条被忽略的细节把局面扳回来。"
+            f"扳回来后他没有放烟花，只在本子写下：第一次回响成功，第二次会更贵。"
         ),
         (
             f"情绪与情报：{name}学会把怒火存进抽屉，把情报存进保险箱。"
@@ -777,7 +779,7 @@ def pad_excerpt(text: str, case: dict, min_chars: int = 2000) -> str:
 
 
 def has_duplicate_padding(text: str, min_repeats: int = 3) -> bool:
-    """撞模板垫文：同句重复，或遗留夜色/手记/三张清单/赛道元语气/冲突加码·夜间复盘堆字尾。"""
+    """撞模板垫文：同句重复，或遗留夜色/手记/三张清单/赛道元语气/冲突加码·夜间复盘/现场补笔·同盟裂痕·钩子兑现堆字尾。"""
     from collections import Counter
 
     if "任何人不得提前走漏风声" in text or "随身手记" in text:
@@ -793,6 +795,15 @@ def has_duplicate_padding(text: str, min_repeats: int = 3) -> bool:
     if "冲突加码：" in text or "夜间复盘：" in text:
         return True
     if "公开示好、私下挖坑" in text or "心软可以，但必须可撤销" in text:
+        return True
+    # 旧 pad 模板：现场补笔 / 同盟裂痕 / 钩子兑现（跨题材同构尾）
+    if "现场补笔：" in text or "同盟裂痕：" in text or "钩子兑现：" in text:
+        return True
+    if "没有开庆功宴，只把时间表又压短一格" in text:
+        return True
+    if "能共苦的人开始问分红，只能共享荣耀的人开始抢功" in text:
+        return True
+    if "第一次兑现并不华丽，甚至有点狼狈" in text:
         return True
     # 同行内复制粘贴堆字
     if text.count(_INLINE_REPEAT_PHRASE) >= 2:
