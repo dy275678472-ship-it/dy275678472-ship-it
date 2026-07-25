@@ -60,11 +60,18 @@
         </div>
       </section>
 
-      <div v-if="previewOpen" class="preview-modal" @click.self="previewOpen = false">
+      <div
+        v-if="previewOpen"
+        class="preview-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="作品预览"
+        @click.self="closePreview"
+      >
         <div class="preview-panel">
           <header class="preview-head">
             <h3>{{ previewData?.title || '作品预览' }}</h3>
-            <button class="preview-close" @click="previewOpen = false">×</button>
+            <button type="button" class="preview-close" aria-label="关闭预览" @click="closePreview">×</button>
           </header>
           <div v-if="previewLoading" class="empty">加载中...</div>
           <div v-else-if="previewData" class="preview-body">
@@ -85,6 +92,22 @@
               >打开创作台自检</router-link>
             </div>
           </div>
+          <footer v-if="previewReviewId != null && !previewLoading" class="preview-actions">
+            <button
+              type="button"
+              class="btn-ok"
+              :disabled="previewActing"
+              @click="approveFromPreview"
+            >通过</button>
+            <button
+              type="button"
+              class="btn-no"
+              :disabled="previewActing"
+              @click="rejectFromPreview"
+            >驳回</button>
+            <button type="button" class="btn-preview" :disabled="previewActing" @click="closePreview">关闭</button>
+            <span class="preview-hint">Esc 关闭</span>
+          </footer>
         </div>
       </div>
 
@@ -186,7 +209,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { adminApi } from '../api'
 import { IMAGES } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
@@ -206,10 +229,35 @@ const jobs = ref([])
 const previewOpen = ref(false)
 const previewLoading = ref(false)
 const previewData = ref(null)
+const previewReviewId = ref(null)
+const previewActing = ref(false)
 
 function trackEmpty(label) {
   trackEvent('admin_empty_cta', { category: 'engagement', label })
 }
+
+function closePreview() {
+  previewOpen.value = false
+  previewReviewId.value = null
+  previewData.value = null
+  previewActing.value = false
+}
+
+function onPreviewKeydown(e) {
+  if (!previewOpen.value) return
+  if (e.key === 'Escape') {
+    e.preventDefault()
+    closePreview()
+  }
+}
+
+watch(previewOpen, (open) => {
+  if (open) {
+    window.addEventListener('keydown', onPreviewKeydown)
+  } else {
+    window.removeEventListener('keydown', onPreviewKeydown)
+  }
+})
 
 const tabs = [
   { id: 'reviews', label: '审核' },
@@ -242,8 +290,11 @@ async function loadAll() {
 
 async function openPreview(id) {
   previewOpen.value = true
+  previewReviewId.value = id
   previewLoading.value = true
   previewData.value = null
+  previewActing.value = false
+  trackEvent('admin_review_preview', { category: 'engagement', label: String(id) })
   try {
     const res = await adminApi.reviewPreview(id)
     if (res?.success) previewData.value = res.preview
@@ -255,13 +306,39 @@ async function openPreview(id) {
 async function approve(id) {
   const res = await adminApi.approveReview(id)
   alert(res?.message || res?.detail || '完成')
-  loadAll()
+  trackEvent('admin_review_approve', { category: 'engagement', label: String(id) })
+  await loadAll()
 }
 
 async function reject(id) {
   const reason = prompt('驳回原因（可选）') || ''
   await adminApi.rejectReview(id, reason)
-  loadAll()
+  trackEvent('admin_review_reject', { category: 'engagement', label: String(id) })
+  await loadAll()
+}
+
+async function approveFromPreview() {
+  const id = previewReviewId.value
+  if (id == null || previewActing.value) return
+  previewActing.value = true
+  try {
+    await approve(id)
+    closePreview()
+  } finally {
+    previewActing.value = false
+  }
+}
+
+async function rejectFromPreview() {
+  const id = previewReviewId.value
+  if (id == null || previewActing.value) return
+  previewActing.value = true
+  try {
+    await reject(id)
+    closePreview()
+  } finally {
+    previewActing.value = false
+  }
 }
 
 async function adjust(u) {
@@ -271,6 +348,9 @@ async function adjust(u) {
 }
 
 onMounted(loadAll)
+onUnmounted(() => {
+  window.removeEventListener('keydown', onPreviewKeydown)
+})
 </script>
 
 <style scoped>
@@ -333,6 +413,18 @@ th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #f0f4f8; 
 .preview-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .preview-close { border: none; background: transparent; font-size: 24px; cursor: pointer; color: #94a3b8; }
 .preview-meta { color: #64748b; font-size: 13px; margin-bottom: 12px; }
+.preview-actions {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  margin-top: 16px; padding-top: 14px; border-top: 1px solid #f0f4f8;
+  position: sticky; bottom: 0; background: #fff;
+}
+.preview-actions .btn-ok,
+.preview-actions .btn-no,
+.preview-actions .btn-preview { padding: 8px 14px; }
+.preview-actions .btn-ok:disabled,
+.preview-actions .btn-no:disabled,
+.preview-actions .btn-preview:disabled { opacity: 0.6; cursor: not-allowed; }
+.preview-hint { margin-left: auto; font-size: 12px; color: #94a3b8; }
 .preview-ch { margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f4f8; }
 .preview-ch h4 { font-size: 14px; margin-bottom: 8px; }
 .preview-ch pre {

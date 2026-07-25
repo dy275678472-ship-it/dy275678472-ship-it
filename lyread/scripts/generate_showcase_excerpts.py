@@ -689,6 +689,9 @@ def _core_story(text: str) -> str:
         "人到场、物到手、时戳在",
         "不拿掌声凑数",
         "不拿空话凑篇幅",
+        # 旧尾声堆字：跨案「故事，仍在前方」重复垫
+        "故事，仍在前方",
+        "故事仍在前方",
     ]
     cut_at = None
     for marker in cut_markers:
@@ -730,6 +733,8 @@ def _core_story(text: str) -> str:
         "人到场、物到手、时戳在",
         "不拿掌声凑数",
         "不拿空话凑篇幅",
+        "故事，仍在前方",
+        "故事仍在前方",
     )
     kept_paras = []
     for para in text.split("\n\n"):
@@ -1271,6 +1276,9 @@ def has_duplicate_padding(text: str, min_repeats: int = 3) -> bool:
     if "人到场、物到手、时戳在" in text or "不拿掌声凑数" in text:
         return True
     if "不拿空话凑篇幅" in text:
+        return True
+    # 旧尾声堆字：跨案「故事，仍在前方」
+    if "故事，仍在前方" in text or "故事仍在前方" in text:
         return True
     # 溢出补笔旧句：跨案「第N次核对」同构
     if "次核对「" in text and "人、物、时三项，缺一则停" in text:
