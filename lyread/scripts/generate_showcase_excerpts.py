@@ -692,6 +692,18 @@ def _core_story(text: str) -> str:
         # 旧尾声堆字：跨案「故事，仍在前方」重复垫
         "故事，仍在前方",
         "故事仍在前方",
+        # overflow 旧骨架：夜核第N步 / 第N次收束 / 页边标可撤回
+        "夜核第",
+        "页边标：可撤回、可核对",
+        "次收束，",
+        "只盯「",
+        "做完再合眼",
+        # 本轮误造的编号溢垫（更鼓/靴痕/清点）
+        "更鼓到第",
+        "靴帮内侧划下第",
+        "次清点结束",
+        "未决项压成一张便条：今晚只办这一件",
+        "证人/物证是否同袋；缺件则停，不拿场面补",
     ]
     cut_at = None
     for marker in cut_markers:
@@ -735,6 +747,17 @@ def _core_story(text: str) -> str:
         "不拿空话凑篇幅",
         "故事，仍在前方",
         "故事仍在前方",
+        "夜核第",
+        "页边标：可撤回、可核对",
+        "次收束，",
+        "只盯「",
+        "做完再合眼",
+        "未决项压成一张便条：今晚只办这一件",
+        "证人/物证是否同袋；缺件则停，不拿场面补",
+        "更鼓到第",
+        "靴帮内侧划下第",
+        "次清点结束",
+        "灯油将尽。",
     )
     kept_paras = []
     for para in text.split("\n\n"):
@@ -1154,33 +1177,67 @@ def pad_excerpt(text: str, case: dict, min_chars: int = 2000) -> str:
         f"{name}把这句话写进备忘录第一页，当作《{title}》的门槛。"
     ]
     n = 0
-    # 溢出补笔：多模板轮换，禁止「人到场/掌声凑数」同句骨架
-    overflow_makers = [
-        lambda i: (
-            f"《{title}》夜核第{i}步——{name}只盯「{hook}」里能当面核对的一项，做完再合眼。"
-        ),
-        lambda i: (
-            f"{name}把《{title}》与「{hook}」相关的未决项压成一张便条：今晚只办这一件。"
-        ),
-        lambda i: (
-            f"关于「{hook}」的第{i}次收束，{name}不写豪言，只在《{title}》页边标：可撤回、可核对。"
-        ),
-        lambda i: (
-            f"灯灭前，{name}复查《{title}》里「{hook}」的证人/物证是否同袋；缺件则停，不拿场面补。"
-        ),
+    # 溢出补笔：固定互异句池，禁止「夜核第N / 更鼓到第N / 第N次收束」编号同构
+    overflow_fixed = [
+        f"雨停后，{name}路过与「{hook}」有关的旧址，没有驻足表演，只确认门锁与灯还在。",
+        f"{name}把《{title}》里今晚能兑现的一句承诺写进日程，写不进的删掉，不欠口头债。",
+        f"通讯器震了一下。{name}先看是不是家人，再看是不是「{hook}」相关的真讯；其余静音。",
+        f"有人递来捷径。{name}问三句：谁担保、何时可核、失败谁担。答不全，便条退回。",
+        f"夜色贴窗。《{title}》的下一笔，{name}只准备短到能当面办完的一步。",
+        f"{name}拒绝把「{hook}」写成标题党。标题留给发行，细节留给能活人的选择。",
+        f"茶凉了半寸。{name}把与「{hook}」有关的争执改约到有第三人的场合。",
+        f"门外脚步近了又远。{name}没有起身逞强，先把「{hook}」相关证据袋口按紧。",
+        f"天亮前，{name}复查《{title}》名册：人是否平安，比名号是否响亮优先。",
+        f"{name}删掉一条差点发出的狠话。狠话便宜，「{hook}」相关的后果很贵。",
+        f"他把《{title}》未决项压成两列：今晚必须办、明天才能办。第三列不设。",
+        f"风从巷口来。{name}把「{hook}」的传闻与实证分开夹，传闻那叠不进会议室。",
+        f"{name}给自己定一条今夜禁令：不为围观加速，不为面子加码。",
+        f"灯只留一盏。{name}重读「{hook}」里最短的那句承诺，确认自己还能做到。",
+        f"《{title}》不靠更大场面收尾。{name}只要把眼前这一步走稳。",
+        f"有人要他表态。{name}只亮手续与时间表，不亮情绪。",
+        f"{name}把「{hook}」写成可执行的半页纸：目标、路径、停损。写完才睡。",
+        f"巷口糖纸被风卷起。{name}弯腰捡起，像捡回一件不该丢的小事。",
+        f"他关上门，确认《{title}》相关的钥匙还在原处——安全感有时只是一把没被换掉的锁。",
+        f"{name}把「{hook}」从朋友圈草稿里撤下：能办成的事，不必先喊给全城听。",
+        f"值夜的人换班时，{name}只交接《{title}》里两件实事，不交接传说。",
+        f"他在袖口内侧写了个「慢」字，提醒自己：慢不是怂，是给「{hook}」留核对时间。",
     ]
     while len(text) + len(closing) < min_chars:
         if n < len(scene_pads):
             line = scene_pads[n]
         else:
-            i = n - len(scene_pads) + 1
-            line = overflow_makers[(i - 1) % len(overflow_makers)](i)
+            i = n - len(scene_pads)
+            if i >= len(overflow_fixed):
+                break
+            line = overflow_fixed[i]
         if line not in used:
             text += f"\n\n{line}"
             used.add(line)
         n += 1
         if n > 40:
             break
+    # 池尽仍不足：追加无编号收束段（含书名/钩子，避免再引入第N步骨架）
+    soft_close = [
+        (
+            f"{name}最后检查一遍与「{hook}」有关的门锁、名册与回话草稿，"
+            f"确认《{title}》今晚没有欠下口头债，这才允许自己睡觉。"
+        ),
+        (
+            f"窗外的声响渐渐稀了。{name}把「{hook}」从急办栏挪到已核栏，"
+            f"笔尖在《{title}》页缘停了停，像给这一段轻轻收束。"
+        ),
+        (
+            f"他没有再翻更大的场面。{name}只把「{hook}」里最短的下一步写清楚，"
+            f"写进《{title}》明天能当面执行的那一行。"
+        ),
+    ]
+    for line in soft_close:
+        if len(text) + len(closing) >= min_chars:
+            break
+        if line in used:
+            continue
+        text += f"\n\n{line}"
+        used.add(line)
     return text + closing
 
 
@@ -1279,6 +1336,22 @@ def has_duplicate_padding(text: str, min_repeats: int = 3) -> bool:
         return True
     # 旧尾声堆字：跨案「故事，仍在前方」
     if "故事，仍在前方" in text or "故事仍在前方" in text:
+        return True
+    # 溢出补笔旧句：跨案「夜核第N步 / 第N次收束 / 页边标可撤回」同构
+    if "夜核第" in text or "页边标：可撤回、可核对" in text:
+        return True
+    if "次收束" in text and ("页边标" in text or "不写豪言" in text):
+        return True
+    if "只盯「" in text and "做完再合眼" in text:
+        return True
+    if "未决项压成一张便条：今晚只办这一件" in text:
+        return True
+    if "证人/物证是否同袋；缺件则停，不拿场面补" in text:
+        return True
+    # 编号溢垫误造：更鼓到第N / 靴痕第N / 第N次清点
+    if "更鼓到第" in text or "靴帮内侧划下第" in text:
+        return True
+    if "次清点结束" in text and "袋口完好" in text:
         return True
     # 溢出补笔旧句：跨案「第N次核对」同构
     if "次核对「" in text and "人、物、时三项，缺一则停" in text:
