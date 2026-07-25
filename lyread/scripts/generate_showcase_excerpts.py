@@ -34,7 +34,7 @@ HANDCRAFTED_IDS = {
     "showcase_game_07",
     "showcase_warrior_06",
     "showcase_warrior_07",
-    "showcase_urban_06",
+    "showcase_urban_05", "showcase_urban_06", "showcase_urban_07", "showcase_urban_08",
     "showcase_system_07",
     "showcase_romance_05", "showcase_romance_06", "showcase_romance_07",
     "showcase_palace_01", "showcase_palace_02",
@@ -661,6 +661,14 @@ def _core_story(text: str) -> str:
         "会议室冷气：",
         "旧庙石阶：",
         "账房灯下：",
+        # 题材分轨后仍跨案同构的无标签尾
+        "并购室的灯只留一排",
+        "复查时间戳与证人名单",
+        "下一场冲突的计时器已上弦",
+        "门外还有未回的消息。他锁门，把计划写短",
+        "形容词不能过桥，数字才能",
+        "对赌条款摊开",
+        "次核对「",
     ]
     cut_at = None
     for marker in cut_markers:
@@ -678,6 +686,14 @@ def _core_story(text: str) -> str:
         "校验：",
         "（续·",
         "备忘录补记",
+        "复查时间戳与证人名单",
+        "下一场冲突的计时器已上弦",
+        "并购室的灯只留一排",
+        "对赌条款摊开",
+        "形容词不能过桥",
+        "门外还有未回的消息",
+        "次核对「",
+        "人、物、时三项，缺一则停",
     )
     kept_paras = []
     for para in text.split("\n\n"):
@@ -699,8 +715,8 @@ def _unique_pad_beats(case: dict) -> list:
     hook = case.get("hook", "")
     banks = {
         "urban": [
-            f"并购室的灯只留一排。{name}把「{hook}」相关的对赌条款摊开，用红笔圈出三处不可转嫁的责任。"
-            f"法务想加形容词，他摇头：形容词不能过桥，数字才能。《{title}》里的翻盘，从这一页开始像报表，不像神话。",
+            f"尽调室只亮一盏台灯。{name}把「{hook}」拆成三张表：人、债、渠道，红笔只圈可交割项。"
+            f"公关想写「震撼业界」，他改成「可过会」。《{title}》要交割，不要标题党。",
             f"江风灌进车窗。{name}拒绝了一场「随便聊聊」的局，改约到有监控的咖啡厅。"
             f"对方递来的合作备忘录少了一行担保人，他指着空白处微笑：先把人写上，再谈酒。",
             f"夜里现金流看板跳红又跳绿。{name}给财务发语音：「停掉所有面子项目，保发薪与售后。」"
@@ -764,15 +780,42 @@ def _unique_pad_beats(case: dict) -> list:
         f"能核验的推进，不能核验的搁置。《{title}》要沉，沉在细节里。",
         f"有人催他亮底牌。{name}只留一盏灯：够写下一步，不够给人看全部。",
         f"他拒绝无效局：不报复发泄、不透支信誉、不把秘密换成廉价喝彩。",
-        f"门外还有未回的消息。他锁门，把计划写短，短到容不下一句废话。",
+        f"未回消息先入待办。{name}锁门，把计划写到只剩三行——短到塞不进一句废话。",
     ]
     beats = banks.get(genre, default)
-    # 补足长度：穿插通用但措辞打散的收束，避免标签体
-    beats = list(beats) + [
-        f"{name}复查时间戳与证人名单，确认「{hook}」没有被掌声冲淡。"
-        f"掌声可以隔夜，账本不能。",
-        f"下一场冲突的计时器已上弦，但他先做一件小事：让该安心的人先睡。",
-    ]
+    # 补足长度：按题材收束，禁止跨案同句尾
+    genre_closers = {
+        "urban": (
+            f"{name}把「{hook}」相关的票据按日归档，掌声隔夜作废，账本不过夜。"
+            f"先让该发薪的人安心，再谈下一场收购的火药味。"
+        ),
+        "warrior": (
+            f"{name}核对护送名册与「{hook}」的时间线，少一人就停。"
+            f"刀可以再拔，孩子的课不能缺。"
+        ),
+        "system": (
+            f"{name}把「{hook}」任务的截图与银行回单钉在一起，系统夸也好，核不过就扔。"
+            f"产量可以熬夜，信誉不能透支到天亮。"
+        ),
+        "xianxia": (
+            f"{name}用残页压住「{hook}」的方位，雾散前不喊人。"
+            f"灵石可再赚，把柄不能先送出门。"
+        ),
+        "game": (
+            f"{name}把「{hook}」拆进两份录像：操作与决策分轨存。"
+            f"高光可以剪，回放必须完整。"
+        ),
+        "reborn": (
+            f"{name}在旧日历上把「{hook}」标成黄灯：可做，不可满仓。"
+            f"先知的第一课是睡眠，不是加仓。"
+        ),
+    }
+    closer = genre_closers.get(
+        genre,
+        f"{name}把「{hook}」的下一步写短，短到只够今晚执行。"
+        f"掌声留给明天，证据留给现在。",
+    )
+    beats = list(beats) + [closer]
     uniq, seen = [], set()
     for b in beats:
         if b not in seen:
@@ -795,32 +838,68 @@ def pad_excerpt(text: str, case: dict, min_chars: int = 2000) -> str:
             continue
         text += f"\n\n{beat}"
         used.add(beat)
-    # 叙事边角补笔：题材动作句，禁止雨棚/码头等同构标签堆字
+    # 叙事边角补笔：按题材分轨，禁止跨案同句堆字
     name = case["protagonist"]
     hook = case.get("hook", "")
     title = case["title"]
     genre = case["genre"]
-    scene_pads = [
-        (
-            f"{name}把与「{hook}」有关的对话改到有第三人的场合，录音键亮着却不晃。"
-            f"对手越急着私下了结，他越慢。"
-        ),
-        (
-            f"关于《{title}》的下一笔，{name}只准备了短计划：先救该救的人，再算该算的账。"
-        ),
-        (
-            f"夜深时，{name}复查「{hook}」的时间线，发现破绽不在对手，而在自己差点答应的软话。"
-        ),
-        (
-            f"{name}拒绝了一场以踩人为乐的饭局。体面不是姿势，是可重复的选择。"
-        ),
-        (
-            f"他给自己定下顺序：止损、核验、公开。顺序错了，赢也会变成输。"
-        ),
-        (
-            f"{GENRE_EXTRA.get(genre, GENRE_EXTRA['default'])}"
-            f"{name}把这句话写进备忘录第一页，当作《{title}》的门槛。"
-        ),
+    genre_scene = {
+        "urban": [
+            f"{name}把与「{hook}」有关的谈判改到有律师在场的会议室，录音灯亮着却不晃。对手越急着私下了结，他越慢。",
+            f"关于《{title}》的下一笔现金流，{name}只批短计划：先保发薪，再算旧怨。",
+            f"夜深时，{name}重看「{hook}」的合同时间线，破绽不在对手，而在自己差点点头的那句软话。",
+            f"{name}婉拒一场以踩人为乐的饭局。体面不是姿势，是可重复的选择。",
+            f"他给并购排优先级：止损、核验、公开。顺序错了，赢也会变成输。",
+        ],
+        "warrior": [
+            f"{name}把「{hook}」相关的口头承诺改成书面命令，第三人在场才算数。",
+            f"关于《{title}》的下一班岗，{name}只留护送与取证，不留表演。",
+            f"夜深时，{name}复盘「{hook}」的通信记录，差点松口的那句护短被他划掉。",
+            f"{name}拒绝把孩子的事做成震慑新闻。护短可以，镜头不行。",
+            f"他给行动排优先级：救人、固证、再谈立场。顺序错了，刀也会伤自己人。",
+        ],
+        "system": [
+            f"{name}把「{hook}」任务的确认键改成「先对账」——系统催得越凶，他越慢。",
+            f"关于《{title}》的下一章产量，{name}只承诺可核验的字数，不承诺神话。",
+            f"夜深时，{name}对照「{hook}」奖励条款，发现破绽在诱饵，不在自己的手速。",
+            f"{name}关掉情绪爆发任务弹窗。稳定比外挂耐读。",
+            f"他给面板排优先级：核验、拒绝、再领取。顺序错了，积分也会变成锁链。",
+        ],
+        "xianxia": [
+            f"{name}把「{hook}」的线索只告诉药庐账本，不告诉爱传话的师兄。",
+            f"关于《{title}》的下一口气，{name}先付灵石再问方向。",
+            f"夜深时，{name}对照残页与「{hook}」的方位，差点喊人的冲动被他按住。",
+            f"{name}拒绝把废柴流言当成下山的借口。测法废了，人不废。",
+            f"他给仙路排优先级：存证、避锋、再显露。顺序错了，机缘也会变成局。",
+        ],
+        "game": [
+            f"{name}把「{hook}」相关的对线改到有录像的训练室，语音键亮着却不喷人。",
+            f"关于《{title}》的下一场排位，{name}只练决策，不赌运气局。",
+            f"夜深时，{name}回看「{hook}」的死亡回放，破绽在心态，不在操作。",
+            f"{name}拒绝把现实当副本清。技能可以亮，日子得走。",
+            f"他给赛季排优先级：复盘、禁令、再冲分。顺序错了，高光也会变黑料。",
+        ],
+        "reborn": [
+            f"{name}把「{hook}」相关的决定写进旧日历，家人在场才签字。",
+            f"关于《{title}》的下一笔小仓，{name}只留可亏得起的额度。",
+            f"夜深时，{name}重读「{hook}」的后悔清单，差点满仓的冲动被睡眠按住。",
+            f"{name}拒绝用先知换廉价喝彩。第二次机会先用来睡够。",
+            f"他给重生排优先级：必做、可缓、绝不再犯。顺序错了，下一世还会赔光。",
+        ],
+    }
+    scene_pads = genre_scene.get(
+        genre,
+        [
+            f"{name}把与「{hook}」有关的对话改到有第三人的场合，录音键亮着却不晃。对手越急着私下了结，他越慢。",
+            f"关于《{title}》的下一笔，{name}只准备了短计划：先救该救的人，再算该算的账。",
+            f"夜深时，{name}复查「{hook}」的时间线，发现破绽不在对手，而在自己差点答应的软话。",
+            f"{name}拒绝了一场以踩人为乐的饭局。体面不是姿势，是可重复的选择。",
+            f"他给自己定下顺序：止损、核验、公开。顺序错了，赢也会变成输。",
+        ],
+    )
+    scene_pads = scene_pads + [
+        f"{GENRE_EXTRA.get(genre, GENRE_EXTRA['default'])}"
+        f"{name}把这句话写进备忘录第一页，当作《{title}》的门槛。"
     ]
     n = 0
     while len(text) + len(closing) < min_chars:
@@ -828,10 +907,10 @@ def pad_excerpt(text: str, case: dict, min_chars: int = 2000) -> str:
         if n < len(scene_pads):
             line = base
         else:
-            # 避免「（续·N）」同构后缀：改写为带序号的独立动作句
+            # 溢出补笔：每条绑定书名+钩子+序号，避免「第N次核对」跨案同构
             line = (
-                f"{name}第{n - len(scene_pads) + 2}次核对「{hook}」："
-                f"人、物、时三项，缺一则停，不拿掌声凑数。"
+                f"《{title}》备忘第{n - len(scene_pads) + 2}条——{name}只推进「{hook}」里"
+                f"今晚能核验的一步：人到场、物到手、时戳在；缺一则停，不拿掌声凑数。"
             )
         if line not in used:
             text += f"\n\n{line}"
@@ -901,6 +980,18 @@ def has_duplicate_padding(text: str, min_repeats: int = 3) -> bool:
     if "怒火存进抽屉，把情报存进保险箱" in text:
         return True
     if "拆成三堆：已证实、待核实、绝不能赌" in text:
+        return True
+    # 题材分轨后仍跨案同构的无标签尾（对赌条款 / 时间戳 / 计时器）
+    if "并购室的灯只留一排" in text or "对赌条款摊开" in text:
+        return True
+    if "形容词不能过桥，数字才能" in text:
+        return True
+    if "复查时间戳与证人名单" in text or "下一场冲突的计时器已上弦" in text:
+        return True
+    if "门外还有未回的消息。他锁门，把计划写短" in text:
+        return True
+    # 溢出补笔旧句：跨案「第N次核对」同构
+    if "次核对「" in text and "人、物、时三项，缺一则停" in text:
         return True
     # 元语气 / 余韵堆字 / 桌前排期注脚 / 尾声钩子注脚
     if "他知道故事还长" in text or "尾声钩子：" in text:
