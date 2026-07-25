@@ -106,7 +106,7 @@
               @click="rejectFromPreview"
             >驳回</button>
             <button type="button" class="btn-preview" :disabled="previewActing" @click="closePreview">关闭</button>
-            <span class="preview-hint">Esc 关闭</span>
+            <span class="preview-hint">A 通过 · R 驳回 · Esc 关闭</span>
           </footer>
         </div>
       </div>
@@ -244,10 +244,24 @@ function closePreview() {
 }
 
 function onPreviewKeydown(e) {
-  if (!previewOpen.value) return
+  if (!previewOpen.value || previewActing.value || previewLoading.value) return
+  if (e.metaKey || e.ctrlKey || e.altKey) return
+  const tag = (e.target && e.target.tagName) || ''
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target?.isContentEditable) return
   if (e.key === 'Escape') {
     e.preventDefault()
     closePreview()
+    return
+  }
+  const k = e.key.length === 1 ? e.key.toLowerCase() : e.key
+  if (k === 'a') {
+    e.preventDefault()
+    approveFromPreview()
+    return
+  }
+  if (k === 'r') {
+    e.preventDefault()
+    rejectFromPreview()
   }
 }
 
