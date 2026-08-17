@@ -1,0 +1,8 @@
+-- LyRead migration 006: 创作者资料持久化
+
+CREATE TABLE IF NOT EXISTS creator_profiles (
+  user_id    VARCHAR(12) PRIMARY KEY,
+  nickname   VARCHAR(100) NULL,
+  bio        TEXT NULL,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
