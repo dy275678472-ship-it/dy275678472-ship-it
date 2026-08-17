@@ -27,13 +27,38 @@ function sharesLongRun(a, b, minLen = 20) {
   return false
 }
 
-/** 从文末丢弃与前段共享 ≥20 字连续子串的近义尾段（对齐 API case_quality） */
+const MOTIF_PUNCT_RE = /[\s，。、；：！？,.!?;:\u201c\u201d\u2018\u2019「」『』（）()【】\[\]…—\-·]/gu
+
+function normMotif(text) {
+  return String(text || '').replace(MOTIF_PUNCT_RE, '')
+}
+
+/** 末段去标点后完整包含前窗短母题 → 融合回声（对齐 API case_quality） */
+function isFusedTrailingEcho(last, prevs, { window = 3, shortPrev = 48, minCore = 8 } = {}) {
+  if (!prevs.length) return false
+  const nlast = normMotif(last)
+  if (nlast.length < minCore) return false
+  const slice = prevs.slice(-window)
+  for (const prev of slice) {
+    if (prev.length > shortPrev) continue
+    const np = normMotif(prev)
+    if (np.length >= minCore && np !== nlast && nlast.includes(np)) return true
+  }
+  return false
+}
+
+/** 从文末丢弃近义/融合回声尾段（对齐 API case_quality） */
 function collapseNearDuplicateTrailing(text, minLen = 20) {
   const parts = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
   if (parts.length < 2) return text
   while (parts.length >= 2) {
     const last = parts[parts.length - 1]
-    if (parts.slice(0, -1).some((prev) => sharesLongRun(last, prev, minLen))) {
+    const prevs = parts.slice(0, -1)
+    if (prevs.some((prev) => sharesLongRun(last, prev, minLen))) {
+      parts.pop()
+      continue
+    }
+    if (isFusedTrailingEcho(last, prevs)) {
       parts.pop()
       continue
     }

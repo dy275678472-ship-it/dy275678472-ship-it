@@ -56,14 +56,55 @@ def _shares_long_run(a: str, b: str, min_len: int = 20) -> bool:
     return False
 
 
+# 去标点后比对短母题，避免「终身版，从…」vs「终身版从…」因逗号漏检
+_MOTIF_PUNCT_RE = re.compile(
+    r"[\s，。、；：！？,\.!?;:"
+    r"\u201c\u201d\u2018\u2019「」『』（）()【】\[\]…—\-·]"
+)
+
+
+def _norm_motif(text: str) -> str:
+    return _MOTIF_PUNCT_RE.sub("", text)
+
+
+def _is_fused_trailing_echo(
+    last: str,
+    prevs: list[str],
+    *,
+    window: int = 3,
+    short_prev: int = 48,
+    min_core: int = 8,
+) -> bool:
+    """文末融合回声：末段去标点后完整包含前窗内短母题段（保留首次叙述）。
+
+    覆盖 case953「傅临收笔…像新章」/ case1198「终身版从这一杯开始」一类
+    短收束被拼进尾段的软回声；全局 ≥20 连续子串故意不碰这些短母题。
+    """
+    if not prevs:
+        return False
+    nlast = _norm_motif(last)
+    if len(nlast) < min_core:
+        return False
+    for prev in prevs[-window:]:
+        if len(prev) > short_prev:
+            continue
+        np = _norm_motif(prev)
+        if len(np) >= min_core and np != nlast and np in nlast:
+            return True
+    return False
+
+
 def _collapse_near_duplicate_trailing(text: str, min_len: int = 20) -> str:
-    """从文末起丢弃与前段共享长连续子串的近义尾段，保留首次叙述。"""
+    """从文末起丢弃近义/融合回声尾段，保留首次叙述。"""
     parts = [p.strip() for p in re.split(r"\n{2,}", text) if p.strip()]
     if len(parts) < 2:
         return text
     while len(parts) >= 2:
         last = parts[-1]
         if any(_shares_long_run(last, prev, min_len) for prev in parts[:-1]):
+            parts.pop()
+            continue
+        if _is_fused_trailing_echo(last, parts[:-1]):
             parts.pop()
             continue
         break
