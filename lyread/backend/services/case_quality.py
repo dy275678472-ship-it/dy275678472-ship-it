@@ -67,6 +67,17 @@ def _norm_motif(text: str) -> str:
     return _MOTIF_PUNCT_RE.sub("", text)
 
 
+def _shares_punct_norm_run(a: str, b: str, min_len: int = 12) -> bool:
+    """去标点后共享 ≥min_len 连续核（标点打断的近义尾段）。
+
+    覆盖 case950「赢人先赢规矩，这比五杀更值」vs「赢人先赢规矩——这比五杀更值」：
+    原文连续子串被逗号/破折号打断，≥20 原文近义漏检。阈值 12：等于该 12 字核，
+    低于 20 原文阈值，又高于常见 6～8 字口号，降低误伤。
+    """
+    na, nb = _norm_motif(a), _norm_motif(b)
+    return _shares_long_run(na, nb, min_len)
+
+
 def _is_fused_trailing_echo(
     last: str,
     prevs: list[str],
@@ -96,7 +107,9 @@ def _is_fused_trailing_echo(
     return False
 
 
-def _collapse_near_duplicate_trailing(text: str, min_len: int = 20) -> str:
+def _collapse_near_duplicate_trailing(
+    text: str, min_len: int = 20, punct_norm_min: int = 12
+) -> str:
     """从文末起丢弃近义/融合回声尾段，保留首次叙述。"""
     parts = [p.strip() for p in re.split(r"\n{2,}", text) if p.strip()]
     if len(parts) < 2:
@@ -104,6 +117,12 @@ def _collapse_near_duplicate_trailing(text: str, min_len: int = 20) -> str:
     while len(parts) >= 2:
         last = parts[-1]
         if any(_shares_long_run(last, prev, min_len) for prev in parts[:-1]):
+            parts.pop()
+            continue
+        if any(
+            _shares_punct_norm_run(last, prev, punct_norm_min)
+            for prev in parts[:-1]
+        ):
             parts.pop()
             continue
         if _is_fused_trailing_echo(last, parts[:-1]):

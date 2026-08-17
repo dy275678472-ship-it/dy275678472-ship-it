@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""本地校验：短母题融合回声折叠（953/1198/1200）+ 不误伤正常收束。"""
+"""本地校验：短母题融合回声 + 标点打断近义尾段 + 不误伤正常收束。"""
 from __future__ import annotations
 
 import sys
@@ -74,6 +74,34 @@ def main() -> int:
     assert_contains(out1200, "林知笑，继续讲题。", "1200")
     assert_contains(out1200, "最后一排，仍有光。", "1200")
 
+    # 标点打断的 12 字核近义尾段（原文 ≥20 连续子串漏检）：case950
+    case950 = """第一章 青训
+
+开篇。
+
+世界赛名单公布，小凯名字在列。老K在直播间说：「我粉丝他，他赢，我仍粉丝。」弹幕刷满，小凯在训练室回一句：「别刷，练。」他知道，吊打教练不是终点，是把青训营的规矩，带到更大的台上——赢人先赢规矩，这比五杀更值。
+
+小凯关电脑，窗外天将明。世界赛在望，他仍记得青训营第一课：赢人先赢规矩——这比五杀更值，也比粉丝更久。
+
+（节选完，共三章）
+"""
+    out950 = clean_preview_body(case950)
+    assert_not_contains(out950, "也比粉丝更久", "950")
+    assert_contains(out950, "赢人先赢规矩，这比五杀更值", "950")
+    assert out950.count("赢人先赢规矩") == 1, out950
+
+    # 去标点核 <12 不误伤（口号级短句）
+    short_norm_ok = """第一章
+
+他把「先赢规矩」四个字写在训练室白板上。
+
+夜训结束，小凯关灯出门，街灯像未写完的下一局。
+
+（节选完）
+"""
+    out_sn = clean_preview_body(short_norm_ok)
+    assert_contains(out_sn, "未写完的下一局", "short_norm_ok")
+
     # 正常收束：末段不包含前窗短母题全文 → 保留
     normal = """第一章
 
@@ -112,7 +140,7 @@ def main() -> int:
     out_near = clean_preview_body(near)
     assert out_near.count("弟子等您，很久了") == 1, out_near
 
-    print("PASS soft-echo fusion(7) + near-dup + normal/short close")
+    print("PASS soft-echo fusion(7) + punct-norm(12) + near-dup + normal/short close")
     return 0
 
 
