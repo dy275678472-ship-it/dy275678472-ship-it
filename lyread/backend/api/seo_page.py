@@ -1665,7 +1665,7 @@ async def seo_story_page(request: Request):
     for row in samples:
         safe_title = escape(str(row.get("title") or "作品"))
         safe_cat = escape(str(row.get("category") or "短篇"))
-        excerpt = escape((row.get("preview_body") or "").strip()[:160])
+        excerpt = escape(_clip_list_excerpt(row.get("preview_body") or "", 160))
         items_html += f"""
         <li>
             <a href="{SITE_BASE}/ep/{int(row['id'])}">{safe_title}</a>
