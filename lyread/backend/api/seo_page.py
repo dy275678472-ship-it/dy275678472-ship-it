@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 from settings import database_config
 from api.auth import get_current_user
-from services.case_quality import public_case_sql_clause
+from services.case_quality import clean_preview_body, public_case_sql_clause
 from services.seo_schema import breadcrumb, combine_json_ld, faq_graph, website_graph
 from services.seo_content import (
     COMPARE_PAGES,
@@ -572,7 +572,7 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
             if row:
                 safe_title = escape(str(row['title']))
                 safe_category = escape(str(row['category']))
-                preview = row.get("preview_body") or ""
+                preview = clean_preview_body(row.get("preview_body") or "")
                 og_image = _og_image_for_category(str(row.get("category") or ""))
                 title = f"{safe_title} - LyRead AI 小说作品"
                 description = escape(
@@ -1859,9 +1859,7 @@ async def ping_search_engines(_user: dict = Depends(get_current_user)):
 
 def _clip_list_excerpt(text: str, limit: int = 280) -> str:
     """SEO 列表节选：句读处截断，与 cases API 列表卡对齐。"""
-    clean = (text or "").strip()
-    if "【节选说明】" in clean:
-        clean = clean.split("【节选说明】")[0].strip()
+    clean = clean_preview_body(text)
     if len(clean) <= limit:
         return clean
     window = clean[:limit]

@@ -63,7 +63,10 @@
       <router-link v-for="(c, i) in cases" :key="c.id" :to="`/case/${c.id}`" class="case-card">
         <CaseCover :item="c" :index="i" :alt="`${c.title} 封面`" />
         <div class="case-body">
-          <span class="cat">{{ c.category || '都市' }}</span>
+          <div class="card-top">
+            <span class="cat">{{ c.category || '都市' }}</span>
+            <span v-if="progressById[c.id]" class="progress-chip">已读 {{ progressById[c.id] }}%</span>
+          </div>
           <h3>{{ c.title }}</h3>
           <p v-if="c.excerpt" class="excerpt">{{ c.excerpt }}</p>
           <div class="meta">
@@ -88,7 +91,12 @@ import { IMAGES } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
 import CaseCover from '../components/CaseCover.vue'
 import { formatExcerptLabel } from '../utils/format'
-import { findLatestResumeProgress } from '../utils/caseProgress'
+import {
+  findLatestResumeProgress,
+  readCaseProgress,
+  RESUME_MIN_RATIO,
+  DONE_RATIO,
+} from '../utils/caseProgress'
 import { trackEvent } from '../utils/analytics'
 
 const images = IMAGES
@@ -99,7 +107,20 @@ const activeCategory = ref('')
 const totalCount = ref(0)
 const loading = ref(true)
 const resumeBanner = ref(null)
+const progressById = ref({})
 const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
+
+function refreshCardProgress(list = cases.value) {
+  const next = {}
+  for (const c of list || []) {
+    if (c?.id == null) continue
+    const data = readCaseProgress(c.id)
+    if (!data || typeof data.ratio !== 'number') continue
+    if (data.ratio < RESUME_MIN_RATIO || data.ratio >= DONE_RATIO) continue
+    next[c.id] = Math.round(data.ratio * 100)
+  }
+  progressById.value = next
+}
 
 function refreshResumeBanner(list = cases.value) {
   const hit = findLatestResumeProgress(list)
@@ -111,6 +132,7 @@ function refreshResumeBanner(list = cases.value) {
         pct: Math.round(hit.ratio * 100),
       }
     : null
+  refreshCardProgress(list)
 }
 
 function onResumeBannerClick() {
@@ -247,9 +269,18 @@ onMounted(async () => {
   overflow: hidden; border: 1px solid #e8f0fa; transition: all 0.2s;
 }
 .case-body { padding: 16px 20px 20px; }
+.card-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-bottom: 10px;
+}
 .case-card:hover { box-shadow: 0 8px 24px rgba(77,161,255,0.12); transform: translateY(-2px); border-color: #bfdbfe; }
 .case-card :deep(.case-cover-wrap) { height: 120px; }
-.cat { display: inline-block; padding: 3px 10px; background: rgba(77,161,255,0.12); color: #2563eb; border-radius: 999px; font-size: 12px; margin-bottom: 10px; }
+.cat { display: inline-block; padding: 3px 10px; background: rgba(77,161,255,0.12); color: #2563eb; border-radius: 999px; font-size: 12px; }
+.progress-chip {
+  flex-shrink: 0; padding: 2px 8px; border-radius: 999px;
+  background: rgba(15, 118, 110, 0.1); color: #0f766e;
+  font-size: 11px; font-weight: 650; letter-spacing: 0.01em;
+}
 .case-card h3 { font-size: 16px; color: #1e2a3a; margin-bottom: 8px; line-height: 1.4; }
 .excerpt { font-size: 12px; color: #64748b; line-height: 1.5; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .meta { display: flex; gap: 12px; font-size: 12px; color: #94a3b8; }

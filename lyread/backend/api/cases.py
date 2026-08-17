@@ -5,7 +5,7 @@ import re
 import mysql.connector
 from fastapi import APIRouter, HTTPException
 from settings import database_config
-from services.case_quality import public_case_sql_clause
+from services.case_quality import clean_preview_body, public_case_sql_clause
 
 router = APIRouter()
 
@@ -13,13 +13,7 @@ _CHAPTER_RE = re.compile(r"^第[一二三四五六七八九十百千0-9]+章", r
 
 
 def _clean_preview(text: str) -> str:
-    if not text:
-        return ""
-    if "【阅读提示】" in text:
-        text = text.split("【阅读提示】")[0]
-    if "【节选说明】" in text:
-        text = text.split("【节选说明】")[0]
-    return text.strip()
+    return clean_preview_body(text)
 
 
 def _excerpt_clip(text: str, limit: int = 280) -> str:
