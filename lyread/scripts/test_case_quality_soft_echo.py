@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""本地校验：短母题融合回声折叠（953/1198）+ 不误伤正常收束。"""
+"""本地校验：短母题融合回声折叠（953/1198/1200）+ 不误伤正常收束。"""
 from __future__ import annotations
 
 import sys
@@ -56,6 +56,24 @@ def main() -> int:
     assert_contains(out1198, "温言点头，终身有效。", "1198")
     assert_contains(out1198, "终身版，从这一杯开始。", "1198")
 
+    # 7 字核短母题（旧 min_core=8 会漏）：末段以前文短收束起笔再扩写
+    case1200 = """第一章 转校
+
+开篇。
+
+最后一排，仍有光。
+
+林知笑，继续讲题。
+
+林知笑，继续讲题，像把金牌藏进抽屉，只留一支笔在桌上。
+
+（节选完，共三章）
+"""
+    out1200 = clean_preview_body(case1200)
+    assert_not_contains(out1200, "金牌藏进抽屉", "1200")
+    assert_contains(out1200, "林知笑，继续讲题。", "1200")
+    assert_contains(out1200, "最后一排，仍有光。", "1200")
+
     # 正常收束：末段不包含前窗短母题全文 → 保留
     normal = """第一章
 
@@ -67,6 +85,18 @@ def main() -> int:
 """
     out_n = clean_preview_body(normal)
     assert_contains(out_n, "未写完的下一章", "normal")
+
+    # 短于 7 字的口头禅不因「被包含」误删尾段
+    short_ok = """第一章
+
+他点头。
+
+夜色沉下来，他把灯拧到最暗，只留窗缝一条细光。
+
+（节选完）
+"""
+    out_short = clean_preview_body(short_ok)
+    assert_contains(out_short, "只留窗缝一条细光", "short_ok")
 
     # ≥20 近义仍生效（保留首次）
     near = """第一章
@@ -82,7 +112,7 @@ def main() -> int:
     out_near = clean_preview_body(near)
     assert out_near.count("弟子等您，很久了") == 1, out_near
 
-    print("PASS soft-echo fusion + near-dup + normal close")
+    print("PASS soft-echo fusion(7) + near-dup + normal/short close")
     return 0
 
 
