@@ -1,26 +1,39 @@
 <template>
-  <div class="reader-page">
+  <div class="reader-page" :class="{ 'has-mobile-dock': showMobileDock }">
     <div
       v-if="caseData && chapters.length"
       class="read-progress"
       role="progressbar"
-      :aria-valuenow="Math.round(scrollPct * 100)"
+      :aria-valuenow="progressPct"
       aria-valuemin="0"
       aria-valuemax="100"
       aria-label="阅读进度"
     >
-      <div class="read-progress-bar" :style="{ width: `${Math.round(scrollPct * 100)}%` }" />
+      <div class="read-progress-bar" :style="{ width: `${progressPct}%` }" />
     </div>
+    <div
+      v-if="caseData && chapters.length && scrollPct >= 0.04 && !finishedOffer"
+      class="read-progress-chip"
+      aria-hidden="true"
+    >{{ progressChipLabel }}</div>
     <div v-if="loading" class="loading">加载中...</div>
-    <div v-else-if="!caseData" class="empty">
-      <p>案例不存在或已下架</p>
-      <router-link
-        :to="{ path: '/login', query: { mode: 'register', redirect: '/workspace?mode=new' } }"
-        class="btn-cta"
-        @click="trackEvent('case_missing_register', { category: 'conversion', label: 'empty' })"
-      >免费注册，送 30 点 →</router-link>
-      <router-link to="/trending" class="link empty-link">回案例广场</router-link>
-    </div>
+    <EmptyState
+      v-else-if="!caseData"
+      :image="images.emptyCreate"
+      image-alt="案例不可用"
+      title="案例不存在或已下架"
+      description="可以回案例广场继续读，或直接注册开写同题材。"
+      :image-width="160"
+    >
+      <div class="empty-actions">
+        <router-link
+          :to="{ path: '/login', query: { mode: 'register', redirect: '/workspace?mode=new' } }"
+          class="btn-cta"
+          @click="trackEvent('case_missing_register', { category: 'conversion', label: 'empty' })"
+        >免费注册，送 30 点 →</router-link>
+        <router-link to="/trending" class="link empty-link">回案例广场</router-link>
+      </div>
+    </EmptyState>
     <article v-else class="article">
       <header>
         <span class="cat">{{ caseData.category }}</span>
@@ -69,15 +82,24 @@
           </div>
         </template>
       </section>
-      <section v-else class="body empty-body">
-        <p>该案例暂无正文节选。</p>
-        <router-link
-          :to="creationLink"
-          class="btn-cta"
-          @click="trackEvent('case_empty_body_cta', { category: 'conversion', label: isLoggedIn ? 'logged_in' : 'register_first', value: Number(caseData.id) || 0 })"
-        >{{ ctaLabel }}</router-link>
-        <router-link to="/trending" class="link empty-link">回案例广场</router-link>
-      </section>
+      <EmptyState
+        v-else
+        class="empty-body-wrap"
+        :image="images.emptyCreate"
+        image-alt="暂无节选"
+        title="该案例暂无正文节选"
+        description="先逛案例广场，或用同题材直接开写。"
+        :image-width="140"
+      >
+        <div class="empty-actions">
+          <router-link
+            :to="creationLink"
+            class="btn-cta"
+            @click="trackEvent('case_empty_body_cta', { category: 'conversion', label: isLoggedIn ? 'logged_in' : 'register_first', value: Number(caseData.id) || 0 })"
+          >{{ ctaLabel }}</router-link>
+          <router-link to="/trending" class="link empty-link">回案例广场</router-link>
+        </div>
+      </EmptyState>
       <!-- 读完软引导：清进度后推下一篇，缩短案例连读路径 -->
       <div v-if="finishedOffer" class="finished-cta" role="status">
         <p class="finished-text">本节选读完了</p>
@@ -114,6 +136,15 @@
         >{{ ctaLabel }}</router-link>
       </footer>
     </article>
+    <!-- 移动端滚动中固定转化条：拇指区可达，读完后让位给 finished CTA -->
+    <div v-if="showMobileDock" class="mobile-dock" role="region" aria-label="继续创作">
+      <span class="mobile-dock-meta">{{ progressChipLabel }}</span>
+      <router-link
+        :to="creationLink"
+        class="mobile-dock-cta"
+        @click="trackEvent('case_mobile_dock_cta', { category: 'conversion', label: isLoggedIn ? 'logged_in' : 'register_first', value: Number(caseData?.id) || 0 })"
+      >{{ isLoggedIn ? '同题材开写 →' : '注册开写 →' }}</router-link>
+    </div>
   </div>
 </template>
 
@@ -121,6 +152,8 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { casesApi } from '../api'
+import { IMAGES } from '../assets/images'
+import EmptyState from '../components/EmptyState.vue'
 import { parseChapters, countChapters } from '../utils/caseContent'
 import { formatStorySettingWords } from '../utils/format'
 import { trackEvent } from '../utils/analytics'
@@ -136,6 +169,7 @@ import {
 /** 相邻篇正文内存预取，连读时跳过一次网络往返 */
 const casePrefetchCache = new Map()
 
+const images = IMAGES
 const route = useRoute()
 const loading = ref(true)
 const caseData = ref(null)
@@ -143,10 +177,22 @@ const rawBody = ref('')
 const prevCase = ref(null)
 const nextCase = ref(null)
 const scrollPct = ref(0)
+const activeChapterIndex = ref(0)
 const resumeOffer = ref(null)
 const finishedOffer = ref(false)
 let completeTrackedFor = null
 const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
+const progressPct = computed(() => Math.round(scrollPct.value * 100))
+const progressChipLabel = computed(() => {
+  const ch = chapters.value[activeChapterIndex.value]
+  const chLabel = ch ? shortChapterLabel(ch, activeChapterIndex.value) : `第${activeChapterIndex.value + 1}章`
+  return `${progressPct.value}% · ${chLabel}`
+})
+/** 读过开头且未读完：窄屏 CSS 显示底部拇指区 CTA（桌面隐藏） */
+const showMobileDock = computed(() => {
+  if (!caseData.value || !chapters.value.length || finishedOffer.value) return false
+  return scrollPct.value >= 0.12 && scrollPct.value < DONE_RATIO
+})
 
 function clearProgress(id) {
   try {
@@ -215,6 +261,7 @@ function measureScroll() {
   nodes.forEach((node) => {
     if (node.offsetTop <= anchorY) chapterIndex = Number(node.dataset.ch) || 0
   })
+  activeChapterIndex.value = chapterIndex
   const done = scrollPct.value >= DONE_RATIO
   finishedOffer.value = done && !!chapters.value.length
   if (done) {
@@ -302,6 +349,7 @@ async function loadCase(id) {
   prevCase.value = null
   nextCase.value = null
   scrollPct.value = 0
+  activeChapterIndex.value = 0
   resumeOffer.value = null
   finishedOffer.value = false
   completeTrackedFor = null
@@ -389,8 +437,15 @@ watch(() => route.params.id, (id) => { if (id) loadCase(id) })
   background: linear-gradient(90deg, #2563eb, #0f766e);
   transition: width 0.12s linear;
 }
-.loading, .empty { text-align: center; color: #94a3b8; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.read-progress-chip {
+  display: none;
+}
+.loading { text-align: center; color: #94a3b8; padding: 60px 20px; }
+.empty-actions {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
 .empty-link { font-size: 14px; }
+.empty-body-wrap { margin: 8px 0 12px; }
 .article { background: #fff; border-radius: 16px; padding: 28px 28px 32px; border: 1px solid #e8f0fa; }
 .cat { display: inline-block; padding: 4px 10px; background: #eff6ff; color: #2563eb; border-radius: 999px; font-size: 12px; }
 h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; color: #1e2a3a; }
@@ -423,7 +478,6 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; color: #1e2a3a; }
   text-indent: 2em;
 }
 .paragraph:last-child { margin-bottom: 0; }
-.empty-body { color: #64748b; font-size: 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
 .link { color: #2563eb; }
 .mid-cta {
   margin: 8px 0 28px;
@@ -498,9 +552,65 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; color: #1e2a3a; }
   color: #fff; border-radius: 10px; text-decoration: none; font-weight: 600;
 }
 .btn-cta:hover { filter: brightness(1.05); }
+.mobile-dock { display: none; }
 @media (max-width: 640px) {
+  .reader-page.has-mobile-dock { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
   .article { padding: 20px 16px 24px; }
   h1 { font-size: 20px; }
   .nav-title { font-size: 13px; }
+  .read-progress-chip {
+    display: block;
+    position: fixed;
+    top: 10px;
+    right: 12px;
+    z-index: 41;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.78);
+    color: #f8fafc;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    pointer-events: none;
+    max-width: 55vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mobile-dock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 42;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 255, 255, 0.96);
+    border-top: 1px solid #e2e8f0;
+    box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.06);
+    backdrop-filter: blur(8px);
+  }
+  .mobile-dock-meta {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mobile-dock-cta {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #0f766e, #0d9488);
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+  }
 }
 </style>
