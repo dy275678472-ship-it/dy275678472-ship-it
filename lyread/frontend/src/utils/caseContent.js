@@ -17,6 +17,31 @@ function collapseDuplicateParagraphs(text) {
   return out.join('\n\n')
 }
 
+function sharesLongRun(a, b, minLen = 20) {
+  if (a.length < minLen || b.length < minLen) return false
+  const shorter = a.length <= b.length ? a : b
+  const longer = a.length <= b.length ? b : a
+  for (let i = 0; i <= shorter.length - minLen; i++) {
+    if (longer.includes(shorter.slice(i, i + minLen))) return true
+  }
+  return false
+}
+
+/** 从文末丢弃与前段共享 ≥20 字连续子串的近义尾段（对齐 API case_quality） */
+function collapseNearDuplicateTrailing(text, minLen = 20) {
+  const parts = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
+  if (parts.length < 2) return text
+  while (parts.length >= 2) {
+    const last = parts[parts.length - 1]
+    if (parts.slice(0, -1).some((prev) => sharesLongRun(last, prev, minLen))) {
+      parts.pop()
+      continue
+    }
+    break
+  }
+  return parts.join('\n\n')
+}
+
 export function cleanExcerptText(text) {
   if (!text) return ''
   let t = text
@@ -33,7 +58,7 @@ export function cleanExcerptText(text) {
     }
     break
   }
-  return collapseDuplicateParagraphs(lines.join('\n').trim())
+  return collapseNearDuplicateTrailing(collapseDuplicateParagraphs(lines.join('\n').trim()))
 }
 export function parseChapters(text) {
   const cleaned = cleanExcerptText(text)

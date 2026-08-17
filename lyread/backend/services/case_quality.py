@@ -39,8 +39,39 @@ def _collapse_duplicate_paragraphs(text: str) -> str:
     return "\n\n".join(out)
 
 
+def _shares_long_run(a: str, b: str, min_len: int = 20) -> bool:
+    """两段是否共享 ≥min_len 的连续子串（用于近义/回声尾段）。
+
+    阈值 20：覆盖 case84「苏灵儿擦净牌位…弟子等您，很久了。」(23 字) 一类回声，
+    又高于常见短收束，降低误伤。
+    """
+    if len(a) < min_len or len(b) < min_len:
+        return False
+    # 用较短段扫子串，降低开销
+    shorter, longer = (a, b) if len(a) <= len(b) else (b, a)
+    limit = len(shorter) - min_len
+    for i in range(limit + 1):
+        if shorter[i : i + min_len] in longer:
+            return True
+    return False
+
+
+def _collapse_near_duplicate_trailing(text: str, min_len: int = 20) -> str:
+    """从文末起丢弃与前段共享长连续子串的近义尾段，保留首次叙述。"""
+    parts = [p.strip() for p in re.split(r"\n{2,}", text) if p.strip()]
+    if len(parts) < 2:
+        return text
+    while len(parts) >= 2:
+        last = parts[-1]
+        if any(_shares_long_run(last, prev, min_len) for prev in parts[:-1]):
+            parts.pop()
+            continue
+        break
+    return "\n\n".join(parts)
+
+
 def clean_preview_body(text: str | None) -> str:
-    """公开节选清洗：去提示块 + 剥离堆字垫行 + 折叠重复段，保留真实正文。"""
+    """公开节选清洗：去提示块 + 剥离堆字垫行 + 折叠重复/近义尾段，保留真实正文。"""
     if not text:
         return ""
     out = str(text)
@@ -58,7 +89,8 @@ def clean_preview_body(text: str | None) -> str:
             continue
         break
     cleaned = "\n".join(lines).strip()
-    return _collapse_duplicate_paragraphs(cleaned)
+    cleaned = _collapse_duplicate_paragraphs(cleaned)
+    return _collapse_near_duplicate_trailing(cleaned)
 
 def public_case_sql_clause(alias: str = "") -> str:
     """返回可拼接到 WHERE 后的 SQL 片段（不含 leading AND）。"""
