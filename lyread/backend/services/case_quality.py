@@ -7,9 +7,9 @@ _TEST_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-# 旧 seed 尾声堆字：跨案重复「故事，仍在前方」垫行（读感差；seed 入库前先读时剥离）
+# 旧 seed 尾声堆字：跨案重复垫行（读感差；seed 入库前先读时剥离）
 _PAD_TAIL_LINE_RE = re.compile(
-    r"^(故事，?\s*仍在前方。?|故事仍在前方。?)\s*$"
+    r"^(故事，?\s*仍在前方。?|故事仍在前方。?|风过处，故事暂歇，余韵仍在。?)\s*$"
 )
 _EXCERPT_END_RE = re.compile(r"^（节选完[^）]*）\s*$")
 
@@ -23,8 +23,24 @@ def is_public_case_title(title: str | None) -> bool:
     return True
 
 
+def _collapse_duplicate_paragraphs(text: str) -> str:
+    """折叠垫文插入导致的连续重复段落，保留首次出现。"""
+    parts = re.split(r"\n{2,}", text)
+    out: list[str] = []
+    prev = None
+    for part in parts:
+        norm = part.strip()
+        if not norm:
+            continue
+        if norm == prev:
+            continue
+        out.append(norm)
+        prev = norm
+    return "\n\n".join(out)
+
+
 def clean_preview_body(text: str | None) -> str:
-    """公开节选清洗：去提示块 + 剥离尾声堆字垫行，保留真实正文。"""
+    """公开节选清洗：去提示块 + 剥离堆字垫行 + 折叠重复段，保留真实正文。"""
     if not text:
         return ""
     out = str(text)
@@ -33,14 +49,16 @@ def clean_preview_body(text: str | None) -> str:
     if "【节选说明】" in out:
         out = out.split("【节选说明】")[0]
     lines = out.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    # 垫行可能夹在重复段中间，不只出现在文末
+    lines = [ln for ln in lines if not _PAD_TAIL_LINE_RE.match(ln.strip())]
     while lines:
         stripped = lines[-1].strip()
-        if not stripped or _EXCERPT_END_RE.match(stripped) or _PAD_TAIL_LINE_RE.match(stripped):
+        if not stripped or _EXCERPT_END_RE.match(stripped):
             lines.pop()
             continue
         break
-    return "\n".join(lines).strip()
-
+    cleaned = "\n".join(lines).strip()
+    return _collapse_duplicate_paragraphs(cleaned)
 
 def public_case_sql_clause(alias: str = "") -> str:
     """返回可拼接到 WHERE 后的 SQL 片段（不含 leading AND）。"""
