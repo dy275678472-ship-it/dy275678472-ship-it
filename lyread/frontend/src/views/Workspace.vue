@@ -14,6 +14,19 @@
         :image-width="160"
       >
         <button class="btn-new" @click="newStory">+ 新建作品</button>
+        <div class="empty-discover">
+          <router-link
+            to="/trending"
+            class="discover-link"
+            @click="trackEvent('workspace_empty_trending', { category: 'funnel', label: 'sidebar_empty' })"
+          >先看案例</router-link>
+          <span class="discover-sep" aria-hidden="true">·</span>
+          <router-link
+            to="/story"
+            class="discover-link"
+            @click="trackEvent('workspace_empty_story', { category: 'funnel', label: 'sidebar_empty' })"
+          >试试短故事</router-link>
+        </div>
         <router-link
           v-if="resumeBanner"
           class="resume-link"
@@ -150,6 +163,19 @@
       <h2>创作台</h2>
       <p>从左侧选择作品，或新建一部小说开始 AI 辅助创作。</p>
       <button class="btn-new large" @click="newStory">+ 新建作品</button>
+      <div v-if="!stories.length" class="empty-discover welcome-discover">
+        <router-link
+          to="/trending"
+          class="discover-link"
+          @click="trackEvent('workspace_empty_trending', { category: 'funnel', label: 'welcome_empty' })"
+        >先看案例</router-link>
+        <span class="discover-sep" aria-hidden="true">·</span>
+        <router-link
+          to="/story"
+          class="discover-link"
+          @click="trackEvent('workspace_empty_story', { category: 'funnel', label: 'welcome_empty' })"
+        >试试短故事</router-link>
+      </div>
       <router-link
         v-if="resumeBanner"
         class="resume-link welcome-resume"
@@ -485,6 +511,23 @@ onMounted(async () => {
 .s-title { display: block; font-weight: 600; font-size: 14px; color: #1e2a3a; }
 .s-meta { font-size: 12px; color: #94a3b8; }
 .empty { color: #94a3b8; font-size: 14px; padding: 20px 0; }
+.empty-discover {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 13px;
+}
+.discover-link {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+.discover-link:hover { text-decoration: underline; }
+.discover-sep { color: #94a3b8; user-select: none; }
+.welcome-discover { margin-top: 4px; }
 .resume-link {
   display: block;
   margin-top: 14px;
