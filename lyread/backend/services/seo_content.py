@@ -387,6 +387,7 @@ def all_static_seo_paths() -> list[tuple[str, str, str]]:
     today_paths = [
         ("/compare", "weekly", "0.85"),
         ("/guide", "weekly", "0.85"),
+        ("/genre", "weekly", "0.8"),
     ]
     for slug in COMPARE_PAGES:
         today_paths.append((f"/compare/{slug}", "monthly", "0.8"))

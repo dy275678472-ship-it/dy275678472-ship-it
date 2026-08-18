@@ -145,11 +145,16 @@ assert_seo_register_cta "/guide"
 assert_seo_register_cta "/compare"
 # sitemap 收录的 /ep 作品索引：主 CTA 须 register-first（送 30 点）
 assert_seo_register_cta "/ep"
+# 题材聚合枢纽 + 叶子页：须 register-first（勿裸链 /workspace）
+assert_seo_register_cta "/genre"
+assert_seo_register_cta "/genre/dushi"
 assert_no_workspace_in_seo_cta "/ep"
 assert_no_workspace_in_seo_cta "/faq"
 assert_no_workspace_in_seo_cta "/pricing" "Googlebot"
 assert_no_workspace_in_seo_cta "/guide"
 assert_no_workspace_in_seo_cta "/compare"
+assert_no_workspace_in_seo_cta "/genre"
+assert_no_workspace_in_seo_cta "/genre/dushi"
 
 # HEAD 可达性（tip 起 /faq /about 应 200，旧版 405）
 echo ""

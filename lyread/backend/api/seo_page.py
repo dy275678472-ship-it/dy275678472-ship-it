@@ -409,6 +409,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
                 <a href="{site_base}/story">短故事</a>
                 <a href="{site_base}/pricing">价格</a>
                 <a href="{site_base}/trending">案例</a>
+                <a href="{site_base}/genre">题材</a>
                 <a href="{site_base}/guide">教程</a>
                 <a href="{site_base}/compare">对比</a>
                 <a href="{site_base}/faq">常见问题</a>
@@ -813,6 +814,7 @@ async def llms_txt():
 - 常见问题：https://lyread.cn/faq
 - 关于我们：https://lyread.cn/about
 - 案例索引：https://lyread.cn/ep
+- 题材聚合：https://lyread.cn/genre
 - 站点地图：https://lyread.cn/sitemap.xml
 
 ## 引用建议
@@ -875,6 +877,7 @@ LyRead AI 是中文智能小说创作平台，帮助作者从题材灵感生成�
 
 - 网站：https://lyread.cn
 - 短故事预览：https://lyread.cn/story
+- 题材聚合：https://lyread.cn/genre
 - 品牌名：LyRead AI / LyRead 智能小说创作
 """
 
@@ -1262,6 +1265,53 @@ async def seo_guide_page(slug: str):
     )
 
 
+@router.api_route("/genre", methods=["GET", "HEAD"], response_class=HTMLResponse)
+async def seo_genre_index():
+    """题材聚合索引：补 sitemap 叶子页缺少的枢纽，CTA 对齐 register-first。"""
+    items = "".join(
+        f'<li><a href="{SITE_BASE}/genre/{slug}">{escape(p["category"])}</a>'
+        f'<span class="stat">{escape(p["intro"][:48])}{"…" if len(p["intro"]) > 48 else ""}</span></li>'
+        for slug, p in GENRE_PAGES.items()
+    )
+    register_href = _register_workspace_href()
+    mid_cta = f"""
+    <div class="seo-cta" style="margin:24px 0">
+      <a href="{register_href}">免费注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">先看看案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/story">试试短故事 →</a>
+    </div>
+    """
+    body = f"""
+    <p>按网文题材浏览 AI 开篇案例与创作入口：都市神豪、战神归来、系统流、仙侠玄幻等。</p>
+    {mid_cta}
+    <ul class="seo-list">{items}</ul>
+    <div class="seo-cta">
+      <a href="{register_href}">注册领 30 点，选题材开写 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/ep">作品索引 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/pricing">查看价格 →</a>
+    </div>
+    """
+    return _seo_html(
+        title="AI小说题材聚合 - LyRead AI",
+        description="按都市神豪、战神归来、系统流、仙侠玄幻等题材浏览 LyRead AI 公开案例与创作入口。注册送 30 点。",
+        keywords="AI小说题材,都市神豪,战神归来,系统流,仙侠玄幻,网文案例",
+        url="/genre",
+        site_base=SITE_BASE,
+        meta_info="题材聚合 · 注册送 30 点",
+        body_html=body,
+        json_ld=breadcrumb([("首页", f"{SITE_BASE}/"), ("题材聚合", f"{SITE_BASE}/genre")]),
+    )
+
+
+@router.api_route("/genre/", methods=["GET", "HEAD"], response_class=HTMLResponse)
+async def seo_genre_index_trailing():
+    return await seo_genre_index()
+
+
 @router.api_route("/genre/{slug}", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def seo_genre_page(slug: str):
     genre = GENRE_PAGES.get(slug)
@@ -1297,6 +1347,8 @@ async def seo_genre_page(slug: str):
     <div class="seo-cta">
       <a href="{write_href}">用此题材注册开写（送 30 点）→</a>
       &nbsp;&nbsp;
+      <a href="{SITE_BASE}/genre">全部题材 →</a>
+      &nbsp;&nbsp;
       <a href="{SITE_BASE}/trending">浏览更多案例 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/story">试试短故事 →</a>
@@ -1316,7 +1368,7 @@ async def seo_genre_page(slug: str):
         og_image=_og_image_for_category(genre["category"]),
         json_ld=breadcrumb([
             ("首页", f"{SITE_BASE}/"),
-            ("案例阅读", f"{SITE_BASE}/trending"),
+            ("题材聚合", f"{SITE_BASE}/genre"),
             (genre["category"], f"{SITE_BASE}{url}"),
         ]),
     )
