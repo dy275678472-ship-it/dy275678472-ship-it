@@ -29,6 +29,8 @@ const routes = [
   { path: '/guide', component: () => import('./views/Guide.vue'), meta: { title: 'AI写小说教程 - LyRead AI 创作指南', desc: 'AI 小说创作教程：入门开书、大纲章纲、日更续写技巧与点数成本估算。' }},
   // 人类走 SPA（次屏 register CTA）；完整刷新仍由 nginx 反代后端 SSR；/compare/:slug 仍 SSR
   { path: '/compare', component: () => import('./views/Compare.vue'), meta: { title: 'AI写小说工具对比 - LyRead AI', desc: '按长篇记忆、创作工作流、使用成本与适用场景比较 AI 写小说工具，并说明第三方信息边界。' }},
+  // 人类走 SPA（次屏 register CTA）；完整刷新 /ep 与 /ep/:id 仍走后端 SSR
+  { path: '/ep', component: () => import('./views/Ep.vue'), meta: { title: 'LyRead AI 小说作品列表 - 智能小说创作平台', desc: '浏览 LyRead AI 公开案例节选：都市神豪、战神归来、系统流等题材 AI 开篇。注册送 30 点，可用同风格开写。' }},
   // SPA 软 404：未知路径仍 200 壳，但页内 register-first + 继续读，避免空白 router-view
   { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('./views/NotFound.vue'), meta: { title: '页面未找到 - LyRead AI', desc: '页面不存在。可回首页、读案例，或免费注册领 30 点开写。' }},
 ]

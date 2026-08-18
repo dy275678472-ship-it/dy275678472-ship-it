@@ -46,6 +46,7 @@
           <router-link to="/about">关于我们</router-link>
           <router-link to="/compare">工具对比</router-link>
           <router-link to="/guide">创作教程</router-link>
+          <router-link to="/ep">作品索引</router-link>
           <router-link to="/pricing">价格</router-link>
           <router-link to="/trending">创作案例</router-link>
           <router-link
