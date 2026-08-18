@@ -17,8 +17,8 @@ const routes = [
   { path: '/workspace', component: () => import('./views/Workspace.vue'), meta: { title: '创作台 - LyRead AI', desc: '小说创作控制台。' }},
   { path: '/reader', component: () => import('./views/Workspace.vue'), meta: { title: '长篇小说 - LyRead AI', desc: '开始你的长篇小说创作。' }},
   { path: '/story', component: () => import('./views/ShortStory.vue'), meta: { title: '短故事 - LyRead AI', desc: '快速生成完整短篇故事。' }},
+  // 规范深链 /ep/:id；/case/:id 保留为别名（旧书签 / sitemap）
   { path: '/case/:id', component: () => import('./views/CaseReader.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '阅读平台 AI 生成案例。' }},
-  // /ep/:id 与 /case/:id 同组件：nginx 人类走 SPA，避免 301 落到 /ep 后丢失阅读器
   { path: '/ep/:id(\\d+)', component: () => import('./views/CaseReader.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '阅读平台 AI 生成案例。' }},
   { path: '/trending', component: () => import('./views/Trending.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '浏览平台生成案例。' }},
   { path: '/admin', component: () => import('./views/Admin.vue'), meta: { title: '运营后台 - LyRead AI', desc: '管理员控制台。' }},

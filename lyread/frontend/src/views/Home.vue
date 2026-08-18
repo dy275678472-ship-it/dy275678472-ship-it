@@ -22,7 +22,7 @@
       </div>
       <router-link
         class="home-resume-go"
-        :to="`/case/${resumeBanner.id}`"
+        :to="`/ep/${resumeBanner.id}`"
         @click="onHomeResumeClick"
       >继续读 →</router-link>
     </div>
@@ -165,7 +165,7 @@
         <router-link
           v-for="(c, i) in hotCases"
           :key="c.id"
-          :to="`/case/${c.id}`"
+          :to="`/ep/${c.id}`"
           class="hot-card hot-card-link"
           @click="trackCaseClick(c)"
         >

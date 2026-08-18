@@ -463,7 +463,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
             '<strong class="seo-resume-title"></strong>' +
             '<span class="seo-resume-meta"></span>' +
           "</div>" +
-          '<a class="seo-resume-go" href="/case/' + encodeURIComponent(best.id) + '">继续读 →</a>';
+          '<a class="seo-resume-go" href="/ep/' + encodeURIComponent(best.id) + '">继续读 →</a>';
         root.querySelector(".seo-resume-title").textContent = title;
         root.querySelector(".seo-resume-meta").textContent = meta;
         root.hidden = false;
@@ -655,7 +655,7 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
                 </div>"""
                 body_html += f"""
                 <div class="seo-cta">
-                    <a href="{SITE_BASE}/case/{int(row['id'])}">打开阅读器 →</a>
+                    <a href="{SITE_BASE}/ep/{int(row['id'])}">打开阅读器 →</a>
                     <a href="{write_href}" style="margin-left:12px">免费注册开写（送 30 点）→</a>
                 </div>
                 """
@@ -1426,7 +1426,7 @@ async def seo_creator_page(user_id: str, request: Request):
             case_rows = cursor.fetchall()
             if case_rows:
                 works_html = "<ul class='seo-list'>" + "".join(
-                    f"<li><a href=\"{SITE_BASE}/case/{r['id']}\">{escape(r.get('title') or '未命名')}</a> "
+                    f"<li><a href=\"{SITE_BASE}/ep/{r['id']}\">{escape(r.get('title') or '未命名')}</a> "
                     f"— {escape(r.get('category') or '都市')} · {int(r.get('word_count') or 0)} 字</li>"
                     for r in case_rows
                 ) + "</ul>"

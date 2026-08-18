@@ -106,7 +106,7 @@
         <div class="finished-actions">
           <router-link
             v-if="nextCase"
-            :to="`/case/${nextCase.id}`"
+            :to="`/ep/${nextCase.id}`"
             class="finished-next"
             @click="trackEvent('case_finished_next', { category: 'engagement', label: 'next', value: Number(nextCase.id) || 0 })"
           >下一篇 · {{ nextCase.title }} →</router-link>
@@ -118,12 +118,12 @@
         </div>
       </div>
       <nav v-if="prevCase || nextCase" class="case-nav" aria-label="同题材案例">
-        <router-link v-if="prevCase" :to="`/case/${prevCase.id}`" class="nav-link nav-prev">
+        <router-link v-if="prevCase" :to="`/ep/${prevCase.id}`" class="nav-link nav-prev">
           <span class="nav-label">← 上一篇</span>
           <span class="nav-title">{{ prevCase.title }}</span>
         </router-link>
         <span v-else class="nav-spacer" />
-        <router-link v-if="nextCase" :to="`/case/${nextCase.id}`" class="nav-link nav-next">
+        <router-link v-if="nextCase" :to="`/ep/${nextCase.id}`" class="nav-link nav-next">
           <span class="nav-label">下一篇 →</span>
           <span class="nav-title">{{ nextCase.title }}</span>
         </router-link>

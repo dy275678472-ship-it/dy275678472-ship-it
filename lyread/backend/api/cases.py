@@ -87,7 +87,7 @@ def list_cases(limit: int = 20, category: str = None):
                     "word_count": int(r.get("word_count") or 0),
                     "heat": int(r.get("heat") or 0),
                     "score": float(r.get("score") or 0),
-                    "url": f"/case/{r['id']}",
+                    "url": f"/ep/{r['id']}",
                     # 列表卡可读性：约 280 字 ≈ Trending 三行节选，句读处截断
                     "excerpt": _excerpt_clip(r.get("preview_body") or "", 280),
                     "has_body": bool(r.get("preview_body")),
@@ -163,7 +163,7 @@ def case_neighbors(case_id: int):
         def _pack(row):
             if not row:
                 return None
-            return {"id": row["id"], "title": row.get("title") or "未命名", "url": f"/case/{row['id']}"}
+            return {"id": row["id"], "title": row.get("title") or "未命名", "url": f"/ep/{row['id']}"}
 
         return {
             "success": True,

@@ -30,7 +30,7 @@
         <router-link
           v-if="resumeBanner"
           class="resume-link"
-          :to="`/case/${resumeBanner.id}`"
+          :to="`/ep/${resumeBanner.id}`"
           @click="onWorkspaceResumeClick('empty')"
         >继续读上次案例 · {{ resumeBanner.title }} →</router-link>
       </EmptyState>
@@ -179,7 +179,7 @@
       <router-link
         v-if="resumeBanner"
         class="resume-link welcome-resume"
-        :to="`/case/${resumeBanner.id}`"
+        :to="`/ep/${resumeBanner.id}`"
         @click="onWorkspaceResumeClick('welcome')"
       >上次读到 · {{ resumeBanner.title }}（约 {{ resumeBanner.pct }}%）→</router-link>
     </div>

@@ -27,7 +27,7 @@
         >先去创作台看看 →</router-link>
         <router-link
           v-if="resumeBanner"
-          :to="`/case/${resumeBanner.id}`"
+          :to="`/ep/${resumeBanner.id}`"
           class="btn-resume"
           @click="onWalletResumeClick('zero_balance')"
         >继续读上次案例 →</router-link>
@@ -94,7 +94,7 @@
         >去创作台开写 →</router-link>
         <router-link
           v-if="resumeBanner"
-          :to="`/case/${resumeBanner.id}`"
+          :to="`/ep/${resumeBanner.id}`"
           class="btn-resume"
           @click="onWalletResumeClick('next_steps')"
         >继续读 · {{ resumeBanner.title }} →</router-link>
@@ -135,7 +135,7 @@
           >试试短故事 →</router-link>
           <router-link
             v-if="resumeBanner"
-            :to="`/case/${resumeBanner.id}`"
+            :to="`/ep/${resumeBanner.id}`"
             class="btn-resume"
             @click="onWalletResumeClick('txn_empty')"
           >继续读上次案例 →</router-link>

@@ -494,7 +494,7 @@ function afterAuth(isRegister = false) {
       value: Number(offer.id) || 0,
     })
     success.value = `登录成功，继续读《${offer.title}》…`
-    router.push(`/case/${offer.id}`)
+    router.push(`/ep/${offer.id}`)
     return
   }
   router.push('/workspace')

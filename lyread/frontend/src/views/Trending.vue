@@ -19,7 +19,7 @@
       </div>
       <router-link
         class="resume-go"
-        :to="`/case/${resumeBanner.id}`"
+        :to="`/ep/${resumeBanner.id}`"
         @click="onResumeBannerClick"
       >继续读 →</router-link>
     </div>
@@ -64,7 +64,7 @@
         <router-link
           v-for="(c, i) in casesHead"
           :key="c.id"
-          :to="`/case/${c.id}`"
+          :to="`/ep/${c.id}`"
           class="case-card"
         >
           <CaseCover :item="c" :index="i" :alt="`${c.title} 封面`" />
@@ -116,7 +116,7 @@
         <router-link
           v-for="(c, i) in casesTail"
           :key="c.id"
-          :to="`/case/${c.id}`"
+          :to="`/ep/${c.id}`"
           class="case-card"
         >
           <CaseCover :item="c" :index="casesHead.length + i" :alt="`${c.title} 封面`" />

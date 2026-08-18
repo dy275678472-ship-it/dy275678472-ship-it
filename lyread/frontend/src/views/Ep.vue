@@ -63,9 +63,9 @@
       </p>
       <ul v-else>
         <li v-for="item in cases" :key="item.id">
-          <!-- 人类走 SPA CaseReader；爬虫仍经 /ep/:id SSR（sitemap / 完整刷新） -->
+          <!-- 规范深链 /ep/:id（人类 SPA CaseReader；抵御生产 /case→/ep 301） -->
           <router-link
-            :to="`/case/${item.id}`"
+            :to="`/ep/${item.id}`"
             @click="track('ep_case_click', String(item.id))"
           >{{ item.title }}</router-link>
           <span v-if="item.category" class="tag">{{ item.category }}</span>

@@ -15,7 +15,7 @@
         </div>
         <router-link
           class="resume-go"
-          :to="`/case/${resumeBanner.id}`"
+          :to="`/ep/${resumeBanner.id}`"
           @click="onResumeClick"
         >继续读 →</router-link>
       </div>
