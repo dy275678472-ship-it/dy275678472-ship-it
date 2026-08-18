@@ -45,6 +45,35 @@
       </div>
     </section>
 
+    <!-- 次屏转化：看完赠送/日免亮点后立刻 register-first，对齐 Guide/Ep -->
+    <section class="pricing-mid-cta" aria-label="开始创作">
+      <p class="mid-kicker">注册送 30 点 · 失败不扣点</p>
+      <div class="mid-actions">
+        <router-link
+          v-if="!isLoggedIn"
+          class="btn primary"
+          :to="{ path: '/login', query: { mode: 'register', redirect: '/workspace?mode=new' } }"
+          @click="trackEvent('pricing_mid_register', { category: 'funnel', label: 'mid_cta' })"
+        >免费注册开写 →</router-link>
+        <router-link
+          v-else
+          class="btn primary"
+          :to="{ path: '/workspace', query: { mode: 'new' } }"
+          @click="trackEvent('pricing_mid_workspace', { category: 'funnel', label: 'mid_cta' })"
+        >进入创作台 →</router-link>
+        <a
+          class="btn"
+          href="#packages"
+          @click="trackEvent('pricing_mid_packages', { category: 'funnel', label: 'mid_cta' })"
+        >查看充值套餐</a>
+        <router-link
+          class="btn"
+          to="/trending"
+          @click="trackEvent('pricing_mid_trending', { category: 'funnel', label: 'mid_cta' })"
+        >先看看案例</router-link>
+      </div>
+    </section>
+
     <section class="price-table">
       <h2>操作消耗参考</h2>
       <div class="table-wrap">
@@ -63,7 +92,7 @@
       </div>
     </section>
 
-    <section class="packages">
+    <section id="packages" class="packages">
       <h2>充值套餐</h2>
       <p v-if="!isLoggedIn" class="guest-pricing-hint">
         游客可先
@@ -309,7 +338,7 @@ async function buy(pkg) {
 }
 .case-resume-go:hover { filter: brightness(1.05); }
 
-.highlights { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 48px; }
+.highlights { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
 .highlight-card {
   display: flex; gap: 14px; align-items: flex-start;
   background: #fff; border-radius: 14px; padding: 20px;
@@ -318,6 +347,22 @@ async function buy(pkg) {
 .hl-icon-img { flex-shrink: 0; object-fit: contain; }
 .highlight-card strong { display: block; color: #1e2a3a; margin-bottom: 4px; }
 .highlight-card p { font-size: 13px; color: #5a6a7a; }
+
+.pricing-mid-cta {
+  margin: 0 0 40px; padding: 20px 18px; text-align: center;
+  background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(218, 230, 245, 0.95);
+  border-radius: 12px;
+}
+.mid-kicker { margin: 0 0 14px; font-size: 14px; color: #4a90d9; font-weight: 600; }
+.mid-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.pricing-mid-cta .btn {
+  display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none;
+  font-size: 14px; font-weight: 500; color: #357abd; background: #e8f0fe; border: 1px solid #d0e0f5;
+  box-sizing: border-box;
+}
+.pricing-mid-cta .btn.primary {
+  color: #fff; background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%); border-color: transparent;
+}
 
 .price-table { margin-bottom: 48px; }
 .price-table h2, .packages h2, .faq h2 { font-size: 22px; margin-bottom: 20px; color: #1e2a3a; }
@@ -373,5 +418,7 @@ th { background: #f8fafc; font-size: 13px; color: #64748b; }
   .page-hero h1 { font-size: 26px; }
   .case-resume-banner { flex-direction: column; align-items: stretch; text-align: left; }
   .case-resume-go { text-align: center; }
+  .mid-actions { flex-direction: column; }
+  .pricing-mid-cta .btn { width: 100%; text-align: center; }
 }
 </style>

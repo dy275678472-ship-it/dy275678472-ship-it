@@ -1607,12 +1607,19 @@ async def seo_pricing_page(request: Request):
       <div class="info-item"><strong>兑换比例</strong><br>10 元 = 100 点</div>
       <div class="info-item"><strong>一章参考</strong><br>约 2000 字 ≈ 10 点</div>
     </div>
+    <div class="seo-cta" style="margin:24px 0">
+      <a href="{_register_workspace_href()}">免费注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/pricing#packages">查看充值套餐 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">先看看案例 →</a>
+    </div>
     <h2 style="font-size:18px;margin-bottom:12px">操作消耗参考</h2>
     <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
       <thead><tr style="background:#f4f8fe"><th style="padding:10px;text-align:left">操作</th><th style="padding:10px">点数</th><th style="padding:10px;text-align:left">说明</th></tr></thead>
       <tbody>{rows_html}</tbody>
     </table>
-    <h2 style="font-size:18px;margin-bottom:12px">充值套餐</h2>
+    <h2 id="packages" style="font-size:18px;margin-bottom:12px">充值套餐</h2>
     <div class="info-grid">{pkg_html}</div>
     <div class="seo-cta">
       <a href="{_register_workspace_href()}">注册领取 30 点 →</a>
