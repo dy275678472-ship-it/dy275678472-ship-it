@@ -1040,9 +1040,13 @@ async def seo_privacy_page(request: Request):
     <h2 style="font-size:18px;margin:20px 0 12px">联系我们</h2>
     <p>隐私相关问题请通过网站「关于我们」页面所列方式联系。</p>
     <div class="seo-cta">
-      <a href="{SITE_BASE}/terms">查看用户协议 →</a>
-      &nbsp;&nbsp;
       <a href="{_register_workspace_href()}">免费注册领 30 点 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/">返回首页 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">看案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/terms">查看用户协议 →</a>
     </div>
     """
     title = "隐私政策 - LyRead AI"
@@ -1090,9 +1094,13 @@ async def seo_terms_page(request: Request):
     <h2 style="font-size:18px;margin:20px 0 12px">协议变更</h2>
     <p>我们可能更新本协议，重大变更将在站内公告。继续使用即视为接受更新后的条款。</p>
     <div class="seo-cta">
-      <a href="{SITE_BASE}/privacy">查看隐私政策 →</a>
-      &nbsp;&nbsp;
       <a href="{_register_workspace_href()}">免费注册领 30 点 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/">返回首页 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">看案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/privacy">查看隐私政策 →</a>
     </div>
     """
     title = "用户协议 - LyRead AI"

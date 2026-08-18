@@ -69,6 +69,10 @@
     </section>
 
     <section class="legal-bottom" aria-label="下一步">
+      <router-link to="/" class="text-link" @click="track('terms_home')">返回首页</router-link>
+      <span class="sep">·</span>
+      <router-link to="/trending" class="text-link" @click="track('terms_bottom_trending')">看案例</router-link>
+      <span class="sep">·</span>
       <router-link to="/privacy" class="text-link" @click="track('terms_privacy')">隐私政策</router-link>
       <span class="sep">·</span>
       <router-link to="/faq" class="text-link" @click="track('terms_faq')">常见问题</router-link>

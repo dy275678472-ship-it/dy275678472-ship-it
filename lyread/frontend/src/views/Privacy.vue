@@ -70,6 +70,10 @@
     </section>
 
     <section class="legal-bottom" aria-label="下一步">
+      <router-link to="/" class="text-link" @click="track('privacy_home')">返回首页</router-link>
+      <span class="sep">·</span>
+      <router-link to="/trending" class="text-link" @click="track('privacy_bottom_trending')">看案例</router-link>
+      <span class="sep">·</span>
       <router-link to="/terms" class="text-link" @click="track('privacy_terms')">用户协议</router-link>
       <span class="sep">·</span>
       <router-link to="/about" class="text-link" @click="track('privacy_about')">关于我们</router-link>
