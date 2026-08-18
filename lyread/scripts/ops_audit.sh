@@ -74,15 +74,31 @@ assert_bot_ssr "/pricing" "点数"
 assert_bot_ssr "/trending" "案例"
 assert_bot_ssr "/story" "短故事"
 
-# 案例 SPA 路径分享/爬虫：应返回正文 SSR（非首页 SPA shell）
+# 案例 SPA 路径：人类走 CaseReader；爬虫 / ?ssr=1 走后端 HTML（canonical=/ep/:id）
+# 生产若仍 301→/ep，硬刷新与分享链会丢失阅读器（需部署 tip nginx）
 CASE_ID=$(curl -sf "$BASE_URL/api/cases?limit=1" | python3 -c "import sys,json; print(json.load(sys.stdin).get('cases',[{}])[0].get('id',''))" 2>/dev/null || echo "")
 if [[ -n "$CASE_ID" ]]; then
+  CASE_HDR=$(curl -sI "$BASE_URL/case/$CASE_ID" | tr -d '\r')
+  CASE_CODE=$(echo "$CASE_HDR" | awk 'NR==1{print $2; exit}')
+  CASE_LOC=$(echo "$CASE_HDR" | awk 'tolower($1)=="location:"{print $2; exit}')
+  if [[ "$CASE_CODE" == "200" ]]; then
+    ok "human /case/$CASE_ID (CaseReader path)"
+  elif [[ "$CASE_CODE" == "301" || "$CASE_CODE" == "302" || "$CASE_CODE" == "307" || "$CASE_CODE" == "308" ]] \
+    && echo "${CASE_LOC:-}" | grep -q "/ep/"; then
+    bad "human /case/$CASE_ID → ${CASE_LOC} (CaseReader blocked; redeploy tip nginx)"
+  else
+    bad "human /case/$CASE_ID ($CASE_CODE)"
+  fi
   assert_bot_ssr "/case/$CASE_ID" "正文节选"
   CASE_SSR=$(curl -sf "$BASE_URL/case/$CASE_ID?ssr=1" || true)
   if echo "$CASE_SSR" | grep -q "正文节选" && echo "$CASE_SSR" | grep -q "rel=\"canonical\".*/ep/$CASE_ID" && ! echo "$CASE_SSR" | grep -q 'id="app"'; then
     ok "ssr=1 /case/$CASE_ID + canonical /ep"
   else
-    bad "ssr=1 /case/$CASE_ID (missing body or canonical)"
+    if echo "$CASE_SSR" | grep -qi "301 Moved Permanently"; then
+      bad "ssr=1 /case/$CASE_ID (301 redirect; tip nginx serves CaseReader/SSR)"
+    else
+      bad "ssr=1 /case/$CASE_ID (missing body or canonical)"
+    fi
   fi
 else
   warn "no public case for /case bot SSR check"
