@@ -1745,6 +1745,13 @@ async def seo_story_page(request: Request):
     )
     body_html = f"""
     <p>选题材、写灵感，AI 一键生成完整短篇（约 3000 字，消耗 15 点）。游客可自由预览题材与灵感；生成需注册（送 30 点）。</p>
+    <div class="seo-cta" style="margin:24px 0">
+      <a href="{story_register_href}">免费注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">先看看案例 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/pricing">查看价格 →</a>
+    </div>
     <h2 style="font-size:18px;margin:8px 0 12px">先读一段真实生成节选</h2>
     <ul class="seo-list">{items_html}</ul>
     <div class="seo-cta">

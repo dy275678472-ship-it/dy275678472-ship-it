@@ -53,6 +53,35 @@
       </div>
       <input v-model="genreCustom" class="input" placeholder="或自定义题材" @input="genreId = ''" />
 
+      <!-- 次屏转化：选题后立刻 register-first，保留题材/灵感回流，对齐 Pricing/Guide -->
+      <section class="story-mid-cta" aria-label="开始创作">
+        <p class="mid-kicker">注册送 30 点 · 约可生成 2 篇短故事</p>
+        <div class="mid-actions">
+          <router-link
+            v-if="!isLoggedIn"
+            class="btn primary"
+            :to="guestRegisterLink"
+            @click="trackEvent('story_mid_register', { category: 'funnel', label: 'mid_cta' })"
+          >免费注册开写 →</router-link>
+          <a
+            v-else
+            class="btn primary"
+            href="#story-generate"
+            @click="trackEvent('story_mid_generate', { category: 'funnel', label: 'mid_cta' })"
+          >继续填写灵感开写 →</a>
+          <router-link
+            class="btn"
+            to="/trending"
+            @click="trackEvent('story_mid_trending', { category: 'funnel', label: 'mid_cta' })"
+          >先看看案例</router-link>
+          <router-link
+            class="btn"
+            to="/pricing"
+            @click="trackEvent('story_mid_pricing', { category: 'funnel', label: 'mid_cta' })"
+          >查看价格</router-link>
+        </div>
+      </section>
+
       <h2>2. 故事灵感</h2>
       <div class="action-row">
         <button type="button" class="btn-secondary" @click="shuffleTemplates">🎲 换一批模板</button>
@@ -76,7 +105,7 @@
         >{{ g.icon }} {{ g.name }}</button>
       </div>
 
-      <button class="btn-generate" :disabled="busy || !canGenerate" @click="generate">
+      <button id="story-generate" class="btn-generate" :disabled="busy || !canGenerate" @click="generate">
         {{ busy ? '生成中...' : '一键生成完整短篇（15 点）' }}
       </button>
       <p v-if="error" class="error">{{ error }}</p>
@@ -338,6 +367,25 @@ onMounted(async () => {
 .panel { background: #fff; border-radius: 16px; padding: 24px; border: 1px solid #e8f0fa; }
 .panel h2 { font-size: 16px; margin: 20px 0 10px; color: #334155; }
 .panel h2:first-child { margin-top: 0; }
+.story-mid-cta {
+  margin: 20px 0 4px; padding: 18px 16px; text-align: center;
+  background: rgba(248, 250, 252, 0.95); border: 1px solid rgba(218, 230, 245, 0.95);
+  border-radius: 12px;
+}
+.mid-kicker { margin: 0 0 12px; font-size: 14px; color: #4a90d9; font-weight: 600; }
+.mid-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.story-mid-cta .btn {
+  display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none;
+  font-size: 14px; font-weight: 500; color: #357abd; background: #e8f0fe; border: 1px solid #d0e0f5;
+  box-sizing: border-box;
+}
+.story-mid-cta .btn.primary {
+  color: #fff; background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%); border-color: transparent;
+}
+@media (max-width: 560px) {
+  .mid-actions { flex-direction: column; }
+  .story-mid-cta .btn { width: 100%; text-align: center; }
+}
 .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .chip-grid.small .chip { font-size: 12px; padding: 8px 10px; }
 .chip { padding: 10px 14px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; }
