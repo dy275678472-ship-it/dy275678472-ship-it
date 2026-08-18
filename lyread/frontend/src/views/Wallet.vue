@@ -124,6 +124,11 @@
             @click="trackEvent('wallet_create_click', { category: 'conversion', label: 'txn_empty' })"
           >去创作台开写 →</router-link>
           <router-link
+            to="/trending"
+            class="btn-resume"
+            @click="trackEvent('wallet_trending_click', { category: 'conversion', label: 'txn_empty' })"
+          >先看案例 →</router-link>
+          <router-link
             to="/story"
             class="btn-resume"
             @click="trackEvent('wallet_story_click', { category: 'conversion', label: 'txn_empty' })"

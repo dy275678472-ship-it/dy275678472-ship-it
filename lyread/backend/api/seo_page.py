@@ -922,6 +922,10 @@ async def seo_faq_page(request: Request):
     <div class="seo-cta">
       <a href="{register_href}">免费注册领 30 点 →</a>
       &nbsp;&nbsp;
+      <a href="{SITE_BASE}/">返回首页 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/trending">看案例 →</a>
+      &nbsp;&nbsp;
       <a href="{SITE_BASE}/pricing">查看价格 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/story">试试短故事 →</a>
@@ -964,6 +968,8 @@ async def seo_about_page(request: Request):
     </div>
     <div class="seo-cta">
       <a href="{_register_workspace_href()}">注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/">返回首页 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/pricing">查看价格 →</a>
       &nbsp;&nbsp;

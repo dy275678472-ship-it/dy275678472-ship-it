@@ -42,6 +42,10 @@
     </section>
 
     <section class="faq-bottom" aria-label="下一步">
+      <router-link to="/" class="text-link" @click="track('faq_home')">返回首页</router-link>
+      <span class="sep">·</span>
+      <router-link to="/trending" class="text-link" @click="track('faq_bottom_trending')">看案例</router-link>
+      <span class="sep">·</span>
       <router-link to="/pricing" class="text-link" @click="track('faq_pricing')">查看价格</router-link>
       <span class="sep">·</span>
       <router-link to="/about" class="text-link" @click="track('faq_about')">关于我们</router-link>

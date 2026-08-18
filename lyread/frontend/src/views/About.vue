@@ -71,6 +71,10 @@
     </section>
 
     <section class="about-bottom" aria-label="下一步">
+      <router-link to="/" class="text-link" @click="track('about_home')">返回首页</router-link>
+      <span class="sep">·</span>
+      <router-link to="/trending" class="text-link" @click="track('about_bottom_trending')">看案例</router-link>
+      <span class="sep">·</span>
       <router-link to="/pricing" class="text-link" @click="track('about_pricing')">查看价格</router-link>
       <span class="sep">·</span>
       <router-link to="/faq" class="text-link" @click="track('about_faq')">常见问题</router-link>
