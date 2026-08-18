@@ -58,6 +58,8 @@
     </section>
 
     <section class="guide-bottom" aria-label="下一步">
+      <router-link to="/genre" class="text-link" @click="track('guide_genre')">题材聚合</router-link>
+      <span class="sep">·</span>
       <router-link to="/pricing" class="text-link" @click="track('guide_pricing')">查看价格</router-link>
       <span class="sep">·</span>
       <router-link to="/faq" class="text-link" @click="track('guide_faq')">常见问题</router-link>

@@ -127,7 +127,8 @@ assert_no_workspace_in_seo_cta() {
     html=$(curl -sf "$BASE_URL$path" || true)
   fi
   # grep 无匹配时退出码 1；配合 set -euo pipefail 必须吞掉，否则整段巡检中断
-  cta=$(printf '%s' "$html" | tr '\n' ' ' | grep -oE '<div class="seo-cta">.{0,900}</div>' | head -1 || true)
+  # 兼容 <div class="seo-cta"> 与 <div class="seo-cta" style=...> 次屏 CTA
+  cta=$(printf '%s' "$html" | tr '\n' ' ' | grep -oE '<div class="seo-cta"[^>]*>.{0,900}</div>' | head -1 || true)
   if [[ -z "$cta" ]]; then
     warn "seo-cta missing on $path"
     return

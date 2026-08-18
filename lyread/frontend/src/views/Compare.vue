@@ -62,6 +62,8 @@
       <span class="sep">·</span>
       <router-link to="/guide" class="text-link" @click="track('compare_guide')">创作教程</router-link>
       <span class="sep">·</span>
+      <router-link to="/genre" class="text-link" @click="track('compare_genre')">题材聚合</router-link>
+      <span class="sep">·</span>
       <router-link
         v-if="!isLoggedIn"
         class="text-link strong"

@@ -1188,6 +1188,8 @@ async def seo_compare_index():
     <div class="seo-cta">
       <a href="{register_href}">免费注册试用（送 30 点）→</a>
       &nbsp;&nbsp;
+      <a href="{SITE_BASE}/genre">题材聚合 →</a>
+      &nbsp;&nbsp;
       <a href="{SITE_BASE}/pricing">查看价格 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/trending">浏览案例 →</a>
@@ -1237,6 +1239,8 @@ async def seo_guide_index():
     <ul class="seo-list">{items}</ul>
     <div class="seo-cta">
       <a href="{register_href}">注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/genre">题材聚合 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/pricing">查看价格 →</a>
       &nbsp;&nbsp;
@@ -1968,6 +1972,8 @@ async def seo_content_list(request: Request):
     </ul>
     <div class="seo-cta">
       <a href="{register_href}">免费注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/genre">题材聚合 →</a>
       &nbsp;&nbsp;
       <a href="{SITE_BASE}/trending">热门案例 →</a>
       &nbsp;&nbsp;

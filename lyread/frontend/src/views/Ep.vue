@@ -77,6 +77,8 @@
     <section class="ep-bottom" aria-label="下一步">
       <router-link to="/pricing" class="text-link" @click="track('ep_pricing')">查看价格</router-link>
       <span class="sep">·</span>
+      <router-link to="/genre" class="text-link" @click="track('ep_genre')">题材聚合</router-link>
+      <span class="sep">·</span>
       <router-link to="/guide" class="text-link" @click="track('ep_guide')">创作教程</router-link>
       <span class="sep">·</span>
       <router-link
