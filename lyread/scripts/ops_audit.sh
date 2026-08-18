@@ -91,16 +91,16 @@ if [[ -n "$CASE_ID" ]]; then
     bad "human /case/$CASE_ID ($CASE_CODE)"
   fi
   # /ep/:id：tip 起人类应拿 SPA（非 301）；旧版全量 SSR 仍 200 HTML（非失败，但阅读器不可达）
-  EP_HDR=$(curl -sI "$BASE_URL/ep/$CASE_ID" | tr -d '\r')
-  EP_CODE=$(echo "$EP_HDR" | awk 'NR==1{print $2; exit}')
-  EP_CT=$(echo "$EP_HDR" | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}')
-  EP_BODY=$(curl -sf -A "Mozilla/5.0" "$BASE_URL/ep/$CASE_ID" || true)
+  # 勿用 HEAD：旧后端/部分路由对 /ep/:id HEAD 会 405 JSON
+  EP_CODE=$(curl -sS -o /tmp/lyread_ep_human_$$.html -w "%{http_code}" -A "Mozilla/5.0" "$BASE_URL/ep/$CASE_ID" || echo "000")
+  EP_BODY=$(cat /tmp/lyread_ep_human_$$.html 2>/dev/null || true)
+  rm -f /tmp/lyread_ep_human_$$.html
   if [[ "$EP_CODE" == "200" ]] && echo "$EP_BODY" | grep -q 'id="app"'; then
     ok "human /ep/$CASE_ID (CaseReader SPA)"
   elif [[ "$EP_CODE" == "200" ]] && echo "$EP_BODY" | grep -q "正文节选"; then
     warn "human /ep/$CASE_ID still SSR-only (deploy tip nginx for CaseReader on /ep)"
   else
-    bad "human /ep/$CASE_ID ($EP_CODE ct=${EP_CT:-?})"
+    bad "human /ep/$CASE_ID ($EP_CODE)"
   fi
   assert_bot_ssr "/case/$CASE_ID" "正文节选"
   assert_bot_ssr "/ep/$CASE_ID" "正文节选"
