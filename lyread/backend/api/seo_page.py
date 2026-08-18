@@ -813,6 +813,8 @@ async def llms_txt():
 - 短故事预览：https://lyread.cn/story
 - 常见问题：https://lyread.cn/faq
 - 关于我们：https://lyread.cn/about
+- 工具对比：https://lyread.cn/compare
+- 创作教程：https://lyread.cn/guide
 - 案例索引：https://lyread.cn/ep
 - 题材聚合：https://lyread.cn/genre
 - 站点地图：https://lyread.cn/sitemap.xml
@@ -878,6 +880,8 @@ LyRead AI 是中文智能小说创作平台，帮助作者从题材灵感生成�
 - 网站：https://lyread.cn
 - 短故事预览：https://lyread.cn/story
 - 题材聚合：https://lyread.cn/genre
+- 创作教程：https://lyread.cn/guide
+- 工具对比：https://lyread.cn/compare
 - 品牌名：LyRead AI / LyRead 智能小说创作
 """
 
