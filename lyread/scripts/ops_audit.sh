@@ -102,7 +102,8 @@ echo "[2c] FAQ/About conversion CTAs"
 assert_seo_register_cta() {
   local path="$1"
   local html ctype
-  ctype=$(curl -sf -D - -o /tmp/lyread_seo_$$.html "$BASE_URL$path" | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}')
+  # curl -sf 在 404（如未部署 /genre）会非零退出；配合 set -euo pipefail 会中断整段巡检
+  ctype=$(curl -sS -D - -o /tmp/lyread_seo_$$.html "$BASE_URL$path" 2>/dev/null | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}' || true)
   html=$(cat /tmp/lyread_seo_$$.html 2>/dev/null || true)
   rm -f /tmp/lyread_seo_$$.html
   if echo "$ctype" | grep -q 'text/html' \
