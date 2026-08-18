@@ -1649,23 +1649,43 @@ async def seo_trending_page(request: Request):
     """案例阅读页 SSR（拉满公开 showcase，CTA 与 Vue 游客漏斗对齐 register-first）。"""
     # 与 /api/cases?limit=140 / Trending.vue 对齐，避免爬虫只索引前 40 部
     cases = _fetch_public_cases(140)
-    items_html = ""
-    for row in cases:
-        safe_title = escape(str(row.get("title") or "作品"))
-        safe_cat = escape(str(row.get("category") or "都市"))
-        items_html += f"""
+    mid_split = 8  # 扫完首批列表后插次屏 CTA，对齐 SPA 首行后转化
+    head = cases[:mid_split]
+    tail = cases[mid_split:]
+
+    def _items_html(rows: list) -> str:
+        html = ""
+        for row in rows:
+            safe_title = escape(str(row.get("title") or "作品"))
+            safe_cat = escape(str(row.get("category") or "都市"))
+            html += f"""
         <li>
             <a href="{SITE_BASE}/ep/{int(row['id'])}">{safe_title}</a>
             <span class="tag">{safe_cat}</span>
             <span class="stat">{row.get('word_count', 0)}字 · 热度{row.get('heat', 0)}</span>
         </li>"""
-    if not items_html:
-        items_html = '<li style="text-align:center;color:#7a8ba8;padding:40px;">暂无公开案例</li>'
+        return html
+
+    head_html = _items_html(head)
+    tail_html = _items_html(tail)
+    if not head_html and not tail_html:
+        head_html = '<li style="text-align:center;color:#7a8ba8;padding:40px;">暂无公开案例</li>'
 
     register_href = _register_workspace_href()
+    mid_cta = f"""
+    <div class="seo-cta" style="margin:24px 0">
+      <a href="{register_href}">免费注册开写（送 30 点）→</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/story">试试短故事 →</a>
+      &nbsp;&nbsp;
+      <a href="{SITE_BASE}/pricing">查看价格 →</a>
+    </div>
+    """
     body_html = f"""
     <p>平台真实生成案例，点击阅读详情；游客请先注册（送 30 点），再用同风格开写。</p>
-    <ul class="seo-list">{items_html}</ul>
+    <ul class="seo-list">{head_html}</ul>
+    {mid_cta if cases else ""}
+    {f'<ul class="seo-list">{tail_html}</ul>' if tail_html else ""}
     <div class="seo-cta">
       <a href="{register_href}">免费注册开写（送 30 点）→</a>
       &nbsp;&nbsp;

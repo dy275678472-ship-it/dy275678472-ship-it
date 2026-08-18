@@ -59,23 +59,82 @@
         <router-link :to="footerCtaLink" class="btn-cta btn-empty-primary">{{ emptyCtaLabel }}</router-link>
       </div>
     </EmptyState>
-    <div v-else class="case-grid">
-      <router-link v-for="(c, i) in cases" :key="c.id" :to="`/case/${c.id}`" class="case-card">
-        <CaseCover :item="c" :index="i" :alt="`${c.title} 封面`" />
-        <div class="case-body">
-          <div class="card-top">
-            <span class="cat">{{ c.category || '都市' }}</span>
-            <span v-if="progressById[c.id]" class="progress-chip">已读 {{ progressById[c.id] }}%</span>
+    <template v-else>
+      <div class="case-grid">
+        <router-link
+          v-for="(c, i) in casesHead"
+          :key="c.id"
+          :to="`/case/${c.id}`"
+          class="case-card"
+        >
+          <CaseCover :item="c" :index="i" :alt="`${c.title} 封面`" />
+          <div class="case-body">
+            <div class="card-top">
+              <span class="cat">{{ c.category || '都市' }}</span>
+              <span v-if="progressById[c.id]" class="progress-chip">已读 {{ progressById[c.id] }}%</span>
+            </div>
+            <h3>{{ c.title }}</h3>
+            <p v-if="c.excerpt" class="excerpt">{{ c.excerpt }}</p>
+            <div class="meta">
+              <span>{{ formatExcerptLabel(c) }}</span>
+              <span class="heat"><img :src="images.fire" alt="热度" width="14" height="14" /> {{ c.heat }}</span>
+            </div>
           </div>
-          <h3>{{ c.title }}</h3>
-          <p v-if="c.excerpt" class="excerpt">{{ c.excerpt }}</p>
-          <div class="meta">
-            <span>{{ formatExcerptLabel(c) }}</span>
-            <span class="heat"><img :src="images.fire" alt="热度" width="14" height="14" /> {{ c.heat }}</span>
-          </div>
+        </router-link>
+      </div>
+
+      <!-- 次屏转化：扫完首行案例后立刻 register-first，对齐 Pricing/Story -->
+      <section class="trending-mid-cta" aria-label="开始创作">
+        <p class="mid-kicker">注册送 30 点 · 约可 AI 续写 3 章</p>
+        <div class="mid-actions">
+          <router-link
+            v-if="!isLoggedIn"
+            class="btn primary"
+            :to="guestRegisterLink"
+            @click="trackEvent('trending_mid_register', { category: 'funnel', label: 'mid_cta' })"
+          >免费注册开写 →</router-link>
+          <router-link
+            v-else
+            class="btn primary"
+            :to="{ path: '/workspace', query: { mode: 'new' } }"
+            @click="trackEvent('trending_mid_workspace', { category: 'funnel', label: 'mid_cta' })"
+          >用同题材开写 →</router-link>
+          <router-link
+            class="btn"
+            to="/story"
+            @click="trackEvent('trending_mid_story', { category: 'funnel', label: 'mid_cta' })"
+          >试试短故事</router-link>
+          <router-link
+            class="btn"
+            to="/pricing"
+            @click="trackEvent('trending_mid_pricing', { category: 'funnel', label: 'mid_cta' })"
+          >查看价格</router-link>
         </div>
-      </router-link>
-    </div>
+      </section>
+
+      <div v-if="casesTail.length" class="case-grid">
+        <router-link
+          v-for="(c, i) in casesTail"
+          :key="c.id"
+          :to="`/case/${c.id}`"
+          class="case-card"
+        >
+          <CaseCover :item="c" :index="casesHead.length + i" :alt="`${c.title} 封面`" />
+          <div class="case-body">
+            <div class="card-top">
+              <span class="cat">{{ c.category || '都市' }}</span>
+              <span v-if="progressById[c.id]" class="progress-chip">已读 {{ progressById[c.id] }}%</span>
+            </div>
+            <h3>{{ c.title }}</h3>
+            <p v-if="c.excerpt" class="excerpt">{{ c.excerpt }}</p>
+            <div class="meta">
+              <span>{{ formatExcerptLabel(c) }}</span>
+              <span class="heat"><img :src="images.fire" alt="热度" width="14" height="14" /> {{ c.heat }}</span>
+            </div>
+          </div>
+        </router-link>
+      </div>
+    </template>
 
     <div class="cta">
       <p v-if="!isLoggedIn" class="guest-cta-hint">注册送 30 点，约可 AI 续写 3 章</p>
@@ -101,6 +160,7 @@ import { trackEvent } from '../utils/analytics'
 
 const images = IMAGES
 
+const MID_SPLIT = 6 // 桌面首行 3 列 × 2，扫完即次屏 CTA
 const cases = ref([])
 const categories = ref([])
 const activeCategory = ref('')
@@ -109,6 +169,8 @@ const loading = ref(true)
 const resumeBanner = ref(null)
 const progressById = ref({})
 const isLoggedIn = computed(() => typeof localStorage !== 'undefined' && !!localStorage.getItem('token'))
+const casesHead = computed(() => (cases.value || []).slice(0, MID_SPLIT))
+const casesTail = computed(() => (cases.value || []).slice(MID_SPLIT))
 
 function refreshCardProgress(list = cases.value) {
   const next = {}
@@ -263,7 +325,22 @@ onMounted(async () => {
 }
 .loading { text-align: center; color: #94a3b8; padding: 60px; }
 .heat { display: inline-flex; align-items: center; gap: 4px; }
-.case-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
+.case-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 28px; }
+.trending-mid-cta {
+  margin: 0 0 28px; padding: 20px 18px; text-align: center;
+  background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(218, 230, 245, 0.95);
+  border-radius: 12px;
+}
+.mid-kicker { margin: 0 0 14px; font-size: 14px; color: #4a90d9; font-weight: 600; }
+.mid-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.trending-mid-cta .btn {
+  display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none;
+  font-size: 14px; font-weight: 500; color: #357abd; background: #e8f0fe; border: 1px solid #d0e0f5;
+  box-sizing: border-box;
+}
+.trending-mid-cta .btn.primary {
+  color: #fff; background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%); border-color: transparent;
+}
 .case-card {
   display: block; text-decoration: none; background: #fff; border-radius: 14px;
   overflow: hidden; border: 1px solid #e8f0fa; transition: all 0.2s;
@@ -290,5 +367,9 @@ onMounted(async () => {
   background: linear-gradient(135deg, #4da1ff, #2563eb); color: #fff;
   font-weight: 600; text-decoration: none;
 }
-@media (max-width: 768px) { .case-grid { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+  .case-grid { grid-template-columns: 1fr; }
+  .mid-actions { flex-direction: column; }
+  .trending-mid-cta .btn { width: 100%; text-align: center; }
+}
 </style>
