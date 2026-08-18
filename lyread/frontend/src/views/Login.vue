@@ -20,6 +20,14 @@
         <strong>上次读到 · {{ resumeOffer.title }}</strong>
         <p>已读约 {{ resumeOffer.pct }}%{{ resumeOffer.category ? ` · ${resumeOffer.category}` : '' }} · 登录后可继续读</p>
       </div>
+      <div v-else-if="showRegister" class="intent-banner welcome-cold" role="status">
+        <strong>注册送 30 点，马上开写</strong>
+        <p>约可写 3 章 · 生成失败全额返还 · 也可先读案例找灵感</p>
+      </div>
+      <div v-else-if="!showForgot && !showReset" class="intent-banner welcome-cold soft" role="status">
+        <strong>欢迎回来</strong>
+        <p>登录后继续创作；没有账号？注册送 30 点，失败不扣点</p>
+      </div>
       
       <!-- 注册表单 -->
       <form v-if="showRegister" @submit.prevent="handleRegister">
@@ -258,6 +266,34 @@ function parseRedirectIntent(redirect) {
         detail: '注册送 30 点，失败全额返还',
       }
     }
+    if (/^\/(case|ep)\/\d+/.test(u.pathname)) {
+      return {
+        kind: 'case_read',
+        title: '登录后继续阅读',
+        detail: '注册送 30 点，读完可按同风格开写',
+      }
+    }
+    if (u.pathname.startsWith('/trending')) {
+      return {
+        kind: 'trending',
+        title: '登录后继续看案例',
+        detail: '注册送 30 点，读完可按同风格开写',
+      }
+    }
+    if (u.pathname.startsWith('/wallet')) {
+      return {
+        kind: 'wallet',
+        title: '登录后查看点数',
+        detail: '注册送 30 点，每日还可领 5 点免费额度',
+      }
+    }
+    if (u.pathname.startsWith('/pricing') && !pkg) {
+      return {
+        kind: 'pricing',
+        title: '注册后查看充值套餐',
+        detail: '注册送 30 点，再到价格页续充',
+      }
+    }
     return null
   } catch {
     return null
@@ -291,6 +327,8 @@ const registerCtaLabel = computed(() => {
   if (kind === 'trial' || kind === 'case') return '注册并开写（送 30 点）'
   if (kind === 'story') return '注册并生成短篇（送 30 点）'
   if (kind === 'workspace') return '注册领 30 点开写'
+  if (kind === 'case_read' || kind === 'trending') return '注册领 30 点继续读'
+  if (kind === 'wallet') return '注册领 30 点看余额'
   return '注册领 30 点'
 })
 
@@ -396,6 +434,11 @@ onMounted(async () => {
       label: resumeOffer.value.title || '',
       value: Number(resumeOffer.value.id) || 0,
     })
+  } else {
+    trackEvent('login_cold_welcome', {
+      category: 'funnel',
+      label: showRegister.value ? 'register' : 'login',
+    })
   }
   try {
     const res = await authApi.oauthStatus()
@@ -424,6 +467,10 @@ function registerSuccessMessage(redirect) {
     return '注册成功，已到账 30 点，正在带入你的创作意图…'
   }
   if (redirect.startsWith('/workspace')) return '注册成功，已到账 30 点，正在进入创作台...'
+  if (/^\/(case|ep)\/\d+/.test(redirect) || redirect.startsWith('/trending')) {
+    return '注册成功，已到账 30 点，正在回到阅读…'
+  }
+  if (redirect.startsWith('/wallet')) return '注册成功，已到账 30 点，正在打开点数页…'
   return '注册成功，已到账 30 点，正在跳转…'
 }
 
@@ -640,6 +687,22 @@ const handleRegister = async () => {
   font-size: 12px;
   line-height: 1.5;
   color: #047857;
+}
+.intent-banner.welcome-cold {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e3a8a;
+}
+.intent-banner.welcome-cold p {
+  color: #1d4ed8;
+}
+.intent-banner.welcome-cold.soft {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #334155;
+}
+.intent-banner.welcome-cold.soft p {
+  color: #64748b;
 }
 
 .recovery-hint {

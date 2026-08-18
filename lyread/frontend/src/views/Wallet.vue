@@ -124,6 +124,11 @@
             @click="trackEvent('wallet_create_click', { category: 'conversion', label: 'txn_empty' })"
           >去创作台开写 →</router-link>
           <router-link
+            to="/story"
+            class="btn-resume"
+            @click="trackEvent('wallet_story_click', { category: 'conversion', label: 'txn_empty' })"
+          >试试短故事 →</router-link>
+          <router-link
             v-if="resumeBanner"
             :to="`/case/${resumeBanner.id}`"
             class="btn-resume"
