@@ -339,7 +339,16 @@ function updatePageMeta(c) {
   }
   setOg('og:title', title)
   setOg('og:description', desc)
-  setOg('og:url', `https://lyread.cn/case/${c.id}`)
+  // 与 SSR canonical 对齐：规范 URL 统一 /ep/:id（/case 仅为阅读器别名）
+  const canon = `https://lyread.cn/ep/${c.id}`
+  setOg('og:url', canon)
+  let link = document.querySelector('link[rel="canonical"]')
+  if (!link) {
+    link = document.createElement('link')
+    link.rel = 'canonical'
+    document.head.appendChild(link)
+  }
+  link.href = canon
 }
 
 async function loadCase(id) {

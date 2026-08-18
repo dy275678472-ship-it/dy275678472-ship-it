@@ -18,6 +18,8 @@ const routes = [
   { path: '/reader', component: () => import('./views/Workspace.vue'), meta: { title: '长篇小说 - LyRead AI', desc: '开始你的长篇小说创作。' }},
   { path: '/story', component: () => import('./views/ShortStory.vue'), meta: { title: '短故事 - LyRead AI', desc: '快速生成完整短篇故事。' }},
   { path: '/case/:id', component: () => import('./views/CaseReader.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '阅读平台 AI 生成案例。' }},
+  // /ep/:id 与 /case/:id 同组件：nginx 人类走 SPA，避免 301 落到 /ep 后丢失阅读器
+  { path: '/ep/:id(\\d+)', component: () => import('./views/CaseReader.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '阅读平台 AI 生成案例。' }},
   { path: '/trending', component: () => import('./views/Trending.vue'), meta: { title: '案例阅读 - LyRead AI', desc: '浏览平台生成案例。' }},
   { path: '/admin', component: () => import('./views/Admin.vue'), meta: { title: '运营后台 - LyRead AI', desc: '管理员控制台。' }},
   // 人类走 SPA（次屏 register CTA）；完整刷新仍由 nginx 反代后端 SSR
@@ -29,7 +31,7 @@ const routes = [
   { path: '/guide', component: () => import('./views/Guide.vue'), meta: { title: 'AI写小说教程 - LyRead AI 创作指南', desc: 'AI 小说创作教程：入门开书、大纲章纲、日更续写技巧与点数成本估算。' }},
   // 人类走 SPA（次屏 register CTA）；完整刷新仍由 nginx 反代后端 SSR；/compare/:slug 仍 SSR
   { path: '/compare', component: () => import('./views/Compare.vue'), meta: { title: 'AI写小说工具对比 - LyRead AI', desc: '按长篇记忆、创作工作流、使用成本与适用场景比较 AI 写小说工具，并说明第三方信息边界。' }},
-  // 人类走 SPA（次屏 register CTA）；完整刷新 /ep 与 /ep/:id 仍走后端 SSR
+  // 人类走 SPA（次屏 register CTA）；完整刷新 /ep 索引仍走后端 SSR；/ep/:id 见上方 CaseReader
   { path: '/ep', component: () => import('./views/Ep.vue'), meta: { title: 'LyRead AI 小说作品列表 - 智能小说创作平台', desc: '浏览 LyRead AI 公开案例节选：都市神豪、战神归来、系统流等题材 AI 开篇。注册送 30 点，可用同风格开写。' }},
   // 人类走 SPA（次屏 register CTA）；完整刷新 /genre 与 /genre/:slug 仍走后端 SSR
   { path: '/genre', component: () => import('./views/Genre.vue'), meta: { title: 'AI小说题材聚合 - LyRead AI', desc: '按都市神豪、战神归来、系统流、仙侠玄幻等题材浏览 LyRead AI 公开案例与创作入口。注册送 30 点。' }},

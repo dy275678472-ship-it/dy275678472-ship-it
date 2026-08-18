@@ -76,6 +76,7 @@ assert_bot_ssr "/story" "短故事"
 
 # 案例 SPA 路径：人类走 CaseReader；爬虫 / ?ssr=1 走后端 HTML（canonical=/ep/:id）
 # 生产若仍 301→/ep，硬刷新与分享链会丢失阅读器（需部署 tip nginx）
+# tip 起 /ep/:id 人类亦走 CaseReader，即使 301 落到 /ep 仍可阅读
 CASE_ID=$(curl -sf "$BASE_URL/api/cases?limit=1" | python3 -c "import sys,json; print(json.load(sys.stdin).get('cases',[{}])[0].get('id',''))" 2>/dev/null || echo "")
 if [[ -n "$CASE_ID" ]]; then
   CASE_HDR=$(curl -sI "$BASE_URL/case/$CASE_ID" | tr -d '\r')
@@ -89,7 +90,20 @@ if [[ -n "$CASE_ID" ]]; then
   else
     bad "human /case/$CASE_ID ($CASE_CODE)"
   fi
+  # /ep/:id：tip 起人类应拿 SPA（非 301）；旧版全量 SSR 仍 200 HTML（非失败，但阅读器不可达）
+  EP_HDR=$(curl -sI "$BASE_URL/ep/$CASE_ID" | tr -d '\r')
+  EP_CODE=$(echo "$EP_HDR" | awk 'NR==1{print $2; exit}')
+  EP_CT=$(echo "$EP_HDR" | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}')
+  EP_BODY=$(curl -sf -A "Mozilla/5.0" "$BASE_URL/ep/$CASE_ID" || true)
+  if [[ "$EP_CODE" == "200" ]] && echo "$EP_BODY" | grep -q 'id="app"'; then
+    ok "human /ep/$CASE_ID (CaseReader SPA)"
+  elif [[ "$EP_CODE" == "200" ]] && echo "$EP_BODY" | grep -q "正文节选"; then
+    warn "human /ep/$CASE_ID still SSR-only (deploy tip nginx for CaseReader on /ep)"
+  else
+    bad "human /ep/$CASE_ID ($EP_CODE ct=${EP_CT:-?})"
+  fi
   assert_bot_ssr "/case/$CASE_ID" "正文节选"
+  assert_bot_ssr "/ep/$CASE_ID" "正文节选"
   CASE_SSR=$(curl -sf "$BASE_URL/case/$CASE_ID?ssr=1" || true)
   if echo "$CASE_SSR" | grep -q "正文节选" && echo "$CASE_SSR" | grep -q "rel=\"canonical\".*/ep/$CASE_ID" && ! echo "$CASE_SSR" | grep -q 'id="app"'; then
     ok "ssr=1 /case/$CASE_ID + canonical /ep"
@@ -117,9 +131,14 @@ echo ""
 echo "[2c] FAQ/About conversion CTAs"
 assert_seo_register_cta() {
   local path="$1"
+  local ua="${2:-}"
   local html ctype
   # curl -sf 在 404（如未部署 /genre）会非零退出；配合 set -euo pipefail 会中断整段巡检
-  ctype=$(curl -sS -D - -o /tmp/lyread_seo_$$.html "$BASE_URL$path" 2>/dev/null | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}' || true)
+  if [[ -n "$ua" ]]; then
+    ctype=$(curl -sS -A "$ua" -D - -o /tmp/lyread_seo_$$.html "$BASE_URL$path" 2>/dev/null | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}' || true)
+  else
+    ctype=$(curl -sS -D - -o /tmp/lyread_seo_$$.html "$BASE_URL$path" 2>/dev/null | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}' || true)
+  fi
   html=$(cat /tmp/lyread_seo_$$.html 2>/dev/null || true)
   rm -f /tmp/lyread_seo_$$.html
   if echo "$ctype" | grep -q 'text/html' \
@@ -163,6 +182,11 @@ assert_seo_register_cta "/guide"
 assert_seo_register_cta "/compare"
 # sitemap 收录的 /ep 作品索引：主 CTA 须 register-first（送 30 点）
 assert_seo_register_cta "/ep"
+# 分享/301 落地：/ep/:id 详情须 register-first（生产旧版仅 login?redirect=/workspace）
+# tip 起人类 /ep/:id 为 SPA，巡检用 Googlebot 取 SSR HTML
+if [[ -n "${CASE_ID:-}" ]]; then
+  assert_seo_register_cta "/ep/$CASE_ID" "Googlebot"
+fi
 # 题材聚合枢纽 + 叶子页：须 register-first（勿裸链 /workspace）
 assert_seo_register_cta "/genre"
 assert_seo_register_cta "/genre/dushi"
@@ -262,6 +286,16 @@ if [[ "$GUIDE_HEAD" == "200" && "$COMPARE_HEAD" == "200" && "$GENRE_HEAD" == "20
   ok "HEAD /guide /compare /genre"
 else
   bad "HEAD SEO cluster guide=$GUIDE_HEAD compare=$COMPARE_HEAD genre=$GENRE_HEAD (expect 200)"
+fi
+
+# llms.txt：GEO 关键页须含 story + genre（与 tip #187+ 对齐；缺链=回退）
+echo ""
+echo "[4a2] llms.txt GEO links"
+LLMS=$(curl -sf "$BASE_URL/llms.txt" || true)
+if echo "$LLMS" | grep -q 'lyread.cn/story' && echo "$LLMS" | grep -q 'lyread.cn/genre'; then
+  ok "llms.txt has /story + /genre"
+else
+  bad "llms.txt missing /story or /genre (deploy tip #187+)"
 fi
 
 # 题材 OG / 封面光栅资源（社交爬虫不吃 SVG；缺文件时 nginx SPA 也会 200 HTML，需验 Content-Type）
