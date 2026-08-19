@@ -38,7 +38,7 @@ const routes = [
   // 人类走 SPA（次屏 register CTA）；完整刷新 /genre 与 /genre/:slug 仍走后端 SSR
   { path: '/genre', component: () => import('./views/Genre.vue'), meta: { title: 'AI小说题材聚合 - LyRead AI', desc: '按都市神豪、战神归来、系统流、仙侠玄幻等题材浏览 LyRead AI 公开案例与创作入口。注册送 30 点。' }},
   // SPA 软 404：未知路径仍 200 壳，但页内 register-first + 继续读，避免空白 router-view
-  { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('./views/NotFound.vue'), meta: { title: '页面未找到 - LyRead AI', desc: '页面不存在。可回首页、读案例，或免费注册领 30 点开写。' }},
+  { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('./views/NotFound.vue'), meta: { title: '页面未找到 - LyRead AI', desc: '页面不存在。可回首页、读案例、试短故事，或免费注册领 30 点开写。' }},
 ]
 
 const router = createRouter({ history: createWebHistory(), routes })
