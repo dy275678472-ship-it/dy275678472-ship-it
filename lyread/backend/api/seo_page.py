@@ -764,9 +764,9 @@ def _build_sitemap_xml() -> str:
             )
             for row in cursor.fetchall():
                 updated = row['updated_at'].strftime('%Y-%m-%d') if row.get('updated_at') else today
+                # 规范深链仅 /ep/:id。勿再收录 /case/:id——生产 nginx 仍可能 301→/ep，
+                # 双收录会浪费爬取配额并稀释 canonical 信号。
                 urls.append((f"{SITE_BASE}/ep/{row['id']}", "weekly", "0.6", updated))
-                # SPA 别名：与 /ep/:id 同内容，降低爬虫漏抓
-                urls.append((f"{SITE_BASE}/case/{row['id']}", "weekly", "0.55", updated))
             cursor.close()
             db.close()
     except Exception as e:

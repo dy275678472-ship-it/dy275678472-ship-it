@@ -276,6 +276,17 @@ if [[ "$SITEMAP_HEAD_CODE" != "200" || "$SITEMAP_CT" != application/xml* ]]; the
 fi
 if [[ "$SITEMAP_HEAD_CODE" == "200" ]]; then ok "HEAD /sitemap.xml"; else bad "HEAD /sitemap.xml ($SITEMAP_HEAD_CODE, expect 200)"; fi
 if [[ "$SITEMAP_CT" == application/xml* ]]; then ok "sitemap Content-Type ($SITEMAP_CT)"; else bad "sitemap Content-Type ($SITEMAP_CT, expect application/xml)"; fi
+# 规范深链仅 /ep/:id；sitemap 再列 /case/:id 会撞生产 301 并稀释 canonical
+SITEMAP_BODY=$(curl -sf "$BASE_URL/sitemap.xml" || true)
+CASE_IN_SM=$(printf '%s' "$SITEMAP_BODY" | grep -cE '/case/[0-9]+' || true)
+EP_IN_SM=$(printf '%s' "$SITEMAP_BODY" | grep -cE '/ep/[0-9]+' || true)
+if [[ "$CASE_IN_SM" -eq 0 && "$EP_IN_SM" -gt 0 ]]; then
+  ok "sitemap cases use /ep only (ep=$EP_IN_SM)"
+elif [[ "$CASE_IN_SM" -gt 0 ]]; then
+  bad "sitemap still lists /case/* ($CASE_IN_SM); use /ep/:id only (prod may 301)"
+else
+  warn "sitemap missing /ep/:id case URLs (ep=$EP_IN_SM)"
+fi
 GUIDE_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/guide")
 COMPARE_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/compare")
 if [[ "$GUIDE_CODE" == "200" && "$COMPARE_CODE" == "200" ]]; then ok "SEO cluster /guide /compare"; else bad "SEO cluster guide=$GUIDE_CODE compare=$COMPARE_CODE"; fi
