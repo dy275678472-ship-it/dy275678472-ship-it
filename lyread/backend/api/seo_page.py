@@ -97,6 +97,51 @@ def _wizard_genre_from_category(category: str) -> dict:
     return {"type": "", "genreCustom": cat[:40], "genreName": cat[:40]}
 
 
+def _genre_hub_path_from_category(category: str) -> str:
+    """与前端 genreHubPathFromCategory 对齐：题材枢纽路径，无匹配则 /trending。"""
+    cat = str(category or "").strip()
+    if not cat:
+        return "/trending"
+    if "系统" in cat:
+        return "/genre/xitong"
+    if any(k in cat for k in ("战神", "兵王")):
+        return "/genre/zhanshen"
+    if any(k in cat for k in ("重生", "穿越")):
+        return "/genre/chongsheng"
+    if any(k in cat for k in ("仙侠", "玄幻", "修仙")):
+        return "/genre/xianxia"
+    if "萌宝" in cat:
+        return "/genre/mengbao"
+    if any(k in cat for k in ("言情", "甜宠")):
+        return "/genre/yanqing"
+    # 灵异悬疑须先于悬疑，避免「悬疑」子串误入 xuanyi
+    if any(k in cat for k in ("灵异", "恐怖")):
+        return "/genre/lingyi"
+    if any(k in cat for k in ("悬疑", "推理")):
+        return "/genre/xuanyi"
+    if "短篇" in cat:
+        return "/genre/duanpian"
+    if "末世" in cat:
+        return "/genre/moshi"
+    if any(k in cat for k in ("宫廷", "宫斗")):
+        return "/genre/gongting"
+    if "赛博" in cat:
+        return "/genre/saibo"
+    if "赘婿" in cat:
+        return "/genre/zhuixu"
+    if any(k in cat for k in ("科幻", "脑洞")):
+        return "/genre/kehuan"
+    if "校园" in cat:
+        return "/genre/xiaoyuan"
+    if any(k in cat for k in ("游戏", "电竞", "竞技")):
+        return "/genre/youxi"
+    if "历史" in cat:
+        return "/genre/lishi"
+    if any(k in cat for k in ("都市", "神豪")):
+        return "/genre/dushi"
+    return "/trending"
+
+
 def _register_workspace_href(extra_params=None) -> str:
     """通用注册 → 创作台深链（默认 mode=new，打开向导）。"""
     from urllib.parse import quote, urlencode
@@ -607,6 +652,7 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
                     str(row.get("category") or ""),
                     str(row.get("title") or ""),
                 )
+                genre_href = f"{SITE_BASE}{_genre_hub_path_from_category(str(row.get('category') or ''))}"
                 body_html = f"""
                 <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:8px">
                     <img src="{SITE_BASE}{cover_path}" alt="{safe_title} 封面" width="96" height="128"
@@ -632,6 +678,7 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
                     <div style="margin:22px 0;padding:12px 0;border-top:1px dashed #dbeafe;border-bottom:1px dashed #dbeafe;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center">
                         <p style="margin:0;font-size:14px;color:#64748b;line-height:1.5;flex:1 1 220px">读到一半了？注册送 30 点，用同题材接着写下去</p>
                         <a href="{write_href}" style="font-size:14px;font-weight:600;color:#0f766e;text-decoration:none;white-space:nowrap">免费注册开写 →</a>
+                        <a href="{genre_href}" style="font-size:13px;font-weight:500;color:#64748b;text-decoration:none;white-space:nowrap">逛同题材 →</a>
                     </div>"""
                             safe_preview = head + mid_cta + tail
                         else:

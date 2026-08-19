@@ -67,18 +67,25 @@
             <h2 v-if="ch.title" class="chapter-title">{{ ch.title }}</h2>
             <p v-for="(para, j) in ch.paragraphs" :key="j" class="paragraph">{{ para }}</p>
           </div>
-          <!-- 长节选中部软 CTA：与 SSR 案例页对齐，缩短阅读→注册路径 -->
+          <!-- 长节选中部软 CTA：与 SSR 案例页对齐，缩短阅读→注册路径；旁挂同题材枢纽回流 -->
           <div
             v-if="showMidCta && i === midCtaAfterIndex"
             class="mid-cta"
             role="note"
           >
             <p class="mid-cta-text">读到一半了？注册送 30 点，用同题材接着写下去</p>
-            <router-link
-              :to="creationLink"
-              class="mid-cta-link"
-              @click="trackEvent('case_mid_cta_click', { category: 'conversion', label: isLoggedIn ? 'logged_in' : 'register_first', value: Number(caseData.id) || 0 })"
-            >{{ isLoggedIn ? '用同题材开写 →' : '免费注册开写 →' }}</router-link>
+            <div class="mid-cta-actions">
+              <router-link
+                :to="creationLink"
+                class="mid-cta-link"
+                @click="trackEvent('case_mid_cta_click', { category: 'conversion', label: isLoggedIn ? 'logged_in' : 'register_first', value: Number(caseData.id) || 0 })"
+              >{{ isLoggedIn ? '用同题材开写 →' : '免费注册开写 →' }}</router-link>
+              <router-link
+                :to="genreMoreLink"
+                class="mid-cta-genre"
+                @click="trackEvent('case_mid_genre', { category: 'engagement', label: genreMoreLabel, value: Number(caseData.id) || 0 })"
+              >逛同题材 →</router-link>
+            </div>
           </div>
         </template>
       </section>
@@ -525,6 +532,12 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; color: #1e2a3a; }
   line-height: 1.5;
   flex: 1 1 220px;
 }
+.mid-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+}
 .mid-cta-link {
   font-size: 14px;
   font-weight: 600;
@@ -533,6 +546,14 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; color: #1e2a3a; }
   white-space: nowrap;
 }
 .mid-cta-link:hover { text-decoration: underline; }
+.mid-cta-genre {
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.mid-cta-genre:hover { color: #334155; text-decoration: underline; }
 .finished-cta {
   margin: 8px 0 0;
   padding: 16px 0 4px;
