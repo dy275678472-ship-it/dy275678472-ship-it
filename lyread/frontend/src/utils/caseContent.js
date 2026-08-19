@@ -1,0 +1,120 @@
+/** 案例正文解析与展示辅助 */
+
+const PAD_TAIL_LINE_RE = /^(故事，?\s*仍在前方。?|故事仍在前方。?|风过处，故事暂歇，余韵仍在。?)\s*$/u
+const EXCERPT_END_RE = /^（节选完[^）]*）\s*$/u
+
+function collapseDuplicateParagraphs(text) {
+  const parts = text.split(/\n{2,}/)
+  const out = []
+  let prev = null
+  for (const part of parts) {
+    const norm = part.trim()
+    if (!norm) continue
+    if (norm === prev) continue
+    out.push(norm)
+    prev = norm
+  }
+  return out.join('\n\n')
+}
+
+function sharesLongRun(a, b, minLen = 20) {
+  if (a.length < minLen || b.length < minLen) return false
+  const shorter = a.length <= b.length ? a : b
+  const longer = a.length <= b.length ? b : a
+  for (let i = 0; i <= shorter.length - minLen; i++) {
+    if (longer.includes(shorter.slice(i, i + minLen))) return true
+  }
+  return false
+}
+
+const MOTIF_PUNCT_RE = /[\s，。、；：！？,.!?;:\u201c\u201d\u2018\u2019「」『』（）()【】\[\]…—\-·]/gu
+
+function normMotif(text) {
+  return String(text || '').replace(MOTIF_PUNCT_RE, '')
+}
+
+/** 末段去标点后完整包含前窗短母题 → 融合回声（对齐 API case_quality） */
+function isFusedTrailingEcho(last, prevs, { window = 3, shortPrev = 48, minCore = 8 } = {}) {
+  if (!prevs.length) return false
+  const nlast = normMotif(last)
+  if (nlast.length < minCore) return false
+  const slice = prevs.slice(-window)
+  for (const prev of slice) {
+    if (prev.length > shortPrev) continue
+    const np = normMotif(prev)
+    if (np.length >= minCore && np !== nlast && nlast.includes(np)) return true
+  }
+  return false
+}
+
+/** 从文末丢弃近义/融合回声尾段（对齐 API case_quality） */
+function collapseNearDuplicateTrailing(text, minLen = 20) {
+  const parts = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
+  if (parts.length < 2) return text
+  while (parts.length >= 2) {
+    const last = parts[parts.length - 1]
+    const prevs = parts.slice(0, -1)
+    if (prevs.some((prev) => sharesLongRun(last, prev, minLen))) {
+      parts.pop()
+      continue
+    }
+    if (isFusedTrailingEcho(last, prevs)) {
+      parts.pop()
+      continue
+    }
+    break
+  }
+  return parts.join('\n\n')
+}
+
+export function cleanExcerptText(text) {
+  if (!text) return ''
+  let t = text
+  if (t.includes('【阅读提示】')) t = t.split('【阅读提示】')[0]
+  if (t.includes('【节选说明】')) t = t.split('【节选说明】')[0]
+  let lines = t.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
+  // 垫行可能夹在重复段中间，不只出现在文末
+  lines = lines.filter((ln) => !PAD_TAIL_LINE_RE.test(ln.trim()))
+  while (lines.length) {
+    const stripped = lines[lines.length - 1].trim()
+    if (!stripped || EXCERPT_END_RE.test(stripped)) {
+      lines.pop()
+      continue
+    }
+    break
+  }
+  return collapseNearDuplicateTrailing(collapseDuplicateParagraphs(lines.join('\n').trim()))
+}
+export function parseChapters(text) {
+  const cleaned = cleanExcerptText(text)
+  if (!cleaned) return []
+  const lines = cleaned.split('\n')
+  const chapters = []
+  let current = null
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed) continue
+    if (/^第[一二三四五六七八九十百千0-9]+章/.test(trimmed)) {
+      if (current) chapters.push(current)
+      current = { title: trimmed, paragraphs: [] }
+    } else if (current) {
+      current.paragraphs.push(trimmed)
+    } else {
+      if (!chapters.length) chapters.push({ title: '', paragraphs: [] })
+      chapters[0].paragraphs.push(trimmed)
+    }
+  }
+  if (current) chapters.push(current)
+  return chapters.filter((ch) => ch.title || ch.paragraphs.length)
+}
+
+export function countChapters(text) {
+  return (cleanExcerptText(text).match(/^第[一二三四五六七八九十百千0-9]+章/gm) || []).length
+}
+
+export function formatStoryWords(n) {
+  const w = Number(n) || 0
+  if (w >= 10000) return `设定约 ${(w / 10000).toFixed(1)} 万字`
+  return `设定 ${w} 字`
+}
