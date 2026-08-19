@@ -74,7 +74,7 @@
         <p v-if="recoveryBlocked" class="recovery-alt">
           <a href="#" @click.prevent="goRegisterInstead">注册新账号继续创作（送 30 点）</a>
           ·
-          <a href="#" @click.prevent="$router.push('/')">先看看案例</a>
+          <a href="#" @click.prevent="browseCases('recovery_blocked')">先看看案例</a>
         </p>
       </form>
 
@@ -117,7 +117,7 @@
         <span class="divider">|</span>
         <a href="#" @click.prevent="openForgot">忘记密码</a>
         <span class="divider">|</span>
-        <a href="#" @click.prevent="$router.push('/')">先看看</a>
+        <a href="#" @click.prevent="browseCases('footer')">先看看案例</a>
       </div>
       <div class="footer" v-else>
         <a href="#" @click.prevent="closeForgot">返回登录</a>
@@ -195,6 +195,12 @@ function goRegisterInstead() {
   showRegister.value = true
   error.value = ''
   success.value = ''
+}
+
+/** 登录页「先看看案例」→ 广场，避免回首页弱化阅读意图 */
+function browseCases(label = 'footer') {
+  trackEvent('login_browse_cases', { category: 'funnel', label })
+  router.push('/trending')
 }
 
 function closeForgot() {
