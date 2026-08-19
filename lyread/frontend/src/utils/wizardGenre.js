@@ -46,3 +46,32 @@ export function workspaceWizardQuery(category = '', title = '') {
   if (seed.genreName) query.genreName = seed.genreName
   return query
 }
+
+/**
+ * 案例题材 → /genre/:slug（与 backend GENRE_PAGES 对齐）。
+ * 无匹配时回退 /trending，供题材链尾完读回流。
+ */
+export function genreHubPathFromCategory(category) {
+  const cat = String(category || '').trim()
+  if (!cat) return '/trending'
+  if (cat.includes('系统')) return '/genre/xitong'
+  if (['战神', '兵王'].some((k) => cat.includes(k))) return '/genre/zhanshen'
+  if (['重生', '穿越'].some((k) => cat.includes(k))) return '/genre/chongsheng'
+  if (['仙侠', '玄幻', '修仙'].some((k) => cat.includes(k))) return '/genre/xianxia'
+  if (cat.includes('萌宝')) return '/genre/mengbao'
+  if (['言情', '甜宠'].some((k) => cat.includes(k))) return '/genre/yanqing'
+  // 灵异悬疑须先于悬疑，避免「悬疑」子串误入 xuanyi
+  if (['灵异', '恐怖'].some((k) => cat.includes(k))) return '/genre/lingyi'
+  if (['悬疑', '推理'].some((k) => cat.includes(k))) return '/genre/xuanyi'
+  if (cat.includes('短篇')) return '/genre/duanpian'
+  if (cat.includes('末世')) return '/genre/moshi'
+  if (['宫廷', '宫斗'].some((k) => cat.includes(k))) return '/genre/gongting'
+  if (cat.includes('赛博')) return '/genre/saibo'
+  if (cat.includes('赘婿')) return '/genre/zhuixu'
+  if (['科幻', '脑洞'].some((k) => cat.includes(k))) return '/genre/kehuan'
+  if (cat.includes('校园')) return '/genre/xiaoyuan'
+  if (['游戏', '电竞', '竞技'].some((k) => cat.includes(k))) return '/genre/youxi'
+  if (cat.includes('历史')) return '/genre/lishi'
+  if (['都市', '神豪'].some((k) => cat.includes(k))) return '/genre/dushi'
+  return '/trending'
+}

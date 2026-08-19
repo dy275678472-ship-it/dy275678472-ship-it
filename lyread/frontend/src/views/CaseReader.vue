@@ -100,7 +100,7 @@
           <router-link to="/trending" class="link empty-link">回案例广场</router-link>
         </div>
       </EmptyState>
-      <!-- 读完软引导：清进度后推下一篇，缩短案例连读路径 -->
+      <!-- 读完软引导：有下一篇则连读；题材链尾则回流题材枢纽/广场 -->
       <div v-if="finishedOffer" class="finished-cta" role="status">
         <p class="finished-text">本节选读完了</p>
         <div class="finished-actions">
@@ -110,6 +110,12 @@
             class="finished-next"
             @click="trackEvent('case_finished_next', { category: 'engagement', label: 'next', value: Number(nextCase.id) || 0 })"
           >下一篇 · {{ nextCase.title }} →</router-link>
+          <router-link
+            v-else
+            :to="genreMoreLink"
+            class="finished-next"
+            @click="trackEvent('case_finished_genre', { category: 'engagement', label: genreMoreLabel, value: Number(caseData.id) || 0 })"
+          >同题材更多 →</router-link>
           <router-link
             :to="creationLink"
             class="finished-write"
@@ -157,7 +163,7 @@ import EmptyState from '../components/EmptyState.vue'
 import { parseChapters, countChapters } from '../utils/caseContent'
 import { formatStorySettingWords } from '../utils/format'
 import { trackEvent } from '../utils/analytics'
-import { workspaceWizardQuery } from '../utils/wizardGenre'
+import { genreHubPathFromCategory, workspaceWizardQuery } from '../utils/wizardGenre'
 import {
   caseProgressStorageKey,
   readCaseProgress,
@@ -407,6 +413,14 @@ const midCtaAfterIndex = computed(() => {
 const workspaceLink = computed(() => {
   const q = workspaceWizardQuery(caseData.value?.category || '', caseData.value?.title || '')
   return { path: '/workspace', query: q }
+})
+
+/** 题材链尾：回流同题材枢纽，无匹配则案例广场 */
+const genreMoreLink = computed(() => genreHubPathFromCategory(caseData.value?.category || ''))
+const genreMoreLabel = computed(() => {
+  const path = genreMoreLink.value
+  if (path.startsWith('/genre/')) return path.slice('/genre/'.length)
+  return 'trending'
 })
 
 /** 游客直达注册表单并带回创作台意图，缩短案例→注册路径 */
