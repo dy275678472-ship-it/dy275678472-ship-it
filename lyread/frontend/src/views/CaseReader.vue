@@ -176,7 +176,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { casesApi } from '../api'
 import { IMAGES } from '../assets/images'
 import EmptyState from '../components/EmptyState.vue'
@@ -197,6 +197,7 @@ const casePrefetchCache = new Map()
 
 const images = IMAGES
 const route = useRoute()
+const router = useRouter()
 const loading = ref(true)
 const caseData = ref(null)
 const rawBody = ref('')
@@ -457,7 +458,12 @@ const ctaLabel = computed(() =>
 
 onMounted(() => {
   window.addEventListener('scroll', onScroll, { passive: true })
-  loadCase(route.params.id)
+  const id = route.params.id
+  loadCase(id)
+  // /read/:id 仅为 SPA 入口；规范 URL 仍 /ep/:id（不整页刷新，避免再落入 SSR）
+  if (id && String(route.path || '').startsWith('/read/')) {
+    router.replace({ path: `/ep/${id}`, query: route.query, hash: route.hash })
+  }
 })
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll)

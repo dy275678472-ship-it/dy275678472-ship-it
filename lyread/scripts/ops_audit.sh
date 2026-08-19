@@ -99,6 +99,20 @@ if [[ -n "$CASE_ID" ]]; then
     ok "human /ep/$CASE_ID (CaseReader SPA)"
   elif [[ "$EP_CODE" == "200" ]] && echo "$EP_BODY" | grep -q "正文节选"; then
     warn "human /ep/$CASE_ID still SSR-only (deploy tip nginx for CaseReader on /ep)"
+    # tip #197+：SSR 含 /read/:id 人类引导；前端路由就绪后可读 SPA
+    if echo "$EP_BODY" | grep -q "/read/$CASE_ID"; then
+      ok "SSR /ep/$CASE_ID offers /read/$CASE_ID SPA bootstrap"
+    else
+      warn "SSR /ep/$CASE_ID missing /read/$CASE_ID bootstrap (deploy tip backend)"
+    fi
+    READ_CODE=$(curl -sS -o /tmp/lyread_read_human_$$.html -w "%{http_code}" -A "Mozilla/5.0" "$BASE_URL/read/$CASE_ID" || echo "000")
+    READ_BODY=$(cat /tmp/lyread_read_human_$$.html 2>/dev/null || true)
+    rm -f /tmp/lyread_read_human_$$.html
+    if [[ "$READ_CODE" == "200" ]] && echo "$READ_BODY" | grep -q 'id="app"'; then
+      ok "human /read/$CASE_ID (CaseReader SPA fallback)"
+    else
+      warn "human /read/$CASE_ID not SPA yet ($READ_CODE; deploy tip frontend)"
+    fi
   else
     bad "human /ep/$CASE_ID ($EP_CODE)"
   fi

@@ -170,6 +170,29 @@ def _workspace_register_href(category: str = "", title: str = "") -> str:
     return _register_workspace_href(params)
 
 
+def _human_case_reader_bootstrap(content_id: int) -> str:
+    """生产若仍把 /ep/:id 全量反代到 SSR，人类可通过 /read/:id 进入 SPA CaseReader。
+
+    - 爬虫通常不执行脚本，继续消费 SSR + canonical /ep
+    - ?ssr=1 预览保留 SSR
+    - tip nginx 部署后人类直达 /ep SPA，此引导不再被下发到浏览器（无 SSR 壳）
+    - /reader 已被创作台别名占用，故用 /read/:id
+    """
+    cid = int(content_id)
+    return f"""
+<script>
+(function () {{
+  try {{
+    var q = location.search || '';
+    if (/(?:^|[?&])ssr=1(?:&|$)/.test(q)) return;
+    var ua = navigator.userAgent || '';
+    if (/Googlebot|bingbot|Baiduspider|Bytespider|YandexBot|DuckDuckBot|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|Discordbot|Applebot|PetalBot/i.test(ua)) return;
+    location.replace('/read/{cid}' + q + (location.hash || ''));
+  }} catch (e) {{}}
+}})();
+</script>"""
+
+
 def _seo_html(**kwargs) -> str:
     """PAGE_TEMPLATE 填充，默认 OG 图为站点分享图；题材 OG 均为 1200×630。"""
     kwargs.setdefault("site_base", SITE_BASE)
@@ -700,12 +723,14 @@ def _render_case_seo_page(content_id: int) -> HTMLResponse:
                         <a href="{write_href}">注册开写 →</a>
                     </p>
                 </div>"""
+                # /read/:id → SPA CaseReader（抵御生产 /ep 全量 SSR、/case→/ep 301）
                 body_html += f"""
                 <div class="seo-cta">
-                    <a href="{SITE_BASE}/ep/{int(row['id'])}">打开阅读器 →</a>
+                    <a href="{SITE_BASE}/read/{int(row['id'])}">打开阅读器 →</a>
                     <a href="{write_href}" style="margin-left:12px">免费注册开写（送 30 点）→</a>
                 </div>
                 """
+                body_html = _human_case_reader_bootstrap(int(row["id"])) + body_html
     except Exception as e:
         print(f"[SEO Page] Error fetching content {content_id}: {e}")
 
