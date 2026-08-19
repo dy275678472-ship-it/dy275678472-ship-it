@@ -100,7 +100,7 @@
           <router-link to="/trending" class="link empty-link">回案例广场</router-link>
         </div>
       </EmptyState>
-      <!-- 读完软引导：有下一篇则连读；题材链尾则回流题材枢纽/广场 -->
+      <!-- 读完软引导：有下一篇则连读+逛同题材；题材链尾则回流题材枢纽/广场 -->
       <div v-if="finishedOffer" class="finished-cta" role="status">
         <p class="finished-text">本节选读完了</p>
         <div class="finished-actions">
@@ -110,6 +110,12 @@
             class="finished-next"
             @click="trackEvent('case_finished_next', { category: 'engagement', label: 'next', value: Number(nextCase.id) || 0 })"
           >下一篇 · {{ nextCase.title }} →</router-link>
+          <router-link
+            v-if="nextCase"
+            :to="genreMoreLink"
+            class="finished-genre"
+            @click="trackEvent('case_finished_genre', { category: 'engagement', label: genreMoreLabel, value: Number(caseData.id) || 0 })"
+          >逛同题材 →</router-link>
           <router-link
             v-else
             :to="genreMoreLink"
@@ -544,7 +550,7 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; color: #1e2a3a; }
   gap: 10px 16px;
   align-items: center;
 }
-.finished-next, .finished-write {
+.finished-next, .finished-write, .finished-genre {
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
@@ -552,6 +558,8 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; color: #1e2a3a; }
 }
 .finished-next { color: #2563eb; }
 .finished-next:hover { text-decoration: underline; }
+.finished-genre { color: #64748b; font-weight: 500; }
+.finished-genre:hover { color: #334155; text-decoration: underline; }
 .finished-write { color: #0f766e; }
 .finished-write:hover { text-decoration: underline; }
 .case-nav {
