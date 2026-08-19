@@ -1402,13 +1402,21 @@ async def seo_genre_page(slug: str):
     except Exception as e:
         print(f"[SEO Page] genre cases: {e}")
 
+    write_href = _workspace_register_href(category=genre["category"], title="")
+    empty_items = (
+        '<li class="genre-empty" style="color:#7a8ba8;line-height:1.7">'
+        f'暂无「{escape(genre["category"])}」公开案例。'
+        f'可先 <a href="{SITE_BASE}/trending">逛热门案例</a> / '
+        f'<a href="{SITE_BASE}/story">试短故事</a>，'
+        f'或 <a href="{write_href}">注册领 30 点用此题材开写 →</a>'
+        '</li>'
+    )
     items = "".join(
         f'<li><a href="{SITE_BASE}/ep/{int(c["id"])}">{escape(str(c.get("title") or "作品"))}</a>'
         f'<span class="stat">{c.get("word_count", 0)}字 · 热度{c.get("heat", 0)}</span></li>'
         for c in cases
-    ) or '<li style="color:#7a8ba8">暂无该题材公开案例，欢迎创作并提交审核。</li>'
+    ) or empty_items
 
-    write_href = _workspace_register_href(category=genre["category"], title="")
     body_html = f"""
     <p>{escape(genre["intro"])}</p>
     <h2 style="font-size:18px;margin:20px 0 12px">相关案例</h2>

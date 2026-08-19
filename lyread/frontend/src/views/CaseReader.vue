@@ -155,14 +155,21 @@
         >{{ ctaLabel }}</router-link>
       </footer>
     </article>
-    <!-- 移动端滚动中固定转化条：拇指区可达，读完后让位给 finished CTA -->
+    <!-- 移动端滚动中固定转化条：拇指区可达；主 CTA 旁挂逛同题材，读完后让位给 finished CTA -->
     <div v-if="showMobileDock" class="mobile-dock" role="region" aria-label="继续创作">
       <span class="mobile-dock-meta">{{ progressChipLabel }}</span>
-      <router-link
-        :to="creationLink"
-        class="mobile-dock-cta"
-        @click="trackEvent('case_mobile_dock_cta', { category: 'conversion', label: isLoggedIn ? 'logged_in' : 'register_first', value: Number(caseData?.id) || 0 })"
-      >{{ isLoggedIn ? '同题材开写 →' : '注册开写 →' }}</router-link>
+      <div class="mobile-dock-actions">
+        <router-link
+          :to="genreMoreLink"
+          class="mobile-dock-genre"
+          @click="trackEvent('case_mobile_dock_genre', { category: 'engagement', label: genreMoreLabel, value: Number(caseData?.id) || 0 })"
+        >逛同题材</router-link>
+        <router-link
+          :to="creationLink"
+          class="mobile-dock-cta"
+          @click="trackEvent('case_mobile_dock_cta', { category: 'conversion', label: isLoggedIn ? 'logged_in' : 'register_first', value: Number(caseData?.id) || 0 })"
+        >{{ isLoggedIn ? '同题材开写 →' : '注册开写 →' }}</router-link>
+      </div>
     </div>
   </div>
 </template>
@@ -654,6 +661,20 @@ h1 { font-size: 24px; margin: 12px 0 8px; line-height: 1.35; color: #1e2a3a; }
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .mobile-dock-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .mobile-dock-genre {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .mobile-dock-genre:hover { color: #334155; text-decoration: underline; }
   .mobile-dock-cta {
     flex-shrink: 0;
     padding: 10px 14px;
