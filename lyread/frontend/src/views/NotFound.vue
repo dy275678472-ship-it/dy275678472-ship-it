@@ -4,7 +4,7 @@
       :image="images.emptyCreate"
       image-alt="页面未找到"
       title="页面未找到"
-      description="链接可能已失效或输错。可以回首页、读案例，或直接注册开写。"
+      description="链接可能已失效或输错。可以回首页、读案例、试短故事，或直接注册开写。"
       :image-width="160"
     >
       <div v-if="resumeBanner" class="resume-banner" role="status">
@@ -23,6 +23,7 @@
       <div class="actions">
         <router-link to="/" class="btn" @click="track('notfound_home')">返回首页</router-link>
         <router-link to="/trending" class="btn" @click="track('notfound_trending')">案例阅读</router-link>
+        <router-link to="/story" class="btn" @click="track('notfound_story')">试试短故事 →</router-link>
         <router-link
           v-if="!isLoggedIn"
           class="btn primary"
